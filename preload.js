@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // Authentication
     auth: {
+        hasSession: () => ipcRenderer.invoke('auth:has-session'),
         status: () => ipcRenderer.invoke('auth:status'),
         login: (licenseKey) => ipcRenderer.invoke('auth:login', licenseKey),
         onRequired: (callback) => ipcRenderer.on('auth:required', (_event, data) => callback(data))

@@ -174,6 +174,10 @@ function createAuthSession({
         return refreshPromise;
     }
 
+    function hasStoredSession() {
+        return Boolean(loadStoredSession());
+    }
+
     async function status() {
         if (!loadStoredSession()) return { authenticated: false, code: 'missing' };
 
@@ -232,7 +236,7 @@ function createAuthSession({
         }
     }
 
-    return { getAccessToken, handleUnauthorized, login, status };
+    return { getAccessToken, handleUnauthorized, hasStoredSession, login, status };
 }
 
 module.exports = { AuthError, createAuthSession };

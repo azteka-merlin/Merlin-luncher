@@ -459,6 +459,10 @@ webview {
     opacity: 0;
 }
 
+.license-gate.is-checking .license-gate-card {
+    text-align: center;
+}
+
 .license-gate-glow {
     position: absolute;
     width: min(72vw, 850px);
@@ -499,6 +503,19 @@ webview {
     transform: rotate(-35deg);
 }
 
+.license-gate.is-checking .license-gate-mark {
+    margin-inline: auto;
+}
+
+.license-gate.is-checking .license-gate-mark span {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-color: #60a5fa rgba(96, 165, 250, 0.2) rgba(96, 165, 250, 0.2);
+    border-radius: 50%;
+    transform: none;
+    animation: license-gate-spin 0.8s linear infinite;
+}
+
 .license-gate-eyebrow {
     margin-bottom: 0.5rem;
     color: #60a5fa;
@@ -523,6 +540,13 @@ webview {
 
 .license-gate-form {
     margin-top: 1.8rem;
+}
+
+.license-gate.is-checking .license-gate-form label,
+.license-gate.is-checking .license-key-field,
+.license-gate.is-checking .license-gate-submit,
+.license-gate.is-checking .license-gate-privacy {
+    display: none;
 }
 
 .license-gate-form label {
@@ -584,6 +608,11 @@ webview {
     margin-top: 0.7rem;
     color: #94a3b8;
     font-size: 0.8rem;
+}
+
+.license-gate.is-checking .license-gate-feedback {
+    margin-top: 1.15rem;
+    font-size: 0.92rem;
 }
 
 .license-gate-feedback[data-type='error'] {
