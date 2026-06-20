@@ -35,21 +35,23 @@ function registerExistingIpc({
 
     ipcMain.handle('verify-files', async () => {
         const config = configStore.get();
-        if (!config.steamPath) return { installed: false };
-        const installed = await dllInstaller.checkAndInstall(config.steamPath, config.language);
+        if (!config.steamPath) {
+            return { installed: false, alreadyInstalled: false, cancelled: false };
+        }
+        const result = await dllInstaller.checkAndInstall(config.steamPath, config.language);
         libraryService?.invalidate();
-        return { installed };
+        return result;
     });
 
     ipcMain.handle('detect-steam', async () => {
         const steamPath = steamService.findDefaultPath();
         if (!steamPath) return null;
-        const installed = await dllInstaller.checkAndInstall(
+        const installResult = await dllInstaller.checkAndInstall(
             steamPath,
             configStore.get().language
         );
         libraryService?.invalidate();
-        return { steamPath, installed };
+        return { steamPath, ...installResult };
     });
 
     ipcMain.handle('is-steam-running', async () => steamService.isRunning());

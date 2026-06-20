@@ -40,6 +40,7 @@ const translations = {
         files_missing: 'Pendente',
         files_label: 'Arquivos',
         files_verified: 'Arquivos verificados com sucesso',
+        files_already_ok: 'Tudo já está configurado.',
         activation_path_invalid: 'O caminho configurado não é uma instalação válida do Steam.',
         activation_files_missing: 'Os arquivos obrigatórios não estão instalados. Clique em Reparar primeiro.'
     },
@@ -84,6 +85,7 @@ const translations = {
         files_missing: 'Pending',
         files_label: 'Files',
         files_verified: 'Files verified successfully',
+        files_already_ok: 'Everything is already set up.',
         activation_path_invalid: 'The configured path is not a valid Steam installation.',
         activation_files_missing: 'Required files are not installed. Click Repair first.'
     },
@@ -128,6 +130,7 @@ const translations = {
         files_missing: 'Pendiente',
         files_label: 'Archivos',
         files_verified: 'Archivos verificados con éxito',
+        files_already_ok: 'Todo ya está configurado.',
         activation_path_invalid: 'La ruta configurada no es una instalación válida de Steam.',
         activation_files_missing: 'Los archivos obligatorios no están instalados. Use Reparar primero.'
     },
@@ -172,6 +175,7 @@ const translations = {
         files_missing: 'En attente',
         files_label: 'Fichiers',
         files_verified: 'Fichiers vérifiés avec succès',
+        files_already_ok: 'Tout est déjà configuré.',
         activation_path_invalid: 'Le chemin configuré n’est pas une installation Steam valide.',
         activation_files_missing: 'Les fichiers requis ne sont pas installés. Utilisez Réparer.'
     },
@@ -216,6 +220,7 @@ const translations = {
         files_missing: 'Ausstehend',
         files_label: 'Dateien',
         files_verified: 'Dateien erfolgreich verifiziert',
+        files_already_ok: 'Alles ist bereits eingerichtet.',
         activation_path_invalid: 'Der konfigurierte Pfad ist keine gültige Steam-Installation.',
         activation_files_missing: 'Erforderliche Dateien fehlen. Verwenden Sie zuerst Reparieren.'
     }
@@ -522,6 +527,11 @@ function setupEventListeners() {
             if (await askToRestartSteam()) {
                 await restartSteam();
             }
+            return;
+        }
+
+        if (result.alreadyInstalled) {
+            showNotification(t('files_already_ok'));
         }
     });
 

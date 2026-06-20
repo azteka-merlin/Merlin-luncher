@@ -47,7 +47,7 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
 
         if (missing.length === 0) {
             notify(true);
-            return false;
+            return { installed: false, alreadyInstalled: true, cancelled: false };
         }
 
         const { response } = await dialog.showMessageBox(getMainWindow(), {
@@ -75,11 +75,11 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
             }
 
             notify(true);
-            return true;
+            return { installed: true, alreadyInstalled: false, cancelled: false };
         }
 
         notify(false);
-        return false;
+        return { installed: false, alreadyInstalled: false, cancelled: true };
     }
 
     return { checkAndInstall };
