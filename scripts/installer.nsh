@@ -1,3 +1,13 @@
+!macro customInit
+  ; Per-machine installs must never continue without an elevated process.
+  ; This also blocks any unexpected non-admin fallback after a denied UAC prompt.
+  ${IfNot} ${UAC_IsAdmin}
+    MessageBox MB_ICONSTOP|MB_OK "Administrator permission is required to install Merlin. The installation will now close."
+    SetErrorLevel 740
+    Quit
+  ${EndIf}
+!macroend
+
 !macro customInstall
   StrCpy $0 "$PROGRAMFILES32\Steam"
 
