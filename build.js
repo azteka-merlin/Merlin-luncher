@@ -9,6 +9,7 @@ const lumaCoreBuild = path.join(rootDir, 'LumaCore', 'build.bat');
 const lumaCoreBuildDir = path.join(rootDir, 'LumaCore', 'build');
 const lumaCoreReleaseDir = path.join(rootDir, 'LumaCore', 'Releases', 'Release');
 const appDllDir = path.join(rootDir, 'assets', 'dlls');
+const distDir = path.join(rootDir, 'dist');
 const requiredDlls = ['LumaCore.dll', 'dwmapi.dll'];
 
 const obfuscationOptions = {
@@ -75,9 +76,10 @@ function sha256(filePath) {
 }
 
 function writeIntegrityManifest() {
-    const distDir = path.join(rootDir, 'dist');
     const files = [
-        path.join(distDir, 'Merlin Setup 2.0.0.exe'),
+        ...fs.readdirSync(distDir)
+            .filter(file => file.toLowerCase().endsWith('.exe'))
+            .map(file => path.join(distDir, file)),
         ...requiredDlls.map(dll => path.join(appDllDir, dll))
     ].filter(fs.existsSync);
 
@@ -158,6 +160,8 @@ console.log(`LumaCore DLLs copied to ${appDllDir}`);
 if (process.argv.includes('--lumacore-only')) {
     console.log('LumaCore Release DLLs are ready.');
 } else {
+    console.log('Cleaning previous Electron build artifacts...');
+    cleanBuildDirectory(distDir);
     const restoreMain = obfuscateMainForPackaging();
     console.log('Building obfuscated Electron package...');
     try {
