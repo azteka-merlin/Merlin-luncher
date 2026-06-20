@@ -1,0 +1,295 @@
+# LumaCore — Feature Reference
+
+This document describes every subsystem in LumaCore, its purpose, the Steam internals it touches, and the configuration interface exposed to SteaMidra via Lua scripts.
+
+---
+
+## Injection chain
+
+Steam loads DLLs from its own directory on startup.  LumaCore exploits this by placing a custom `dwmapi.dll` (a thin proxy that forwards all real DWM exports) alongside `steam.exe`.  When Steam starts, Windows loads the proxy DLL before any game code runs.  The proxy's `DllMain` loads `LumaCore.dll` and returns.
+
+`LumaCore.dll` then:
+
+1. Copies `steamclient64.dll` to `bin\lcoverlay.dll` (with retry logic in case the file is locked).
+2. Loads `lcoverlay.dll` explicitly so it has an independent module handle.
+3. Reads the current Steam build ID from `steam.exe!GetBootstrapperVersion` and stores it for diagnostics + status surfacing.
+4. Synchronously primes the runtime pattern cache from disk for both `steamclient64.dll` and `steamui.dll`, so the first hook installer sees a populated pattern map without waiting on the network.
+5. Spawns a worker thread that installs all hooks, kicks off the network refresh path for the per-build pattern files in the background, and starts the Lua directory watcher.
+
+The copy step is necessary because hooking the live `steamclient64.dll` while it is already mapped into the process would require patching code that is in use.  Hooking the private copy avoids race conditions and keeps the original file untouched on disk.
+
+---
+
+## Pattern resolution (`hooks/PatternFetcher.cpp` + `utils/ByteScan.cpp`)
+
+LumaCore locates Steam internal functions through a runtime pattern map.  At startup the fetcher hashes `steamclient64.dll` and `steamui.dll` (lowercase hex SHA-256), looks up a matching `<sha>.toml` for each, and stores the parsed entries in an in-memory map keyed by function name.  Each entry is a `name`, an `rva` relative to that DLL's image base, and a byte `sig` (hex with `??` wildcards) used to verify the bytes at that rva before any hook attaches.
+
+### Pattern file format
+
+Section keys are FNV-1a 32-bit of the function name (offset basis `0x811c9dc5`, prime `0x01000193`), filenames are the lowercase-hex SHA-256 of the inspected DLL, fields are `name`, `rva`, `sig`:
+
+```toml
+[0x82428E37]
+name = "BBuildAndAsyncSendFrame"
+rva  = "0xD15DD0"
+sig  = "48 8B C4 55 48 8D 68 A1 48 81 EC C0 00 00 00 48 89 70 18"
+```
+
+This is the same schema used by the canonical pattern publisher (`OpenSteam001/steam-monitor` `pattern` branch), so a TOML pulled from there can drop straight into `<Steam>\lumacore\pattern\` and resolve.
+
+### Source priority
+
+For each DLL, the fetcher tries sources in this order:
+
+1. **User mirror** (optional). If `[pattern_fetch] mirror` is set in `lumacore.toml`, the fetcher substitutes `{subdir}` (`steamclient` or `steamui`) and `{sha}` into the URL and treats it as the first try. Any failure (HTTP 4xx/5xx, network error, parse error) logs a debug line and falls through.
+2. **GitHub raw** — `raw.githubusercontent.com/KoriaPolis/Steam-Auto-PT/pattern/<subdir>/<sha>.toml`.
+3. **jsDelivr CDN** — `cdn.jsdelivr.net/gh/KoriaPolis/Steam-Auto-PT@pattern/<subdir>/<sha>.toml`. Used only on transport failure since GitHub raw and jsDelivr serve the same content; a 404 from either short-circuits to the cache step.
+4. **Local cache** — `<Steam>\lumacore\pattern\<sha>.toml`. Always written-through on a successful fetch and always read on a network miss.
+
+### Cache and atomic writes
+
+Cache writes go through `<sha>.toml.tmp` followed by `MoveFileExA(MOVEFILE_REPLACE_EXISTING)`, so a writer crash, power loss, or concurrent reads from multiple Steam-instance processes never expose a partially written file. Surviving `.tmp` files from a crashed writer get swept on the next successful fetch into the same directory.
+
+### Fallback and graceful degradation
+
+The hook installer macros call `ByteSearch(module, "FunctionName")`, which consults the in-memory pattern map, verifies the bytes at `module_base + entry.rva` match the TOML's sig, and returns the address. Out-of-range rva values, sig mismatches, or missing names log a warning and `RecordMissed` into `status.json`; the hook is silently skipped and Steam runs that function unmodified. A missing TOML for one DLL never blocks hook installs in the other DLL, so a partial pattern set still produces a partially-functional LumaCore install instead of aborting.
+
+There are no compiled-in `*Sigs[]` arrays anymore. The runtime pattern map is the single source of truth; the legacy `hooks/PatternDb.h` header is gone.
+
+### Pattern refresh and the analyzer
+
+`cleintcheck/steamclient_analyzer.py` is the maintainer-side tool that produces `<sha>.toml` files for the runtime fetcher.
+
+```
+cd cleintcheck
+python steamclient_analyzer.py "C:\Program Files (x86)\Steam\steamclient64.dll" \
+       --steamui "C:\Program Files (x86)\Steam\steamui.dll" \
+       --emit toml --out-dir PatternsUpdate
+```
+
+The script computes the SHA-256 of each DLL, locates every target function via a hybrid of string-XRef and byte-pattern matching, and writes `PatternsUpdate/steamclient/<sha>.toml` and `PatternsUpdate/steamui/<sha>.toml` ready for upload to the pattern repo.
+
+By default the script also fetches the canonical pattern publisher's TOML for the same SHA from `OpenSteam001/steam-monitor`'s `pattern` branch (with jsDelivr as a transport fallback) and lets the canonical entries win on shared names. Analyzer-only entries — `RequiresLegacyCDKey` and the DLC / cloud / subscription helpers that LumaCore tracks but the canonical doesn't ship — ride along on top, so a single output file covers everything LumaCore expects. Pass `--no-canonical-overlay` to skip the merge, or `--canonical-overlay-url URL` (repeatable) to point at a different mirror.
+
+The runtime fetcher's own logs (`<Steam>\lumacore\misc.log`) note every overlay, cache, and network step so it's straightforward to triage a build that doesn't resolve cleanly.
+
+---
+
+## Hook modules
+
+### DepotKeys (`hooks/DepotKeys.cpp`)
+
+Hooks `LoadDepotDecryptionKey`.
+
+When Steam mounts a depot it calls this function to fetch the AES-128 decryption key for that depot from the user's license data.  The hook intercepts the call, checks whether `LuaLoader` has a key for the requested depot ID (loaded from the `.lua` script provided by SteaMidra), and writes it into the output buffer.  If no key is known, the call falls through to the original function.
+
+Lua interface:
+
+```lua
+addappid(1234567, 1, "0A1B2C3D...")  -- depot 1234567, decryption key
+```
+
+---
+
+### IPCBus (`hooks/IPCBus.cpp`)
+
+Hooks `IPCProcessMessage` and resolves `GetPipeClient` — both via pure byte-pattern matching.
+
+Steam uses an internal IPC bus to route messages between its client service and the UI process.  The hook intercepts `IPCProcessMessage`, inspects the command code, and dispatches it to any registered LumaCore handlers.  Currently the following handlers are active:
+
+- `GetSteamID` — returns a spoofed SteamID (see CmdUser below)
+- `GetAppOwnershipTicketExtendedData` — produces a synthetic AppTicket for apps in the Lua config
+
+All other messages pass through unmodified.
+
+Both `GetPipeClient` and `IPCProcessMessage` resolve through the same runtime pattern map every other hook uses; the address is verified against the TOML's sig at `module_base + rva` before any detour attaches. String cross-reference resolution was previously attempted for these two and reverted because the referenced strings can resolve to helper functions at early startup, producing a null pipe pointer and crashing Steam on the first IPC Handshake. Pattern-only resolution sidesteps that hazard.
+
+---
+
+### CmdUser (`hooks/CmdUser.cpp`)
+
+Handles the `GetSteamID` and `GetAppOwnershipTicketExtendedData` IPC commands.
+
+**GetSteamID**: returns the SteamID configured in `lumacore.toml` under `[user] steam_id`.  For Denuvo-protected titles, which embed the owning SteamID in the AppTicket and validate it at runtime, LumaCore uses `GetDynamicOwnerSteamID`.  That function searches `Steam\userdata\` directories for an account that has local app data for the requested game and returns that account's ID.  This avoids hardcoding a single SteamID for users who run multiple accounts.
+
+**GetAppOwnershipTicketExtendedData**: builds a synthetic AppTicket and ETicket for apps listed in the active `.lua` config.  The ticket includes the SteamID resolved above, the app's package ID read from the Lua script, and a minimal set of ownership flags.
+
+---
+
+### ManifestBind (`hooks/ManifestBind.cpp`)
+
+Handles the manifest-key binding that associates a depot manifest with the active decryption key.  When Steam mounts a manifest, it calls this function to verify that the manifest's encryption was produced with the key the user holds.  The hook ensures keys supplied via Lua are accepted for this check.
+
+---
+
+### SteamCapture (`hooks/SteamCapture.cpp`)
+
+Uses VEH one-shot int3 captures (not Detours hooks) to resolve internal Steam object pointers at runtime.
+
+This module arms single-byte breakpoints at the entry of several Steam functions.  When each fires for the first time, the VEH handler records `RCX` (the `this` pointer) into a module-level variable, then restores the original byte and resumes execution normally.  The captured pointers are:
+
+| Function | Captured into |
+|---|---|
+| `GetAppIDForCurrentPipe` | `g_steamEngine` |
+| `GetAppDataFromAppInfo` | `g_pCAppInfoCache` |
+| `MarkLicenseAsChanged` | `g_pCUser` |
+| `GetPackageInfo` | `g_pCPackageInfo` |
+
+`ProcessPendingLicenseUpdates`, `CUtlBufferEnsureCapacity`, and `CUtlMemoryGrow` are resolved without int3 (address-only).
+
+`SteamCapture::NotifyLicenseChanged` uses the captured `g_pCUser` and resolved function pointers to push new ownership records into Steam's in-memory license tables and trigger an ownership refresh without restarting Steam.
+
+---
+
+### PacketRouter (`hooks/PacketRouter.cpp`)
+
+Hooks `BBuildAndAsyncSendFrame` and `RecvPkt`.
+
+Steam communicates with the Steam Network (CM servers) using a protobuf-over-TCP framing.  PacketRouter intercepts outgoing and incoming packet frames and replaces the content of specific message types:
+
+- `FamilyGroupsClient.NotifyRunningApps` — replaces the running-app list so family-sharing session checks on the CM side see the correct owner rather than the borrower account.
+- `Player.GetUserStats` — rewrites the SteamID in the stats request so achievements are loaded from the account configured in the Lua `setStat` call.
+
+Packet replacement uses a fixed-size ring-buffer pool to avoid heap allocation on the hot path.
+
+Lua interface:
+
+```lua
+setStat(1234567, "76561198028121353")  -- load stats from this SteamID for app 1234567
+```
+
+If no `setStat` is provided for an app, the fallback SteamID defined in `entry.h` (`ONLINE_FIX_APP_ID`) is used.
+
+---
+
+### PackagePatch (`hooks/PackagePatch.cpp`)
+
+Hooks `LoadPackage`, `CheckAppOwnership`, and `SendCallbackToPipe`.
+
+- **`LoadPackage`** — intercepts the call for Package 0 (the free-to-play base package) and appends all app IDs from the active Lua config to its `AppIdVec`, so Steam considers them part of the base license.
+- **`CheckAppOwnership`** — patches the returned `CAppOwnershipInfo` struct for apps present in the Lua config so they show as owned, released, and playable.  If the app is genuinely owned it is marked as such and excluded from future patching.
+- **`SendCallbackToPipe`** — intercepts `AppLicensesChanged` callbacks and forces `m_bReloadAll = true` so Steam fully refreshes its license state after an ownership injection.
+
+---
+
+### LicenseHooks (`hooks/LicenseHooks.cpp`)
+
+Detours `OptedInMask` and `RequiresLegacyCDKey` against `steamclient64.dll`.
+
+- **`OptedInMask`** — when the OnlineFix CGameID rewrite is in flight, the controller layer asks for appid 480 (Spacewar) and gets the empty mask back. The detour swaps the query back to the real appid so controllers stay live under `-onlinefix`.
+- **`RequiresLegacyCDKey`** — Steam asks the wrapper for a CD key on a small set of pre-2010 titles when ownership crosses certain code paths. For Lua-tracked appids the user has no real key, so the detour answers `false` and the prompt never fires. Without this hook those games refuse to launch.
+
+DLC ownership / install / cloud / license-update / subscribed-app / ownership-ticket queries (`BIsDlcEnabled`, `IsAppDlcInstalled`, `IsCloudEnabledForApp`, `BUpdateLicenses`, `GetSubscribedApps`, `BUpdateAppOwnershipTicket`) are intentionally not detoured here. Steam already returns the right answer for Lua-tracked appids through the existing `CheckAppOwnership` patch, so detouring those is redundant and risks stack corruption on x64 fastcall when an argument count or type is even slightly off. The patterns for those six still ride in the per-build TOML, so future code that needs their addresses can resolve them without changing the publisher or the cache layout.
+
+---
+
+### RuntimeCapture (`hooks/RuntimeCapture.cpp`)
+
+VEH-based captures and hooks used by the `-onlinefix` game-launch path.
+
+- Arms a one-shot int3 on `CUser_SpawnProcess`.  When Steam is about to launch a game, the VEH fires, checks whether `-onlinefix` is present in the launch command, and if so records the real app ID for the session.  The original byte is restored and execution continues.
+- Hooks `BuildSpawnEnvBlock` (via string XRef, since this function is only called at launch — not at startup — making string-based resolution safe here) to patch `SteamOverlayGameId` and `SteamAppId` environment variables so overlays and stats bind to the correct app.
+- Uses `GetAppDataFromAppInfo` captures from `SteamCapture` to resolve game names for rich-presence labelling.
+
+---
+
+### RichPresence (`hooks/RichPresence.cpp`)
+
+Patches `CMsgClientPersonaState` protobuf messages intercepted by PacketRouter.
+
+When an online-fix game is running, Steam's presence broadcasts the SpaceWar app ID (480) rather than the real game ID.  `RichPresence::HandleRecv` rewrites the `game_played_app_id` field to the real app ID resolved by RuntimeCapture, so friends see the correct game name in their friend list.
+
+---
+
+### StringFind (`hooks/StringFind.cpp`)
+
+Implements the string cross-reference search used by the `_STR_D` hook macros.  Scans the `.rdata` section of a module for a target string, finds all code locations that reference it via RIP-relative `LEA`/`MOV` instructions, locates the enclosing function via `.pdata` RUNTIME_FUNCTION lookup, and returns the function entry point.
+
+This is more update-proof for functions called only at game-launch time.  It is intentionally **not** used for hooks that fire during early Steam startup (e.g. `IPCBus`) — those resolve through the runtime pattern fetcher only, since the rva pin plus byte verification rules out the risk of the string residing in a helper function and resolving to the wrong address.
+
+---
+
+## Lua configuration format
+
+SteaMidra writes `.lua` files to `Steam\config\stplug-in\<appid>.lua`.  LumaCore watches this directory and reloads files as they change.
+
+### App and depot registration
+
+```lua
+-- Register ownership of app 1234567 with a depot decryption key
+addappid(1234567)
+addappid(1001, 1, "0A1B2C3D4E5F6071820394A5B6C7D8E9")
+```
+
+`addappid(appId)` — registers ownership of appId without a depot key.
+`addappid(depotId, 1, "hexkey")` — registers ownership and provides the AES-128 decryption key for depotId.
+
+### Manifest pinning
+
+```lua
+setManifestid(1001, "1234567890123456789")
+```
+
+Pins the manifest GID for depot 1001.  LumaCore reports this GID when Steam asks for the active manifest, preventing automatic updates from switching to a newer manifest that may not have a corresponding decryption key.
+
+### Stats and achievements
+
+```lua
+setStat(1234567, "76561198028121353")
+```
+
+Instructs PacketRouter to load achievement and stats data from the given SteamID for app 1234567.  Required when the game checks online achievement state against a specific account.
+
+---
+
+## Configuration file (`lumacore.toml`)
+
+Placed in the Steam installation directory.  SteaMidra writes this file during LumaCore setup.
+
+```toml
+[user]
+steam_id = "76561198028121353"  # SteamID64 to spoof in GetSteamID responses
+```
+
+All other settings use built-in defaults.
+
+---
+
+## Pattern maintenance
+
+When a Steam client update lands and the new SHA-256 isn't in the pattern repo yet, generate a fresh `<sha>.toml` with the analyzer:
+
+```
+cd cleintcheck
+python steamclient_analyzer.py "C:\Program Files (x86)\Steam\steamclient64.dll" \
+       --steamui "C:\Program Files (x86)\Steam\steamui.dll" \
+       --emit toml --out-dir PatternsUpdate
+```
+
+Two files land under `PatternsUpdate\steamclient\` and `PatternsUpdate\steamui\` — upload both to the pattern repo, and LumaCore picks them up on the next launch (or immediately if the user drops the files into `<Steam>\lumacore\pattern\` themselves).
+
+See the **Pattern resolution** section above for the full details on the canonical-overlay merge, the FNV-1a section keys, and the source-priority chain.
+
+---
+
+## Logging
+
+Logging is compiled in only for Debug builds (`LUMACORE_LOGGING_ENABLED` define).  Release builds compile all `LOG_*` macros to no-ops so there is no runtime overhead.
+
+When enabled, logs are written to `Steam\lumacore\` alongside `LumaCore.dll`.  Each module writes to its own file:
+
+| File | Module |
+|---|---|
+| `main.log` | Core init, DLL loading, build ID detection |
+| `ipc.log` | IPCBus — IPC message dispatch |
+| `package.log` | PackagePatch / PackageInfo / DirWatch |
+| `capture.log` | SteamCapture / RuntimeCapture VEH events |
+| `packet.log` | PacketRouter — protobuf frame interception |
+| `keyvalue.log` | KVHooks — Install / Uninstall events only (per-call traffic is silent) |
+| `license.log` | LicenseHooks — `OptedInMask` and `RequiresLegacyCDKey` |
+| `misc.log` | Miscellaneous, including the runtime pattern fetcher's overlay / cache / network steps |
+| `status.json` | Single-line snapshot: Steam build id, per-DLL TOML availability, hooks installed / missed |
+
+The `pattern\` subdirectory next to these logs holds the cached `<sha>.toml` files the runtime fetcher uses. Files there are safe to delete; they get re-fetched on next launch.
+
+Log level is controlled by `lumacore.toml` under `[log] level = "debug"` (default: `info`).

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merlin</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon"></div>
+                    <h1 class="title">Merlin</h1>
+                    <span class="version">v1.0</span>
+                </div>
+                <div class="header-controls">
+                    <nav class="header-navigation" aria-label="Main navigation" data-i18n-aria-label="main_navigation_label">
+                        <button id="addGamesNavBtn" class="header-nav-btn active" type="button" aria-pressed="true">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 5v14M5 12h14"></path>
+                            </svg>
+                            <span data-i18n="add_game_source">Add game</span>
+                        </button>
+                        <button id="libraryBtn" class="header-nav-btn" type="button" aria-pressed="false">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
+                            </svg>
+                            <span data-i18n="library_button">Library</span>
+                        </button>
+                    </nav>
+                    <select id="languageSelect" class="language-selector">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                        <option value="ptbr">Português (Brasil)</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="config-section card">
+                    <h2 class="section-title" data-i18n="config">Configuration</h2>
+                    <div class="config-info">
+                        <div class="info-item">
+                            <span class="label" data-i18n="steam_path">Steam Path</span>
+                            <span id="steamPathDisplay"
+                                class="value truncate"
+                                data-i18n="steam_not_configured">
+                                Not configured
+                            </span>
+                        </div>
+                        <div class="button-group">
+                            <button id="detectSteamBtn"
+                                    class="btn btn-secondary"
+                                    data-i18n="detect_steam">
+                                Auto Detect
+                            </button>
+
+                            <button id="selectSteamBtn"
+                                    class="btn btn-secondary"
+                                    data-i18n="select_steam">
+                                Browse
+                            </button>
+
+                            <button id="verifyFilesBtn"
+                                    class="btn btn-secondary"
+                                    data-i18n="verify_files">
+                                Repair
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-section card">
+                    <h2 class="section-title" data-i18n="status">Status</h2>
+                    <div class="status-info">
+                        <div class="status-item">
+                            <span class="label">Steam</span>
+                            <div class="status-indicator-wrapper">
+                                <span class="status-dot" id="steamStatus"></span>
+                                <span id="steamStatusText" data-i18n="steam_offline">Offline</span>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <span class="label" data-i18n="app_id">App ID</span>
+                            <span id="appIdDisplay" class="app-id">—</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label" data-i18n="files_label">Files</span>
+                            <div class="status-indicator-wrapper">
+                                <span class="status-dot" id="filesStatus"></span>
+                                <span id="filesStatusText" data-i18n="files_missing">Files missing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="steamActionsCard" class="actions-section card" hidden>
+                    <h2 class="section-title" data-i18n="actions">Actions</h2>
+                    <div class="button-group vertical">
+                        <button id="addToSteamBtn" class="btn btn-primary" disabled data-i18n="add_to_steam">
+                            Add to Steam
+                        </button>
+                        <button id="restartSteamBtn" class="btn btn-danger" data-i18n="restart_steam">
+                            Restart Steam
+                        </button>
+                    </div>
+                </div>
+
+                <div class="gamepad-indicator card" id="gamepadIndicator">
+                    <div class="gamepad-icon-wrapper">
+                        <svg class="gamepad-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 12h4m2 0h4m-7 3h4m-2-6h.01M6 9h.01M18 9h.01M18 12h.01"></path>
+                            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                        </svg>
+                    </div>
+                    <span data-i18n="gamepad_connected">Controller Connected</span>
+                </div>
+            </aside>
+
+            <!-- Browser Panel -->
+            <div class="browser-panel">
+                <div class="browser-toolbar native-content-active">
+                    <div class="nav-buttons">
+                        <button id="backBtn" class="nav-btn" title="Back">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <button id="forwardBtn" class="nav-btn" title="Forward">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                        <button id="refreshBtn" class="nav-btn" title="Refresh">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </button>
+                        <button id="homeBtn" class="nav-btn" title="Home">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="url-bar">
+                        <input type="text" id="urlInput" readonly class="url-input" placeholder="https://store.steampowered.com">
+                    </div>
+                    <div id="addGameModeSwitch" class="add-game-mode-switch" role="group" aria-label="Add game mode"
+                         data-i18n-aria-label="add_game_mode_label">
+                        <button id="linkModeBtn" class="add-game-mode-btn active" type="button" aria-pressed="true"
+                                data-i18n="add_game_link_mode">By link</button>
+                        <button id="steamStoreModeBtn" class="add-game-mode-btn" type="button" aria-pressed="false"
+                                data-i18n="steam_store_source">Steam Store</button>
+                    </div>
+                    <select id="siteSelector" class="site-selector" hidden aria-hidden="true" tabindex="-1">
+                        <option value="add-games" selected data-i18n="add_game_source">Adicionar jogo</option>
+                        <option value="https://store.steampowered.com" data-i18n="steam_store_source">Steam Store</option>
+                    </select>
+                </div>
+                <div class="browser-content">
+                    <webview id="webview"
+                             src="https://store.steampowered.com"
+                             useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                             partition="persist:steaminjector" hidden></webview>
+
+                    <section id="addGamesView" class="add-games-view" aria-labelledby="addGamesTitle">
+                        <div class="add-games-card">
+                            <header class="add-games-header">
+                                <h2 id="addGamesTitle" data-i18n="add_games_title">Adicionar jogo da Steam</h2>
+                                <p data-i18n="add_games_description">Cole o link da página do jogo na Steam.</p>
+                            </header>
+
+                            <div class="add-games-input-group">
+                                <label class="sr-only" for="gameLinkInput" data-i18n="add_games_link_label">Link da página do jogo na Steam</label>
+                                <input
+                                    id="gameLinkInput"
+                                    class="add-games-input"
+                                    type="url"
+                                    placeholder="https://store.steampowered.com/app/..."
+                                    data-i18n="add_games_link_placeholder"
+                                    autocomplete="off"
+                                    data-testid="game-link-input">
+                            </div>
+
+                            <div class="add-games-actions">
+                                <button id="installNowBtn" class="add-games-btn add-games-btn-primary" type="button">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M13 2 5 14h6l-1 8 9-13h-6V2Z"></path>
+                                    </svg>
+                                    <span data-i18n="install_now">Instalar agora</span>
+                                </button>
+                                <button id="addToQueueBtn" class="add-games-btn add-games-btn-secondary" type="button">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 5v14M5 12h14"></path>
+                                    </svg>
+                                    <span data-i18n="add_to_queue">Adicionar à fila</span>
+                                </button>
+                            </div>
+
+                            <p id="addGamesFeedback" class="add-games-feedback" role="status" aria-live="polite" hidden></p>
+
+                            <section class="game-queue" aria-labelledby="queueTitle">
+                                <div class="game-queue-header">
+                                    <h3 id="queueTitle"><span data-i18n="queue_title">Jogos na fila</span> <span id="queueCount">(0)</span></h3>
+                                    <button id="clearQueueBtn" class="clear-queue-btn" type="button">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 10v6m4-6v6"></path>
+                                        </svg>
+                                        <span data-i18n="clear_queue">Limpar fila</span>
+                                    </button>
+                                </div>
+                                <ul id="gameQueueList" class="game-queue-list" aria-live="polite"></ul>
+                            </section>
+
+                            <button id="installAllBtn" class="install-all-btn" type="button">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14"></path>
+                                </svg>
+                                <span data-i18n="install_all">Instalar todos</span>
+                                <span id="installAllCount">(0)</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section id="libraryView" class="library-view" aria-labelledby="libraryTitle" hidden>
+                        <div class="library-card">
+                            <header class="library-header">
+                                <h2 id="libraryTitle" data-i18n="library_title">Library</h2>
+                                <p data-i18n="library_subtitle">Games managed by Merlin</p>
+                            </header>
+
+                            <div class="library-notice">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 11v5M12 8h.01"></path>
+                                </svg>
+                                <p data-i18n="library_notice">Removing a game here will stop Merlin from managing it. The game will remain installed on your computer.</p>
+                            </div>
+
+                            <div class="library-controls">
+                                <button id="libraryRefreshBtn" class="library-refresh-btn" type="button">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"></path>
+                                    </svg>
+                                    <span data-i18n="library_refresh">Refresh library</span>
+                                </button>
+                                <div class="library-search-wrap">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <circle cx="11" cy="11" r="7"></circle>
+                                        <path d="m20 20-4-4"></path>
+                                    </svg>
+                                    <label class="sr-only" for="librarySearchInput" data-i18n="library_search_label">Search games</label>
+                                    <input id="librarySearchInput" type="search" data-i18n="library_search_placeholder" placeholder="Search games by name or AppID..." autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div id="libraryLoadingState" class="library-state">
+                                <span class="library-spinner" aria-hidden="true"></span>
+                                <p data-i18n="library_loading">Loading library...</p>
+                            </div>
+
+                            <div id="libraryErrorState" class="library-state" hidden>
+                                <p data-i18n="library_load_error">Could not load your library.</p>
+                                <button id="libraryRetryBtn" class="library-retry-btn" type="button" data-i18n="library_try_again">Try again</button>
+                            </div>
+
+                            <div id="libraryEmptyState" class="library-state" hidden>
+                                <strong data-i18n="library_empty_title">No games in your library</strong>
+                                <p data-i18n="library_empty_description">Games managed by Merlin will appear here.</p>
+                            </div>
+
+                            <div id="libraryNoResultsState" class="library-state" hidden>
+                                <strong data-i18n="library_no_results_title">No games found</strong>
+                                <p data-i18n="library_no_results_description">Try searching by game name or AppID.</p>
+                            </div>
+
+                            <div id="libraryTableWrap" class="library-table-wrap" hidden>
+                                <table class="library-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="library_column_game">Game</th>
+                                            <th data-i18n="library_column_app_id">App ID</th>
+                                            <th><span class="sr-only" data-i18n="library_column_actions">Actions</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="libraryTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <footer id="libraryFooter" class="library-footer" hidden>
+                                <p id="libraryResultCount"></p>
+                                <nav id="libraryPagination" class="library-pagination" aria-label=""></nav>
+                            </footer>
+                        </div>
+                    </section>
+                </div>
+                <div class="progress-container" id="progressContainer" style="display: none;">
+                    <div class="progress-info">
+                        <span id="progressText" data-i18n="downloading">Downloading...</span>
+                        <span id="progressPercent" class="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Footer -->
+        <footer class="footer">
+            <p class="instructions" data-i18n="instructions">
+                Leave the magic to Merlin. · Powered by Azteka
+            </p>
+        </footer>
+    </div>
+
+    <div id="licenseGate" class="license-gate" role="dialog" aria-modal="true" aria-labelledby="licenseGateTitle">
+        <div class="license-gate-glow" aria-hidden="true"></div>
+        <section class="license-gate-card">
+            <div class="license-gate-mark" aria-hidden="true">
+                <span></span>
+            </div>
+            <p id="licenseGateEyebrow" class="license-gate-eyebrow">ACESSO MERLIN</p>
+            <h2 id="licenseGateTitle">Ative sua licença</h2>
+            <p id="licenseGateDescription" class="license-gate-description">
+                Informe sua chave para validar este computador e liberar o aplicativo.
+            </p>
+            <form id="licenseGateForm" class="license-gate-form" novalidate>
+                <label id="licenseGateLabel" for="licenseKeyInput">Chave de acesso</label>
+                <div class="license-key-field">
+                    <span aria-hidden="true">M</span>
+                    <input
+                        id="licenseKeyInput"
+                        type="text"
+                        inputmode="text"
+                        maxlength="21"
+                        placeholder="MERLIN-XXXX-XXXX-XXXX"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                        spellcheck="false"
+                        required
+                    >
+                </div>
+                <p id="licenseGateFeedback" class="license-gate-feedback" role="status" aria-live="polite">
+                    Validando acesso salvo...
+                </p>
+                <button id="licenseGateSubmit" class="license-gate-submit" type="submit" disabled>
+                    <span id="licenseGateSubmitText">Validar chave</span>
+                    <span class="license-gate-spinner" aria-hidden="true"></span>
+                </button>
+            </form>
+            <p id="licenseGatePrivacy" class="license-gate-privacy">
+                A chave fica protegida neste computador.
+            </p>
+        </section>
+    </div>
+
+    <div id="libraryRemoveModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="libraryModalTitle" hidden>
+        <div class="library-modal-card">
+            <h2 id="libraryModalTitle" data-i18n="library_remove_title">Remove from Merlin?</h2>
+            <p id="libraryModalGameMessage"></p>
+            <p class="library-modal-warning" data-i18n="library_remove_warning">This will not uninstall the game from Steam or remove its game files.</p>
+            <div class="library-modal-actions">
+                <button id="libraryCancelRemoveBtn" class="btn btn-secondary" type="button" data-i18n="library_cancel">Cancel</button>
+                <button id="libraryConfirmRemoveBtn" class="btn btn-danger" type="button" data-i18n="library_confirm_remove">Remove from Merlin</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="steamRestartModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="steamRestartModalTitle" hidden>
+        <div class="library-modal-card">
+            <h2 id="steamRestartModalTitle" data-i18n="restart_prompt_title">Restart Steam?</h2>
+            <p id="steamRestartModalMessage"></p>
+            <div class="library-modal-actions">
+                <button id="steamRestartLaterBtn" class="btn btn-secondary" type="button" data-i18n="restart_prompt_later">Later</button>
+                <button id="steamRestartNowBtn" class="btn btn-danger" type="button" data-i18n="restart_prompt_action">Restart Steam</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameInstallConfirmModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="gameInstallConfirmTitle" hidden>
+        <div class="library-modal-card">
+            <h2 id="gameInstallConfirmTitle" data-i18n="game_install_prompt_title">Add to Steam?</h2>
+            <p id="gameInstallConfirmMessage"></p>
+            <div class="library-modal-actions">
+                <button id="gameInstallCancelBtn" class="btn btn-secondary" type="button" data-i18n="game_install_prompt_cancel">Cancel</button>
+                <button id="gameInstallConfirmBtn" class="btn btn-primary" type="button" data-i18n="game_install_prompt_action">Add game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorialPromptModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialPromptTitle" hidden>
+        <div class="library-modal-card tutorial-prompt-card">
+            <div class="tutorial-icon" aria-hidden="true">✦</div>
+            <h2 id="tutorialPromptTitle" data-i18n="tutorial_prompt_title">Want to discover Merlin?</h2>
+            <p data-i18n="tutorial_prompt_message">We prepared a quick tutorial to show you how to use Merlin. Would you like to watch it now?</p>
+            <p class="tutorial-prompt-hint" data-i18n="tutorial_prompt_hint">You can watch it again at any time from Help → Tutorial.</p>
+            <div class="library-modal-actions">
+                <button id="tutorialNotNowBtn" class="btn btn-secondary" type="button" data-i18n="tutorial_not_now">Not now</button>
+                <button id="tutorialWatchBtn" class="btn btn-primary" type="button" data-i18n="tutorial_watch_now">Watch tutorial</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorialVideoModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialVideoTitle" hidden>
+        <div class="library-modal-card tutorial-video-card">
+            <div class="tutorial-video-header">
+                <h2 id="tutorialVideoTitle" data-i18n="tutorial_title">Merlin tutorial</h2>
+                <button id="tutorialCloseBtn" class="tutorial-close-btn" type="button" data-i18n-aria-label="tutorial_close" aria-label="Close tutorial">×</button>
+            </div>
+            <div class="tutorial-video-frame">
+                <iframe id="tutorialVideo" title="Merlin tutorial" sandbox="allow-scripts allow-same-origin allow-presentation" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/renderer/auth/license-gate.js"></script>
+    <script src="renderer.js"></script>
+    <script src="src/renderer/shared/restart-prompt.js"></script>
+    <script src="src/renderer/shared/game-install-prompt.js"></script>
+    <script src="src/renderer/shared/tutorial.js"></script>
+    <script src="src/renderer/add-games/add-games.js"></script>
+    <script src="src/renderer/library/library-model.js"></script>
+    <script src="src/renderer/library/library.js"></script>
+    <script src="gamepad.js"></script>
+</body>
+</html>

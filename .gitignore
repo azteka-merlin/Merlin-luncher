@@ -1,0 +1,22 @@
+#Env
+.env
+
+# Dependências do Node.js
+node_modules/
+package-lock.json
+
+# Logs do npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos gerados pelo Electron Builder
+dist/
+
+# Saidas geradas pelo LumaCore
+LumaCore/build/
+LumaCore/Releases/
+LumaCore/.deps/
+
+# Manifesto de integridade gerado durante o build
+dist/integrity.json
