@@ -14,7 +14,7 @@
                 <div class="logo-section">
                     <div class="logo-icon"></div>
                     <h1 class="title">Merlin</h1>
-                    <span class="version">v1.0</span>
+                    <span id="appVersion" class="version">v--</span>
                 </div>
                 <div class="header-controls">
                     <nav class="header-navigation" aria-label="Main navigation" data-i18n-aria-label="main_navigation_label">
@@ -426,11 +426,24 @@
         </div>
     </div>
 
+    <div id="updateAvailableModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="updateAvailableTitle" hidden>
+        <div class="library-modal-card update-modal-card">
+            <div class="update-icon" aria-hidden="true">&#8593;</div>
+            <h2 id="updateAvailableTitle">New version available</h2>
+            <p id="updateAvailableMessage"></p>
+            <div class="library-modal-actions">
+                <button id="updateLaterBtn" class="btn btn-secondary" type="button">Later</button>
+                <button id="updateDownloadBtn" class="btn btn-primary" type="button">Download update</button>
+            </div>
+        </div>
+    </div>
+
     <script src="src/renderer/auth/license-gate.js"></script>
     <script src="renderer.js"></script>
     <script src="src/renderer/shared/restart-prompt.js"></script>
     <script src="src/renderer/shared/game-install-prompt.js"></script>
     <script src="src/renderer/shared/tutorial.js"></script>
+    <script src="src/renderer/shared/update-checker.js"></script>
     <script src="src/renderer/add-games/add-games.js"></script>
     <script src="src/renderer/library/library-model.js"></script>
     <script src="src/renderer/library/library.js"></script>

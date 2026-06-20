@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, safeStorage, session } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, safeStorage, session, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -27,6 +27,7 @@ const { createArchiveClient } = require('./src/main/network/archive-client');
 const { createApiAgent } = require('./src/main/network/api-agent');
 const { createMachineIdentity } = require('./src/main/security/machine-identity');
 const { REQUIRED_DLLS, createSteamService } = require('./src/main/steam/steam-service');
+const { createUpdateService } = require('./src/main/updates/update-service');
 
 let mainWindow;
 
@@ -146,6 +147,7 @@ const authSession = createAuthSession({
     onAuthRequired: code => mainWindow?.webContents.send('auth:required', { code })
 });
 const archiveClient = createArchiveClient({ axios, httpsAgent: apiAgent });
+const updateService = createUpdateService({ app, axios, shell });
 
 const libraryService = createLibraryService({
     fs,
@@ -228,6 +230,9 @@ ipcMain.handle('app:set-menu-language', (_event, language) => {
     setApplicationMenu(language);
     return { success: true };
 });
+ipcMain.handle('app:get-version', () => app.getVersion());
+ipcMain.handle('app:check-for-updates', () => updateService.check());
+ipcMain.handle('app:open-update-download', (_event, downloadUrl) => updateService.openDownload(downloadUrl));
 
 app.on('web-contents-created', (_event, contents) => {
     contents.setWindowOpenHandler(({ url }) => {

@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getConfig: () => ipcRenderer.invoke('get-config'),
     saveConfig: (config) => ipcRenderer.invoke('save-config', config),
     setMenuLanguage: (language) => ipcRenderer.invoke('app:set-menu-language', language),
+    getVersion: () => ipcRenderer.invoke('app:get-version'),
+    checkForUpdates: () => ipcRenderer.invoke('app:check-for-updates'),
+    openUpdateDownload: (downloadUrl) => ipcRenderer.invoke('app:open-update-download', downloadUrl),
     onOpenTutorial: (callback) => ipcRenderer.on('tutorial:open', callback),
 
     // Authentication

@@ -159,8 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let compact = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (compact.startsWith('MERLIN')) compact = compact.slice(6);
         compact = compact.slice(0, 12);
+        if (!compact) return '';
         const groups = compact.match(/.{1,4}/g) || [];
-        return `MERLIN${groups.length ? `-${groups.join('-')}` : '-'}`;
+        return `MERLIN-${groups.join('-')}`;
     }
 
     function isCompleteKey(value) {

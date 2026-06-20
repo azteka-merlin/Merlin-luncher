@@ -5,7 +5,8 @@ function createConfigStore({ fs, path, getFilePath, defaults }) {
         try {
             const configFile = getFilePath();
             if (fs.existsSync(configFile)) {
-                config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+                const savedConfig = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+                config = { ...defaults, ...savedConfig };
             }
         } catch (error) {
             console.error('Error loading config:', error);

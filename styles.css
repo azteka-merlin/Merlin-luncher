@@ -1421,6 +1421,28 @@ webview {
     justify-content: center;
 }
 
+.update-modal-card {
+    text-align: center;
+}
+
+.update-icon {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 1rem;
+    place-items: center;
+    border: 1px solid rgba(139, 92, 246, 0.55);
+    border-radius: 12px;
+    color: #c4b5fd;
+    background: rgba(124, 58, 237, 0.14);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.update-modal-card .library-modal-actions {
+    justify-content: center;
+}
+
 .tutorial-video-card {
     width: min(100%, 960px);
     padding: 1.25rem;
