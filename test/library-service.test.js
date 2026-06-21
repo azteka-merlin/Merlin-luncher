@@ -13,60 +13,186 @@ function createFixture() {
     fs.mkdirSync(luaDirectory, { recursive: true });
     fs.mkdirSync(manifestDirectory, { recursive: true });
     fs.writeFileSync(path.join(root, 'steam.exe'), '');
-    const names = {};
-    const nameStore = {
-        get: appId => names[appId] || null,
-        set: (appId, name) => { names[appId] = name; },
-        setMany: entries => Object.assign(names, entries)
+    const cache = {};
+    const catalog = {};
+    const cacheStore = {
+        load: () => cache,
+        get: appId => cache[appId] || null,
+        hasCompleteMetadata: appId => {
+            const entry = cache[appId];
+            return Boolean(entry && entry.name && (entry.coverUrl || entry.notFoundInCatalog));
+        },
+        merge: (appId, data) => {
+            const current = cache[appId] || {
+                name: '',
+                coverUrl: null,
+                coverSource: null,
+                notFoundInCatalog: false
+            };
+            cache[appId] = {
+                name: typeof data.name === 'string' && data.name.trim() ? data.name.trim() : current.name,
+                coverUrl: Object.prototype.hasOwnProperty.call(data, 'coverUrl')
+                    ? data.coverUrl
+                    : current.coverUrl,
+                coverSource: Object.prototype.hasOwnProperty.call(data, 'coverSource')
+                    ? data.coverSource
+                    : current.coverSource,
+                notFoundInCatalog: Object.prototype.hasOwnProperty.call(data, 'notFoundInCatalog')
+                    ? Boolean(data.notFoundInCatalog)
+                    : current.notFoundInCatalog
+            };
+            return true;
+        }
     };
-    return { root, luaDirectory, manifestDirectory, names, nameStore };
+    const catalogStore = {
+        load: () => ({ games: catalog }),
+        get: appId => catalog[appId] || null,
+        replace: entries => {
+            for (const key of Object.keys(catalog)) delete catalog[key];
+            Object.assign(catalog, entries);
+        },
+        needsBootstrap: () => Object.keys(catalog).length === 0
+    };
+    return { root, luaDirectory, manifestDirectory, cache, cacheStore, catalog, catalogStore };
 }
 
-function serviceFor(fixture, resolve) {
+function serviceFor(fixture, download) {
     return createLibraryService({
         fs,
         path,
         configStore: { get: () => ({ steamPath: fixture.root }) },
-        nameStore: fixture.nameStore,
-        nameResolver: { resolve },
+        cacheStore: fixture.cacheStore,
+        catalogStore: fixture.catalogStore,
+        catalogService: {
+            refresh: async () => {
+                const downloaded = await download();
+                fixture.catalogStore.replace(downloaded.games);
+                return downloaded.games;
+            }
+        },
         steamService: { isRunning: async () => true }
     });
 }
 
-test('resolves only unknown names and keeps resolved names across refreshes', async t => {
+test('reuses cached metadata without downloading the remote catalog', async t => {
     const fixture = createFixture();
     t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
     fs.writeFileSync(path.join(fixture.luaDirectory, '1.lua'), 'addappid(1)');
-    fs.writeFileSync(path.join(fixture.luaDirectory, '2.lua'), 'addappid(2)');
-    fixture.names['1'] = 'Cached Game';
-    const calls = [];
-    const service = serviceFor(fixture, async appId => {
-        calls.push(appId);
-        return `Resolved ${appId}`;
+    fixture.cache['1'] = {
+        name: 'Cached Game',
+        coverUrl: 'https://example.com/cached.jpg',
+        coverSource: 'header_image',
+        notFoundInCatalog: false
+    };
+    let downloads = 0;
+    const service = serviceFor(fixture, async () => {
+        downloads += 1;
+        return { games: {}, syncedAt: '2026-06-21T00:00:00Z' };
     });
 
-    const first = await service.list();
-    const refreshed = await service.list({ force: true });
+    const result = await service.list();
 
-    assert.equal(first.success, true);
-    assert.equal(refreshed.success, true);
-    assert.deepEqual(calls, ['2']);
-    assert.equal(fixture.names['2'], 'Resolved 2');
+    assert.equal(result.success, true);
+    assert.equal(downloads, 0);
+    assert.deepEqual(result.items[0], {
+        appId: '1',
+        gameName: 'Cached Game',
+        coverUrl: 'https://example.com/cached.jpg'
+    });
 });
 
-test('does not persist fallback names and retries unresolved AppIDs', async t => {
+test('uses the local catalog before downloading the remote catalog', async t => {
+    const fixture = createFixture();
+    t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
+    fs.writeFileSync(path.join(fixture.luaDirectory, '2.lua'), 'addappid(2)');
+    fixture.catalog['2'] = {
+        name: 'Catalog Game',
+        coverUrl: 'https://example.com/catalog.jpg',
+        coverSource: 'header_image'
+    };
+    let downloads = 0;
+    const service = serviceFor(fixture, async () => {
+        downloads += 1;
+        return { games: {}, syncedAt: '2026-06-21T00:00:00Z' };
+    });
+
+    const result = await service.list();
+
+    assert.equal(result.success, true);
+    assert.equal(downloads, 0);
+    assert.equal(fixture.cache['2'].name, 'Catalog Game');
+    assert.equal(fixture.cache['2'].coverUrl, 'https://example.com/catalog.jpg');
+});
+
+test('downloads the remote catalog when metadata is missing locally', async t => {
     const fixture = createFixture();
     t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
     fs.writeFileSync(path.join(fixture.luaDirectory, '3.lua'), 'addappid(3)');
-    let calls = 0;
-    const service = serviceFor(fixture, async () => { calls++; return null; });
+    let downloads = 0;
+    const service = serviceFor(fixture, async () => {
+        downloads += 1;
+        return {
+            games: {
+                '3': {
+                    name: 'Remote Game',
+                    coverUrl: 'https://example.com/remote.jpg',
+                    coverSource: 'header_image'
+                }
+            },
+            syncedAt: '2026-06-21T00:00:00Z'
+        };
+    });
+
+    const result = await service.list();
+
+    assert.equal(result.success, true);
+    assert.equal(downloads, 1);
+    assert.equal(result.items[0].gameName, 'Remote Game');
+    assert.equal(result.items[0].coverUrl, 'https://example.com/remote.jpg');
+});
+
+test('marks missing catalog entries during normal loads and retries them on refresh', async t => {
+    const fixture = createFixture();
+    t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
+    fs.writeFileSync(path.join(fixture.luaDirectory, '4.lua'), 'addappid(4)');
+    let downloads = 0;
+    const service = serviceFor(fixture, async () => {
+        downloads += 1;
+        if (downloads === 1) {
+            return { games: {}, syncedAt: '2026-06-21T00:00:00Z' };
+        }
+        return {
+            games: {
+                '4': {
+                    name: 'Found Later',
+                    coverUrl: 'https://example.com/found-later.jpg',
+                    coverSource: 'header_image'
+                }
+            },
+            syncedAt: '2026-06-22T00:00:00Z'
+        };
+    });
 
     const first = await service.list();
-    await service.list({ force: true });
 
+    assert.equal(first.success, true);
     assert.equal(first.items[0].gameName, '');
-    assert.equal(fixture.names['3'], undefined);
-    assert.equal(calls, 2);
+    assert.equal(first.items[0].coverUrl, null);
+    assert.equal(downloads, 1);
+
+    const second = await service.list();
+
+    assert.equal(second.success, true);
+    assert.equal(fixture.cache['4'].notFoundInCatalog, true);
+    assert.equal(downloads, 1);
+
+    const refreshed = await service.list({ force: true });
+
+    assert.equal(refreshed.success, true);
+    assert.equal(downloads, 2);
+    assert.equal(refreshed.items[0].gameName, 'Found Later');
+    assert.equal(refreshed.items[0].coverUrl, 'https://example.com/found-later.jpg');
+    assert.equal(fixture.cache['4'].notFoundInCatalog, false);
 });
 
 test('removes the Lua and exclusive manifests but preserves shared manifests', async t => {
@@ -80,8 +206,13 @@ test('removes the Lua and exclusive manifests but preserves shared manifests', a
     fs.writeFileSync(otherLua, '--setmanifestid(200,"2000")');
     fs.writeFileSync(exclusiveManifest, 'exclusive');
     fs.writeFileSync(sharedManifest, 'shared');
-    fixture.names['10'] = 'Remembered Game';
-    const service = serviceFor(fixture, async appId => `Game ${appId}`);
+    fixture.cache['10'] = {
+        name: 'Remembered Game',
+        coverUrl: null,
+        coverSource: null,
+        notFoundInCatalog: true
+    };
+    const service = serviceFor(fixture, async () => ({ games: {}, syncedAt: '2026-06-21T00:00:00Z' }));
 
     const result = await service.remove('10');
 
@@ -92,5 +223,5 @@ test('removes the Lua and exclusive manifests but preserves shared manifests', a
     assert.equal(fs.existsSync(exclusiveManifest), false);
     assert.equal(fs.existsSync(sharedManifest), true);
     assert.equal(fs.existsSync(otherLua), true);
-    assert.equal(fixture.names['10'], 'Remembered Game');
+    assert.equal(fixture.cache['10'].name, 'Remembered Game');
 });

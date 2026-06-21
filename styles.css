@@ -866,6 +866,7 @@ webview {
 }
 
 .add-games-input-group {
+    position: relative;
     margin-bottom: 1.25rem;
 }
 
@@ -890,6 +891,103 @@ webview {
     border-color: #8b5cf6;
     background: rgba(15, 20, 31, 0.95);
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.game-suggestions {
+    margin-top: -0.55rem;
+    margin-bottom: 1.15rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(7, 12, 22, 0.94);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+.game-suggestion-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 0.95rem;
+    border: 0;
+    border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+    background: transparent;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.game-suggestion-item:last-child {
+    border-bottom: 0;
+}
+
+.game-suggestion-item:hover,
+.game-suggestion-item.active {
+    background: rgba(124, 58, 237, 0.12);
+}
+
+.game-suggestion-cover,
+.game-queue-cover {
+    width: 68px;
+    height: 32px;
+    flex: 0 0 68px;
+    border-radius: 6px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    object-fit: cover;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(124, 58, 237, 0.14));
+    overflow: hidden;
+}
+
+.game-suggestion-cover.game-queue-cover-placeholder,
+.game-queue-cover-placeholder {
+    position: relative;
+}
+
+.game-suggestion-cover.game-queue-cover-placeholder::before,
+.game-suggestion-cover.game-queue-cover-placeholder::after,
+.game-queue-cover-placeholder::before,
+.game-queue-cover-placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+}
+
+.game-suggestion-cover.game-queue-cover-placeholder::before,
+.game-queue-cover-placeholder::before {
+    width: 18px;
+    height: 18px;
+    background: rgba(148, 163, 184, 0.15);
+}
+
+.game-suggestion-cover.game-queue-cover-placeholder::after,
+.game-queue-cover-placeholder::after {
+    width: 7px;
+    height: 7px;
+    background: rgba(226, 232, 240, 0.36);
+}
+
+.game-suggestion-meta {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+}
+
+.game-suggestion-name,
+.game-queue-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.game-suggestion-appid {
+    color: var(--text-tertiary);
+    font-size: 0.74rem;
+    font-family: 'Courier New', monospace;
 }
 
 .add-games-actions {
@@ -1053,6 +1151,13 @@ webview {
     border-bottom: 1px solid var(--border);
 }
 
+.game-queue-info {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
 .browser-toolbar.native-content-active {
     justify-content: flex-end;
 }
@@ -1067,12 +1172,8 @@ webview {
 }
 
 .game-queue-name {
-    min-width: 0;
-    overflow: hidden;
     color: var(--text-primary);
     font-size: 0.9rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .remove-game-btn {
@@ -1282,6 +1383,57 @@ webview {
     color: var(--text-primary);
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.library-game-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.library-game-cover {
+    width: 78px;
+    height: 36px;
+    flex: 0 0 78px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(139, 92, 246, 0.12));
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    overflow: hidden;
+}
+
+.library-game-cover-placeholder {
+    position: relative;
+}
+
+.library-game-cover-placeholder::before,
+.library-game-cover-placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+}
+
+.library-game-cover-placeholder::before {
+    width: 20px;
+    height: 20px;
+    background: rgba(148, 163, 184, 0.16);
+}
+
+.library-game-cover-placeholder::after {
+    width: 8px;
+    height: 8px;
+    background: rgba(226, 232, 240, 0.35);
+}
+
+.library-game-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
 }
 
 .library-table td:last-child {

@@ -15,8 +15,8 @@ const licenseGateTranslations = {
         revoked: 'Esta licença foi revogada.',
         hwid_mismatch: 'Esta chave já está vinculada a outro computador.',
         unavailable: 'Não foi possível conectar à Merlin API. Tente novamente.',
-        server_error: 'A API não conseguiu validar sua licença. Tente novamente.',
-        invalid_response: 'A API retornou uma sessão inválida. Tente novamente.',
+        server_error: 'Não foi possível validar sua chave. Tente novamente.',
+        invalid_response: 'Não foi possível validar sua chave. Tente novamente.',
         device_error: 'Não foi possível identificar este computador.',
         missing: 'Informe sua chave para continuar.'
     },
@@ -36,8 +36,8 @@ const licenseGateTranslations = {
         revoked: 'This license has been revoked.',
         hwid_mismatch: 'This key is already linked to another computer.',
         unavailable: 'Could not connect to the Merlin API. Try again.',
-        server_error: 'The API could not validate your license. Try again.',
-        invalid_response: 'The API returned an invalid session. Try again.',
+        server_error: 'Could not validate your key. Try again.',
+        invalid_response: 'Could not validate your key. Try again.',
         device_error: 'This computer could not be identified.',
         missing: 'Enter your key to continue.'
     },
@@ -57,8 +57,8 @@ const licenseGateTranslations = {
         revoked: 'Esta licencia ha sido revocada.',
         hwid_mismatch: 'Esta clave ya está vinculada a otro equipo.',
         unavailable: 'No se pudo conectar con Merlin API. Inténtalo de nuevo.',
-        server_error: 'La API no pudo validar tu licencia.',
-        invalid_response: 'La API devolvió una sesión no válida.',
+        server_error: 'No se pudo validar tu clave. Inténtalo de nuevo.',
+        invalid_response: 'No se pudo validar tu clave. Inténtalo de nuevo.',
         device_error: 'No se pudo identificar este equipo.',
         missing: 'Introduce tu clave para continuar.'
     },
@@ -78,8 +78,8 @@ const licenseGateTranslations = {
         revoked: 'Cette licence a été révoquée.',
         hwid_mismatch: 'Cette clé est déjà liée à un autre ordinateur.',
         unavailable: 'Connexion à Merlin API impossible. Réessayez.',
-        server_error: 'L’API n’a pas pu valider votre licence.',
-        invalid_response: 'L’API a renvoyé une session invalide.',
+        server_error: 'Impossible de valider votre clé. Réessayez.',
+        invalid_response: 'Impossible de valider votre clé. Réessayez.',
         device_error: 'Impossible d’identifier cet ordinateur.',
         missing: 'Saisissez votre clé pour continuer.'
     },
@@ -99,8 +99,8 @@ const licenseGateTranslations = {
         revoked: 'Diese Lizenz wurde widerrufen.',
         hwid_mismatch: 'Dieser Schlüssel ist bereits mit einem anderen Computer verknüpft.',
         unavailable: 'Verbindung zur Merlin API fehlgeschlagen. Versuchen Sie es erneut.',
-        server_error: 'Die API konnte Ihre Lizenz nicht validieren.',
-        invalid_response: 'Die API hat eine ungültige Sitzung zurückgegeben.',
+        server_error: 'Ihr Schlüssel konnte nicht validiert werden. Versuchen Sie es erneut.',
+        invalid_response: 'Ihr Schlüssel konnte nicht validiert werden. Versuchen Sie es erneut.',
         device_error: 'Dieser Computer konnte nicht identifiziert werden.',
         missing: 'Geben Sie Ihren Schlüssel ein, um fortzufahren.'
     }
@@ -156,16 +156,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatLicenseKey(value) {
-        let compact = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-        if (compact.startsWith('MERLIN')) compact = compact.slice(6);
-        compact = compact.slice(0, 12);
-        if (!compact) return '';
-        const groups = compact.match(/.{1,4}/g) || [];
-        return `MERLIN-${groups.join('-')}`;
+        let sanitized = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const hasPrefix = sanitized.startsWith('MERLIN');
+        if (hasPrefix) sanitized = sanitized.slice(6);
+        sanitized = sanitized.slice(0, 12);
+        if (!sanitized) return hasPrefix ? 'MERLIN-' : '';
+
+        const groups = sanitized.match(/.{1,4}/g) || [];
+        return hasPrefix
+            ? `MERLIN-${groups.join('-')}`
+            : groups.join('-');
+    }
+
+    function normalizeLicenseKey(value) {
+        const formatted = formatLicenseKey(value);
+        if (!formatted) return '';
+        return formatted.startsWith('MERLIN-') ? formatted : `MERLIN-${formatted}`;
     }
 
     function isCompleteKey(value) {
-        return /^MERLIN-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/.test(value);
+        return /^MERLIN-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/.test(normalizeLicenseKey(value));
     }
 
     function setBusy(value, message) {
@@ -213,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setMode('prompt');
         setBusy(true, messages().validating);
         try {
-            const result = await window.electronAPI.auth.login(input.value);
+            const result = await window.electronAPI.auth.login(normalizeLicenseKey(input.value));
             if (result.authenticated) {
                 input.value = '';
                 unlock();

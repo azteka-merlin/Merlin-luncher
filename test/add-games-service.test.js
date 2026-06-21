@@ -23,6 +23,10 @@ test('installs queued games sequentially, removing successes and retaining failu
     const service = createAddGamesService({
         parseSteamGameLink: link => ({ appId: link, fallbackName: `Game ${link}` }),
         nameResolver: { resolve: async (_appId, fallback) => fallback },
+        catalogService: {
+            resolveByAppId: async appId => ({ appId, name: `Game ${appId}`, coverUrl: `https://example.com/${appId}.jpg` }),
+            search: async () => []
+        },
         queue,
         gameInstaller,
         configStore: { get: () => ({ steamPath: 'C:\\Steam' }) },
@@ -39,6 +43,7 @@ test('installs queued games sequentially, removing successes and retaining failu
     assert.deepEqual(result.installed.map(item => item.appId), ['1', '3']);
     assert.deepEqual(result.failed.map(item => item.appId), ['2']);
     assert.deepEqual(service.queueState().items.map(item => item.appId), ['2']);
+    assert.equal(service.queueState().items[0].coverUrl, 'https://example.com/2.jpg');
     assert.deepEqual(progress.map(item => item.current), [1, 2, 3]);
 });
 
@@ -47,6 +52,10 @@ test('blocks install now while the queue contains any game', async () => {
     const service = createAddGamesService({
         parseSteamGameLink: link => ({ appId: link, fallbackName: `Game ${link}` }),
         nameResolver: { resolve: async (_appId, fallback) => fallback },
+        catalogService: {
+            resolveByAppId: async appId => ({ appId, name: `Game ${appId}`, coverUrl: `https://example.com/${appId}.jpg` }),
+            search: async () => []
+        },
         queue,
         gameInstaller: { install: async () => ({ success: true }) },
         configStore: { get: () => ({ steamPath: 'C:\\Steam' }) },
@@ -58,4 +67,34 @@ test('blocks install now while the queue contains any game', async () => {
 
     assert.equal(result.success, false);
     assert.equal(result.code, 'queue_not_empty');
+});
+
+test('searches the catalog and installs a selected game with cover metadata', async () => {
+    const service = createAddGamesService({
+        parseSteamGameLink: link => ({ appId: link, fallbackName: `Game ${link}` }),
+        nameResolver: { resolve: async (_appId, fallback) => fallback },
+        catalogService: {
+            resolveByAppId: async appId => ({ appId, name: `Catalog ${appId}`, coverUrl: `https://example.com/${appId}.jpg` }),
+            search: async query => query === 'final fantasy'
+                ? [
+                    { appId: '10', name: 'Final Fantasy', coverUrl: 'https://example.com/10.jpg' },
+                    { appId: '20', name: 'Final Fantasy II', coverUrl: 'https://example.com/20.jpg' }
+                ]
+                : []
+        },
+        queue: createGameQueue(),
+        gameInstaller: {
+            install: async () => ({ success: true, message: 'Installed' })
+        },
+        configStore: { get: () => ({ steamPath: 'C:\\Steam' }) },
+        steamService: {}
+    });
+
+    const search = await service.searchCatalog('final fantasy');
+    const install = await service.installNow(search.items[0]);
+
+    assert.equal(search.success, true);
+    assert.equal(search.items.length, 2);
+    assert.equal(install.success, true);
+    assert.equal(install.item.coverUrl, 'https://example.com/10.jpg');
 });

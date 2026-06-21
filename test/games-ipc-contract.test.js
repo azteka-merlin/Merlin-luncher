@@ -12,6 +12,7 @@ test('registers isolated games IPC channels', () => {
 
     assert.deepEqual(channels, [
         'games:resolve-link',
+        'games:search',
         'games:queue:list',
         'games:queue:add',
         'games:queue:remove',

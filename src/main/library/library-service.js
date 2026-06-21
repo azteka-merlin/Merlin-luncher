@@ -4,7 +4,15 @@ const {
     referenceKey
 } = require('./manifest-references');
 
-function createLibraryService({ fs, path, configStore, nameStore, nameResolver, steamService }) {
+function createLibraryService({
+    fs,
+    path,
+    configStore,
+    cacheStore,
+    catalogStore,
+    catalogService,
+    steamService
+}) {
     let cachedItems = null;
 
     function invalidate() {
@@ -38,22 +46,76 @@ function createLibraryService({ fs, path, configStore, nameStore, nameResolver, 
             }));
     }
 
-    async function buildItems(paths) {
-        const luaFiles = managedLuaFiles(paths.luaDirectory);
-        const resolvedNames = {};
+    function shouldResolveFromRemote(entry, forceRefresh) {
+        if (!entry) return true;
+        if (!entry.name) return true;
+        if (entry.coverUrl) return false;
+        if (forceRefresh) return true;
+        return !entry.notFoundInCatalog;
+    }
 
-        for (const file of luaFiles) {
-            if (nameStore.get(file.appId)) continue;
-            const name = await nameResolver.resolve(file.appId);
-            if (name) resolvedNames[file.appId] = name;
+    function applyCatalogData(appId, catalogEntry) {
+        if (!catalogEntry) return false;
+        return cacheStore.merge(appId, {
+            name: catalogEntry.name,
+            coverUrl: catalogEntry.coverUrl,
+            coverSource: catalogEntry.coverSource,
+            notFoundInCatalog: false
+        });
+    }
+
+    async function resolveMetadata(appIds, { forceCatalogRefresh = false } = {}) {
+        cacheStore.load();
+        catalogStore.load();
+        const unresolved = new Set();
+
+        for (const appId of appIds) {
+            const entry = cacheStore.get(appId);
+            if (!shouldResolveFromRemote(entry, forceCatalogRefresh)) continue;
+            const localCatalogEntry = catalogStore.get(appId);
+            if (localCatalogEntry) {
+                applyCatalogData(appId, localCatalogEntry);
+                continue;
+            }
+            unresolved.add(appId);
         }
-        nameStore.setMany(resolvedNames);
+
+        if ((forceCatalogRefresh || unresolved.size > 0) && (appIds.length > 0)) {
+            await catalogService.refresh();
+            for (const appId of appIds) {
+                const entry = cacheStore.get(appId);
+                if (!shouldResolveFromRemote(entry, forceCatalogRefresh)) continue;
+                const refreshedCatalogEntry = catalogStore.get(appId);
+                if (refreshedCatalogEntry) {
+                    applyCatalogData(appId, refreshedCatalogEntry);
+                } else {
+                    cacheStore.merge(appId, { notFoundInCatalog: true });
+                }
+            }
+        }
+    }
+
+    async function buildItems(paths, { forceCatalogRefresh = false } = {}) {
+        const luaFiles = managedLuaFiles(paths.luaDirectory);
+        const appIdsNeedingMetadata = luaFiles
+            .map(file => file.appId)
+            .filter(appId => shouldResolveFromRemote(cacheStore.get(appId), forceCatalogRefresh));
+
+        if (appIdsNeedingMetadata.length > 0 && (catalogStore.needsBootstrap() || forceCatalogRefresh)) {
+            await resolveMetadata(luaFiles.map(file => file.appId), { forceCatalogRefresh: true });
+        } else if (appIdsNeedingMetadata.length > 0) {
+            await resolveMetadata(appIdsNeedingMetadata, { forceCatalogRefresh: false });
+        }
 
         return luaFiles
-            .map(file => ({
-                appId: file.appId,
-                gameName: nameStore.get(file.appId) || ''
-            }))
+            .map(file => {
+                const metadata = cacheStore.get(file.appId);
+                return {
+                    appId: file.appId,
+                    gameName: metadata?.name || '',
+                    coverUrl: metadata?.coverUrl || null
+                };
+            })
             .sort((left, right) =>
                 (left.gameName || left.appId).localeCompare(right.gameName || right.appId));
     }
@@ -65,7 +127,7 @@ function createLibraryService({ fs, path, configStore, nameStore, nameResolver, 
             if (!force && cachedItems) {
                 return { success: true, items: cachedItems.map(item => ({ ...item })) };
             }
-            cachedItems = await buildItems(paths);
+            cachedItems = await buildItems(paths, { forceCatalogRefresh: force });
             return { success: true, items: cachedItems.map(item => ({ ...item })) };
         } catch (error) {
             console.error('Unable to load Library:', error);
@@ -74,7 +136,10 @@ function createLibraryService({ fs, path, configStore, nameStore, nameResolver, 
     }
 
     function recordName(appId, gameName) {
-        nameStore.set(String(appId), gameName);
+        cacheStore.merge(String(appId), {
+            name: gameName,
+            notFoundInCatalog: false
+        });
         invalidate();
     }
 

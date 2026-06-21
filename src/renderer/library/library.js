@@ -156,6 +156,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return item.gameName || tr('library_unknown_game', { appId: item.appId });
     }
 
+    function createGameCellContent(item) {
+        const wrap = document.createElement('div');
+        wrap.className = 'library-game-cell';
+
+        const cover = document.createElement(item.coverUrl ? 'img' : 'div');
+        cover.className = 'library-game-cover';
+        cover.setAttribute('aria-hidden', 'true');
+
+        if (item.coverUrl) {
+            cover.src = item.coverUrl;
+            cover.alt = '';
+            cover.loading = 'lazy';
+            cover.decoding = 'async';
+            cover.addEventListener('error', () => {
+                const fallback = document.createElement('div');
+                fallback.className = 'library-game-cover library-game-cover-placeholder';
+                fallback.setAttribute('aria-hidden', 'true');
+                cover.replaceWith(fallback);
+            }, { once: true });
+        } else {
+            cover.classList.add('library-game-cover-placeholder');
+        }
+
+        const name = document.createElement('span');
+        name.className = 'library-game-name';
+        name.textContent = displayName(item);
+        name.title = name.textContent;
+
+        wrap.append(cover, name);
+        return wrap;
+    }
+
     function filteredItems() {
         return window.libraryModel.filterItems(items, elements.search.value);
     }
@@ -207,8 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             const gameCell = document.createElement('td');
             const gameName = displayName(item);
-            gameCell.textContent = gameName;
-            gameCell.title = gameName;
+            gameCell.append(createGameCellContent(item));
             const appIdCell = document.createElement('td');
             appIdCell.textContent = item.appId;
             const actionCell = document.createElement('td');

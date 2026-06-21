@@ -191,12 +191,14 @@
                                 <input
                                     id="gameLinkInput"
                                     class="add-games-input"
-                                    type="url"
+                                    type="text"
                                     placeholder="https://store.steampowered.com/app/..."
                                     data-i18n="add_games_link_placeholder"
                                     autocomplete="off"
                                     data-testid="game-link-input">
                             </div>
+
+                            <div id="gameSuggestions" class="game-suggestions" hidden></div>
 
                             <div class="add-games-actions">
                                 <button id="installNowBtn" class="add-games-btn add-games-btn-primary" type="button">

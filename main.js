@@ -19,8 +19,10 @@ const { registerExistingIpc } = require('./src/main/ipc/register-existing-ipc');
 const { registerAuthIpc } = require('./src/main/ipc/register-auth-ipc');
 const { registerGamesIpc } = require('./src/main/ipc/register-games-ipc');
 const { registerLibraryIpc } = require('./src/main/ipc/register-library-ipc');
-const { createLibraryNameResolver } = require('./src/main/library/library-name-resolver');
-const { createLibraryNameStore } = require('./src/main/library/library-name-store');
+const { createLibraryCacheStore } = require('./src/main/library/library-cache-store');
+const { createLibraryCatalogClient } = require('./src/main/library/library-catalog-client');
+const { createLibraryCatalogService } = require('./src/main/library/library-catalog-service');
+const { createLibraryCatalogStore } = require('./src/main/library/library-catalog-store');
 const { createLibraryService } = require('./src/main/library/library-service');
 const { createDllInstaller } = require('./src/main/lumacore/dll-installer');
 const { createArchiveClient } = require('./src/main/network/archive-client');
@@ -108,6 +110,14 @@ function getLibraryFilePath() {
     return path.join(app.getPath('userData'), 'library.json');
 }
 
+function getLibraryCacheFilePath() {
+    return path.join(app.getPath('userData'), 'library-cache.json');
+}
+
+function getLibraryCatalogFilePath() {
+    return path.join(app.getPath('userData'), 'games-catalog.json');
+}
+
 function getBundledDllPath(dll) {
     const dllDirectory = app.isPackaged
         ? path.join(process.resourcesPath, 'dlls')
@@ -148,13 +158,28 @@ const authSession = createAuthSession({
 });
 const archiveClient = createArchiveClient({ axios, httpsAgent: apiAgent });
 const updateService = createUpdateService({ app, axios, shell });
+const libraryCatalogStore = createLibraryCatalogStore({
+    fs,
+    path,
+    getFilePath: getLibraryCatalogFilePath
+});
+const libraryCatalogService = createLibraryCatalogService({
+    catalogStore: libraryCatalogStore,
+    catalogClient: createLibraryCatalogClient({ axios })
+});
 
 const libraryService = createLibraryService({
     fs,
     path,
     configStore,
-    nameStore: createLibraryNameStore({ fs, path, getFilePath: getLibraryFilePath }),
-    nameResolver: createLibraryNameResolver({ axios }),
+    cacheStore: createLibraryCacheStore({
+        fs,
+        path,
+        getFilePath: getLibraryCacheFilePath,
+        getLegacyFilePath: getLibraryFilePath
+    }),
+    catalogStore: libraryCatalogStore,
+    catalogService: libraryCatalogService,
     steamService
 });
 
@@ -178,7 +203,8 @@ const addGamesService = createAddGamesService({
     gameInstaller,
     configStore,
     steamService,
-    libraryService
+    libraryService,
+    catalogService: libraryCatalogService
 });
 
 const dllInstaller = createDllInstaller({

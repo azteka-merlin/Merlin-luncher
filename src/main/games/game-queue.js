@@ -11,7 +11,11 @@ function createGameQueue() {
         if (items.some(existing => existing.appId === item.appId)) {
             return { success: false, code: 'duplicate' };
         }
-        items.push({ appId: item.appId, name: item.name });
+        items.push({
+            appId: item.appId,
+            name: item.name,
+            coverUrl: item.coverUrl || null
+        });
         return { success: true, item: { ...item } };
     }
 

@@ -47,6 +47,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Isolated "Add games" feature
     games: {
         resolveLink: (link) => ipcRenderer.invoke('games:resolve-link', link),
+        search: (query) => ipcRenderer.invoke('games:search', query),
         listQueue: () => ipcRenderer.invoke('games:queue:list'),
         addToQueue: (link) => ipcRenderer.invoke('games:queue:add', link),
         removeFromQueue: (appId) => ipcRenderer.invoke('games:queue:remove', appId),

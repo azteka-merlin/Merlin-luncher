@@ -1,3 +1,56 @@
+window.merlinI18n.register({
+    ptbr: {
+        add_games_description: 'Cole o link da Steam, digite o nome do jogo ou informe o AppID.',
+        add_games_link_label: 'Link da Steam, nome do jogo ou AppID',
+        add_games_link_placeholder: 'https://store.steampowered.com/app/... ou nome do jogo',
+        games_searching: 'Pesquisando jogos...',
+        games_suggestions_empty: 'Nenhum jogo encontrado para essa busca.',
+        games_select_game: 'Selecione um jogo da lista antes de continuar.',
+        games_error_selection_required: 'Selecione um jogo da lista antes de continuar.',
+        games_error_search_failed: 'Não foi possível pesquisar jogos agora.'
+    },
+    en: {
+        add_games_description: 'Paste a Steam link, type a game name, or enter an AppID.',
+        add_games_link_label: 'Steam link, game name, or AppID',
+        add_games_link_placeholder: 'https://store.steampowered.com/app/... or game name',
+        games_searching: 'Searching games...',
+        games_suggestions_empty: 'No games found for this search.',
+        games_select_game: 'Select a game from the list before continuing.',
+        games_error_selection_required: 'Select a game from the list before continuing.',
+        games_error_search_failed: 'Could not search games right now.'
+    },
+    es: {
+        add_games_description: 'Pegue un enlace de Steam, escriba el nombre del juego o introduzca el AppID.',
+        add_games_link_label: 'Enlace de Steam, nombre del juego o AppID',
+        add_games_link_placeholder: 'https://store.steampowered.com/app/... o nombre del juego',
+        games_searching: 'Buscando juegos...',
+        games_suggestions_empty: 'No se encontraron juegos para esta búsqueda.',
+        games_select_game: 'Seleccione un juego de la lista antes de continuar.',
+        games_error_selection_required: 'Seleccione un juego de la lista antes de continuar.',
+        games_error_search_failed: 'No se pudieron buscar juegos ahora.'
+    },
+    fr: {
+        add_games_description: 'Collez un lien Steam, saisissez le nom du jeu ou entrez l’AppID.',
+        add_games_link_label: 'Lien Steam, nom du jeu ou AppID',
+        add_games_link_placeholder: 'https://store.steampowered.com/app/... ou nom du jeu',
+        games_searching: 'Recherche de jeux...',
+        games_suggestions_empty: 'Aucun jeu trouvé pour cette recherche.',
+        games_select_game: 'Sélectionnez un jeu dans la liste avant de continuer.',
+        games_error_selection_required: 'Sélectionnez un jeu dans la liste avant de continuer.',
+        games_error_search_failed: 'Impossible de rechercher des jeux pour le moment.'
+    },
+    de: {
+        add_games_description: 'Fügen Sie einen Steam-Link ein, geben Sie den Spielnamen oder die AppID ein.',
+        add_games_link_label: 'Steam-Link, Spielname oder AppID',
+        add_games_link_placeholder: 'https://store.steampowered.com/app/... oder Spielname',
+        games_searching: 'Spiele werden gesucht...',
+        games_suggestions_empty: 'Keine Spiele für diese Suche gefunden.',
+        games_select_game: 'Wählen Sie ein Spiel aus der Liste aus, bevor Sie fortfahren.',
+        games_error_selection_required: 'Wählen Sie ein Spiel aus der Liste aus, bevor Sie fortfahren.',
+        games_error_search_failed: 'Spiele konnten gerade nicht gesucht werden.'
+    }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
     const api = window.electronAPI.games;
     const siteSelector = document.getElementById('siteSelector');
@@ -9,6 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const browserToolbar = document.querySelector('.browser-toolbar');
     const steamActionsCard = document.getElementById('steamActionsCard');
     const linkInput = document.getElementById('gameLinkInput');
+    const suggestions = document.getElementById('gameSuggestions');
     const queueList = document.getElementById('gameQueueList');
     const queueCount = document.getElementById('queueCount');
     const installAllCount = document.getElementById('installAllCount');
@@ -20,6 +74,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let queueState = { items: [], count: 0, locked: false, installing: false };
     let requestBusy = false;
+    let suggestionItems = [];
+    let selectedGame = null;
+    let searchTimer = null;
+    let searchRequestId = 0;
 
     function tr(key, values = {}) {
         const template = window.merlinI18n?.t(key) || key;
@@ -53,6 +111,85 @@ document.addEventListener('DOMContentLoaded', async () => {
         feedback.hidden = !message;
     }
 
+    function isSteamLink(value) {
+        return /^https?:\/\/store\.steampowered\.com\/app\//i.test(String(value || '').trim());
+    }
+
+    function clearSuggestions() {
+        suggestionItems = [];
+        suggestions.replaceChildren();
+        suggestions.hidden = true;
+    }
+
+    function queueCoverElement(game) {
+        if (game.coverUrl) {
+            const image = document.createElement('img');
+            image.className = 'game-queue-cover';
+            image.src = game.coverUrl;
+            image.alt = '';
+            image.loading = 'lazy';
+            image.decoding = 'async';
+            image.addEventListener('error', () => {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'game-queue-cover game-queue-cover-placeholder';
+                image.replaceWith(placeholder);
+            }, { once: true });
+            return image;
+        }
+        const placeholder = document.createElement('div');
+        placeholder.className = 'game-queue-cover game-queue-cover-placeholder';
+        return placeholder;
+    }
+
+    function renderSuggestions(items) {
+        suggestionItems = items || [];
+        suggestions.replaceChildren();
+
+        for (const item of suggestionItems) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `game-suggestion-item${selectedGame?.appId === item.appId ? ' active' : ''}`;
+            button.dataset.appId = item.appId;
+
+            const cover = queueCoverElement(item);
+            cover.classList.add('game-suggestion-cover');
+
+            const meta = document.createElement('span');
+            meta.className = 'game-suggestion-meta';
+
+            const name = document.createElement('span');
+            name.className = 'game-suggestion-name';
+            name.textContent = item.name;
+
+            const appId = document.createElement('span');
+            appId.className = 'game-suggestion-appid';
+            appId.textContent = `AppID ${item.appId}`;
+
+            meta.append(name, appId);
+            button.append(cover, meta);
+            suggestions.append(button);
+        }
+
+        suggestions.hidden = suggestionItems.length === 0;
+    }
+
+    function setSelectedGame(game) {
+        selectedGame = game ? {
+            appId: game.appId,
+            name: game.name,
+            coverUrl: game.coverUrl || null
+        } : null;
+        if (selectedGame) {
+            linkInput.value = selectedGame.name;
+        }
+        renderSuggestions(suggestionItems);
+        updateControls();
+    }
+
+    function currentInputPayload() {
+        return selectedGame ? { ...selectedGame } : linkInput.value;
+    }
+
     function setRequestBusy(value) {
         requestBusy = value;
         updateControls();
@@ -60,9 +197,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateControls() {
         const locked = requestBusy || queueState.locked || queueState.installing;
+        const hasSelected = Boolean(selectedGame);
+        const hasLink = isSteamLink(linkInput.value);
+        const canSubmit = hasSelected || hasLink;
         linkInput.disabled = locked;
-        installNowBtn.disabled = locked || queueState.count > 0;
-        addToQueueBtn.disabled = locked;
+        installNowBtn.disabled = locked || queueState.count > 0 || !canSubmit;
+        addToQueueBtn.disabled = locked || !canSubmit;
         installAllBtn.disabled = locked || queueState.count === 0;
         clearQueueBtn.disabled = locked || queueState.count === 0;
         queueList.querySelectorAll('.remove-game-btn').forEach(button => {
@@ -78,10 +218,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const item = document.createElement('li');
             item.className = 'game-queue-item';
 
+            const info = document.createElement('div');
+            info.className = 'game-queue-info';
+
+            const cover = queueCoverElement(game);
+
             const name = document.createElement('span');
             name.className = 'game-queue-name';
             name.textContent = game.name;
             name.title = `${game.name} (${game.appId})`;
+
+            info.append(cover, name);
 
             const removeButton = document.createElement('button');
             removeButton.className = 'remove-game-btn';
@@ -93,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 10v6m4-6v6"></path>
                 </svg>`;
 
-            item.append(name, removeButton);
+            item.append(info, removeButton);
             queueList.append(item);
         }
 
@@ -121,17 +268,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         siteSelector.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    async function runSearch(query) {
+        const requestId = ++searchRequestId;
+        if (!query || isSteamLink(query)) {
+            clearSuggestions();
+            return;
+        }
+
+        showFeedback(tr('games_searching'));
+        const result = await api.search(query);
+        if (requestId !== searchRequestId) return;
+
+        if (!result.success) {
+            clearSuggestions();
+            showFeedback(errorMessage(result), 'error');
+            return;
+        }
+
+        renderSuggestions(result.items);
+        if (result.items.length === 0) {
+            showFeedback(tr('games_suggestions_empty'));
+        } else {
+            showFeedback('');
+        }
+    }
+
+    function scheduleSearch() {
+        clearTimeout(searchTimer);
+        const query = linkInput.value.trim();
+        if (!query || isSteamLink(query)) {
+            clearSuggestions();
+            if (!query) showFeedback('');
+            return;
+        }
+        searchTimer = setTimeout(() => {
+            runSearch(query).catch(() => {
+                showFeedback(tr('games_error_search_failed'), 'error');
+            });
+        }, 300);
+    }
+
     async function addToQueue() {
         setRequestBusy(true);
         showFeedback(tr('games_resolving'));
         try {
-            const result = await api.addToQueue(linkInput.value);
+            const result = await api.addToQueue(currentInputPayload());
             if (!result.success) {
                 showFeedback(errorMessage(result), 'error');
                 return;
             }
             renderQueue(result.queue);
             linkInput.value = '';
+            setSelectedGame(null);
+            clearSuggestions();
             showFeedback(tr('games_added', { name: result.item.name }), 'success');
         } catch (_) {
             showFeedback(tr('games_add_failed'), 'error');
@@ -144,12 +333,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         setRequestBusy(true);
         showFeedback(tr('games_install_preparing'));
         try {
-            const result = await api.installNow(linkInput.value);
+            const result = await api.installNow(currentInputPayload());
             if (!result.success) {
                 showFeedback(errorMessage(result, 'games_install_failed'), 'error');
                 return;
             }
             linkInput.value = '';
+            setSelectedGame(null);
+            clearSuggestions();
             showFeedback(tr('games_install_success', { name: result.item.name }), 'success');
             if (await window.merlinRestartPrompt.ask({ message: tr('games_restart_prompt') })) {
                 const restart = await api.restartSteam();
@@ -200,12 +391,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     addGamesNavBtn.addEventListener('click', () => selectMode('add-games'));
     linkModeBtn.addEventListener('click', () => selectMode('add-games'));
     steamStoreModeBtn.addEventListener('click', () => selectMode('https://store.steampowered.com'));
-    window.addEventListener('merlin-language-changed', () => renderQueue(queueState));
+    window.addEventListener('merlin-language-changed', () => {
+        renderQueue(queueState);
+        renderSuggestions(suggestionItems);
+    });
     addToQueueBtn.addEventListener('click', addToQueue);
     installNowBtn.addEventListener('click', installNow);
     installAllBtn.addEventListener('click', installAll);
+    linkInput.addEventListener('input', () => {
+        if (selectedGame && linkInput.value.trim() !== selectedGame.name) {
+            setSelectedGame(null);
+        }
+        scheduleSearch();
+        updateControls();
+    });
     linkInput.addEventListener('keydown', event => {
-        if (event.key === 'Enter' && !addToQueueBtn.disabled) addToQueue();
+        if (event.key === 'Escape') {
+            clearSuggestions();
+            return;
+        }
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            if (!selectedGame && suggestionItems.length > 0) {
+                setSelectedGame(suggestionItems[0]);
+                clearSuggestions();
+                showFeedback('');
+                return;
+            }
+            if (!addToQueueBtn.disabled) addToQueue();
+        }
+    });
+
+    suggestions.addEventListener('click', event => {
+        const button = event.target.closest('.game-suggestion-item');
+        if (!button) return;
+        const selected = suggestionItems.find(item => item.appId === button.dataset.appId);
+        if (!selected) return;
+        setSelectedGame(selected);
+        clearSuggestions();
+        showFeedback('');
     });
 
     queueList.addEventListener('click', async event => {
@@ -243,4 +467,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         showFeedback(tr('games_queue_load_failed'), 'error');
     }
     updateVisibleView();
+    updateControls();
 });

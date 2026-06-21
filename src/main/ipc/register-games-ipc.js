@@ -8,6 +8,9 @@ function registerGamesIpc({ ipcMain, addGamesService }) {
     ipcMain.handle('games:resolve-link', async (_event, link) =>
         addGamesService.resolveLink(link));
 
+    ipcMain.handle('games:search', async (_event, query) =>
+        addGamesService.searchCatalog(query));
+
     ipcMain.handle('games:queue:list', async () => addGamesService.queueState());
 
     ipcMain.handle('games:queue:add', async (event, link) =>

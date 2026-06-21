@@ -45,6 +45,19 @@ function friendlyInstallResult(result) {
     };
 }
 
+function normalizeSelectedItem(input) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
+    const appId = String(input.appId || '').trim();
+    const name = typeof input.name === 'string' ? input.name.trim() : '';
+    const coverUrl = typeof input.coverUrl === 'string' ? input.coverUrl.trim() : '';
+    if (!/^\d+$/.test(appId) || !name) return null;
+    return {
+        appId,
+        name,
+        coverUrl: coverUrl || null
+    };
+}
+
 function createAddGamesService({
     parseSteamGameLink,
     nameResolver,
@@ -52,7 +65,8 @@ function createAddGamesService({
     gameInstaller,
     configStore,
     steamService,
-    libraryService
+    libraryService,
+    catalogService
 }) {
     let installing = false;
 
@@ -64,10 +78,15 @@ function createAddGamesService({
     async function resolveLink(link) {
         try {
             const parsed = parseSteamGameLink(link);
-            const name = await nameResolver.resolve(parsed.appId, parsed.fallbackName);
+            const catalogMatch = await catalogService?.resolveByAppId(parsed.appId, { allowRefresh: true });
+            const name = catalogMatch?.name || await nameResolver.resolve(parsed.appId, parsed.fallbackName);
             return {
                 success: true,
-                item: { appId: parsed.appId, name }
+                item: {
+                    appId: parsed.appId,
+                    name,
+                    coverUrl: catalogMatch?.coverUrl || null
+                }
             };
         } catch (error) {
             return {
@@ -80,8 +99,63 @@ function createAddGamesService({
         }
     }
 
-    async function add(link, onQueueUpdated = () => {}) {
-        const resolved = await resolveLink(link);
+    async function resolveCatalogGame(query) {
+        const term = String(query || '').trim();
+        if (!term) {
+            return {
+                success: false,
+                code: 'selection_required',
+                message: 'Selecione um jogo antes de continuar.'
+            };
+        }
+        const match = /^\d+$/.test(term)
+            ? await catalogService?.resolveByAppId(term, { allowRefresh: true })
+            : null;
+
+        if (!match) {
+            return {
+                success: false,
+                code: 'not_found',
+                message: 'Nenhum jogo foi encontrado para essa busca.'
+            };
+        }
+
+        return { success: true, item: match };
+    }
+
+    async function resolveInput(input) {
+        const selected = normalizeSelectedItem(input);
+        if (selected) return { success: true, item: selected };
+        const raw = String(input || '').trim();
+        if (!raw) {
+            return {
+                success: false,
+                code: 'selection_required',
+                message: 'Selecione um jogo antes de continuar.'
+            };
+        }
+        if (/^https?:\/\//i.test(raw)) return resolveLink(raw);
+        return resolveCatalogGame(raw);
+    }
+
+    async function searchCatalog(query) {
+        const term = String(query || '').trim();
+        if (!term) return { success: true, items: [] };
+        try {
+            const items = await catalogService.search(term, { limit: 4 });
+            return { success: true, items };
+        } catch (error) {
+            return {
+                success: false,
+                code: 'search_failed',
+                message: error.message || 'Não foi possível pesquisar agora.',
+                items: []
+            };
+        }
+    }
+
+    async function add(input, onQueueUpdated = () => {}) {
+        const resolved = await resolveInput(input);
         if (!resolved.success) return resolved;
 
         const result = queue.add(resolved.item);
@@ -107,7 +181,7 @@ function createAddGamesService({
         return { success: true, queue: queueState() };
     }
 
-    async function installNow(link, events = {}) {
+    async function installNow(input, events = {}) {
         if (installing) {
             return { success: false, code: 'install_busy', message: QUEUE_MESSAGES.install_busy };
         }
@@ -119,7 +193,7 @@ function createAddGamesService({
             };
         }
 
-        const resolved = await resolveLink(link);
+        const resolved = await resolveInput(input);
         if (!resolved.success) return resolved;
         if (queue.list().length > 0) {
             return {
@@ -149,6 +223,7 @@ function createAddGamesService({
                     ...progress,
                     appId: resolved.item.appId,
                     name: resolved.item.name,
+                    coverUrl: resolved.item.coverUrl || null,
                     current: 1,
                     total: 1
                 })
@@ -191,6 +266,7 @@ function createAddGamesService({
                         ...progress,
                         appId: item.appId,
                         name: item.name,
+                        coverUrl: item.coverUrl || null,
                         current: index + 1,
                         total: snapshot.length
                     })
@@ -234,7 +310,18 @@ function createAddGamesService({
         };
     }
 
-    return { add, clear, installAll, installNow, queueState, remove, resolveLink, restartSteam };
+    return {
+        add,
+        clear,
+        installAll,
+        installNow,
+        queueState,
+        remove,
+        resolveInput,
+        resolveLink,
+        restartSteam,
+        searchCatalog
+    };
 }
 
 module.exports = { createAddGamesService };
