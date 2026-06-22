@@ -66,7 +66,7 @@ function createGameInstaller({
         return null;
     }
 
-    function installArchiveFiles(extractedDir, depotcachePath, stplugInPath) {
+    function installArchiveFiles(extractedDir, depotcachePath, stplugInPath, { autoUpdate = true } = {}) {
         let filesCopied = 0;
         let totalFiles = 0;
 
@@ -90,7 +90,7 @@ function createGameInstaller({
                         console.log(`Copied manifest: ${file} -> ${destPath}`);
                     } else if (file.endsWith('.lua')) {
                         const destPath = path.join(stplugInPath, file);
-                        const commentedLines = installLuaFile(fs, filePath, destPath);
+                        const commentedLines = installLuaFile(fs, filePath, destPath, { autoUpdate });
                         filesCopied++;
                         console.log(
                             `Installed lua: ${file} -> ${destPath} `
@@ -107,7 +107,7 @@ function createGameInstaller({
         return { filesCopied, totalFiles };
     }
 
-    async function install({ appId, steamPath, onProgress }) {
+    async function install({ appId, steamPath, onProgress, autoUpdate = true }) {
         appId = String(appId || '').trim();
         if (!/^\d+$/.test(appId)) {
             return { success: false, message: 'Invalid App ID.' };
@@ -208,7 +208,7 @@ function createGameInstaller({
 
             console.log(`Extracted directory: ${extractedDir} (source: ${sourceUsed})`);
             onProgress({ message: 'Installing files...', percent: 75 });
-            const result = installArchiveFiles(extractedDir, depotcachePath, stplugInPath);
+            const result = installArchiveFiles(extractedDir, depotcachePath, stplugInPath, { autoUpdate });
 
             onProgress({ message: 'Cleaning up...', percent: 95 });
             try {

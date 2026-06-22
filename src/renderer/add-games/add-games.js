@@ -7,7 +7,9 @@ window.merlinI18n.register({
         games_suggestions_empty: 'Nenhum jogo encontrado para essa busca.',
         games_select_game: 'Selecione um jogo da lista antes de continuar.',
         games_error_selection_required: 'Selecione um jogo da lista antes de continuar.',
-        games_error_search_failed: 'Não foi possível pesquisar jogos agora.'
+        games_error_search_failed: 'Não foi possível pesquisar jogos agora.',
+        auto_update_title: 'Atualizar automaticamente',
+        auto_update_description: 'Recomendado para a maioria dos jogos. Se estiver em dúvida, deixe ativado.'
     },
     en: {
         add_games_description: 'Paste a Steam link, type a game name, or enter an AppID.',
@@ -17,7 +19,9 @@ window.merlinI18n.register({
         games_suggestions_empty: 'No games found for this search.',
         games_select_game: 'Select a game from the list before continuing.',
         games_error_selection_required: 'Select a game from the list before continuing.',
-        games_error_search_failed: 'Could not search games right now.'
+        games_error_search_failed: 'Could not search games right now.',
+        auto_update_title: 'Update automatically',
+        auto_update_description: 'Recommended for most games. If you are not sure, leave this enabled.'
     },
     es: {
         add_games_description: 'Pegue un enlace de Steam, escriba el nombre del juego o introduzca el AppID.',
@@ -27,7 +31,9 @@ window.merlinI18n.register({
         games_suggestions_empty: 'No se encontraron juegos para esta búsqueda.',
         games_select_game: 'Seleccione un juego de la lista antes de continuar.',
         games_error_selection_required: 'Seleccione un juego de la lista antes de continuar.',
-        games_error_search_failed: 'No se pudieron buscar juegos ahora.'
+        games_error_search_failed: 'No se pudieron buscar juegos ahora.',
+        auto_update_title: 'Actualizar automáticamente',
+        auto_update_description: 'Recomendado para la mayoría de los juegos. Si no está seguro, déjelo activado.'
     },
     fr: {
         add_games_description: 'Collez un lien Steam, saisissez le nom du jeu ou entrez l’AppID.',
@@ -37,7 +43,9 @@ window.merlinI18n.register({
         games_suggestions_empty: 'Aucun jeu trouvé pour cette recherche.',
         games_select_game: 'Sélectionnez un jeu dans la liste avant de continuer.',
         games_error_selection_required: 'Sélectionnez un jeu dans la liste avant de continuer.',
-        games_error_search_failed: 'Impossible de rechercher des jeux pour le moment.'
+        games_error_search_failed: 'Impossible de rechercher des jeux pour le moment.',
+        auto_update_title: 'Mettre à jour automatiquement',
+        auto_update_description: 'Recommandé pour la plupart des jeux. En cas de doute, laissez cette option activée.'
     },
     de: {
         add_games_description: 'Fügen Sie einen Steam-Link ein, geben Sie den Spielnamen oder die AppID ein.',
@@ -47,7 +55,9 @@ window.merlinI18n.register({
         games_suggestions_empty: 'Keine Spiele für diese Suche gefunden.',
         games_select_game: 'Wählen Sie ein Spiel aus der Liste aus, bevor Sie fortfahren.',
         games_error_selection_required: 'Wählen Sie ein Spiel aus der Liste aus, bevor Sie fortfahren.',
-        games_error_search_failed: 'Spiele konnten gerade nicht gesucht werden.'
+        games_error_search_failed: 'Spiele konnten gerade nicht gesucht werden.',
+        auto_update_title: 'Automatisch aktualisieren',
+        auto_update_description: 'Für die meisten Spiele empfohlen. Wenn Sie unsicher sind, lassen Sie dies aktiviert.'
     }
 });
 
@@ -63,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const steamActionsCard = document.getElementById('steamActionsCard');
     const linkInput = document.getElementById('gameLinkInput');
     const suggestions = document.getElementById('gameSuggestions');
+    const autoUpdateToggle = document.getElementById('autoUpdateToggle');
     const queueList = document.getElementById('gameQueueList');
     const queueCount = document.getElementById('queueCount');
     const installAllCount = document.getElementById('installAllCount');
@@ -78,6 +89,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let selectedGame = null;
     let searchTimer = null;
     let searchRequestId = 0;
+
+    function resetAutoUpdate() {
+        autoUpdateToggle.checked = true;
+    }
 
     function tr(key, values = {}) {
         const template = window.merlinI18n?.t(key) || key;
@@ -115,6 +130,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return /^https?:\/\/store\.steampowered\.com\/app\//i.test(String(value || '').trim());
     }
 
+    function fallbackCoverUrl(appId) {
+        return /^\d+$/.test(String(appId || ''))
+            ? `https://generator.ryuu.lol/files/images/${appId}.jpg`
+            : null;
+    }
+
     function clearSuggestions() {
         suggestionItems = [];
         suggestions.replaceChildren();
@@ -130,10 +151,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             image.loading = 'lazy';
             image.decoding = 'async';
             image.addEventListener('error', () => {
+                const fallbackUrl = fallbackCoverUrl(game.appId);
+                if (fallbackUrl && image.src !== fallbackUrl) {
+                    image.src = fallbackUrl;
+                    return;
+                }
                 const placeholder = document.createElement('div');
                 placeholder.className = 'game-queue-cover game-queue-cover-placeholder';
                 image.replaceWith(placeholder);
-            }, { once: true });
+            });
             return image;
         }
         const placeholder = document.createElement('div');
@@ -187,7 +213,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function currentInputPayload() {
-        return selectedGame ? { ...selectedGame } : linkInput.value;
+        return {
+            selected: selectedGame ? { ...selectedGame } : null,
+            raw: selectedGame ? '' : linkInput.value,
+            autoUpdate: autoUpdateToggle.checked
+        };
     }
 
     function setRequestBusy(value) {
@@ -208,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         queueList.querySelectorAll('.remove-game-btn').forEach(button => {
             button.disabled = locked;
         });
+        autoUpdateToggle.disabled = locked;
     }
 
     function renderQueue(nextState) {
@@ -275,7 +306,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        showFeedback(tr('games_searching'));
         const result = await api.search(query);
         if (requestId !== searchRequestId) return;
 
@@ -301,6 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!query) showFeedback('');
             return;
         }
+        showFeedback('');
         searchTimer = setTimeout(() => {
             runSearch(query).catch(() => {
                 showFeedback(tr('games_error_search_failed'), 'error');
@@ -320,6 +351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderQueue(result.queue);
             linkInput.value = '';
             setSelectedGame(null);
+            resetAutoUpdate();
             clearSuggestions();
             showFeedback(tr('games_added', { name: result.item.name }), 'success');
         } catch (_) {
@@ -340,6 +372,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             linkInput.value = '';
             setSelectedGame(null);
+            resetAutoUpdate();
             clearSuggestions();
             showFeedback(tr('games_install_success', { name: result.item.name }), 'success');
             if (await window.merlinRestartPrompt.ask({ message: tr('games_restart_prompt') })) {

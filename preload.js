@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     selectSteamPath: () => ipcRenderer.invoke('select-steam-path'),
     findSteam: () => ipcRenderer.invoke('find-steam'),
     detectSteam: () => ipcRenderer.invoke('detect-steam'),
+    isSteamDetected: () => ipcRenderer.invoke('is-steam-detected'),
     isSteamRunning: () => ipcRenderer.invoke('is-steam-running'),
     closeSteam: () => ipcRenderer.invoke('close-steam'),
     startSteam: () => ipcRenderer.invoke('start-steam'),

@@ -156,6 +156,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return item.gameName || tr('library_unknown_game', { appId: item.appId });
     }
 
+    function fallbackCoverUrl(appId) {
+        return /^\d+$/.test(String(appId || ''))
+            ? `https://generator.ryuu.lol/files/images/${appId}.jpg`
+            : null;
+    }
+
     function createGameCellContent(item) {
         const wrap = document.createElement('div');
         wrap.className = 'library-game-cell';
@@ -170,11 +176,16 @@ document.addEventListener('DOMContentLoaded', () => {
             cover.loading = 'lazy';
             cover.decoding = 'async';
             cover.addEventListener('error', () => {
+                const fallbackUrl = fallbackCoverUrl(item.appId);
+                if (fallbackUrl && cover.src !== fallbackUrl) {
+                    cover.src = fallbackUrl;
+                    return;
+                }
                 const fallback = document.createElement('div');
                 fallback.className = 'library-game-cover library-game-cover-placeholder';
                 fallback.setAttribute('aria-hidden', 'true');
                 cover.replaceWith(fallback);
-            }, { once: true });
+            });
         } else {
             cover.classList.add('library-game-cover-placeholder');
         }

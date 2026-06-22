@@ -1,13 +1,18 @@
-function normalizeCatalogEntry(value) {
+const { fallbackCoverForAppId } = require('./library-catalog-client');
+
+function normalizeCatalogEntry(appId, value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
     const name = typeof value.name === 'string' ? value.name.trim() : '';
     const coverUrl = typeof value.coverUrl === 'string' ? value.coverUrl.trim() : '';
     const coverSource = typeof value.coverSource === 'string' ? value.coverSource.trim() : '';
-    if (!name && !coverUrl) return null;
+    const fallbackCoverUrl = fallbackCoverForAppId(appId);
+    const finalCoverUrl = coverUrl || fallbackCoverUrl || '';
+    const finalCoverSource = coverSource || (coverUrl ? null : fallbackCoverUrl ? 'ryuu_image' : null);
+    if (!name && !finalCoverUrl) return null;
     return {
         name,
-        coverUrl: coverUrl || null,
-        coverSource: coverSource || null
+        coverUrl: finalCoverUrl || null,
+        coverSource: finalCoverSource || null
     };
 }
 
@@ -33,7 +38,7 @@ function createLibraryCatalogStore({ fs, path, getFilePath }) {
                 games = Object.fromEntries(
                     Object.entries(storedGames)
                         .filter(([appId]) => /^\d+$/.test(appId))
-                        .map(([appId, value]) => [appId, normalizeCatalogEntry(value)])
+                        .map(([appId, value]) => [appId, normalizeCatalogEntry(appId, value)])
                         .filter(([, value]) => value)
                 );
             }
@@ -61,7 +66,7 @@ function createLibraryCatalogStore({ fs, path, getFilePath }) {
         games = Object.fromEntries(
             Object.entries(entries || {})
                 .filter(([appId]) => /^\d+$/.test(appId))
-                .map(([appId, value]) => [appId, normalizeCatalogEntry(value)])
+                .map(([appId, value]) => [appId, normalizeCatalogEntry(appId, value)])
                 .filter(([, value]) => value)
         );
         lastSync = syncedAt;

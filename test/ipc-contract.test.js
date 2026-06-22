@@ -27,6 +27,7 @@ test('preserves every existing IPC channel', () => {
         'verify-files',
         'detect-steam',
         'is-steam-running',
+        'is-steam-detected',
         'check-files-status',
         'close-steam',
         'start-steam',

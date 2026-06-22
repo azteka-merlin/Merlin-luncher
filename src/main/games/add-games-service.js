@@ -54,7 +54,40 @@ function normalizeSelectedItem(input) {
     return {
         appId,
         name,
-        coverUrl: coverUrl || null
+        coverUrl: coverUrl || null,
+        autoUpdate: input.autoUpdate !== false
+    };
+}
+
+function normalizeInputPayload(input) {
+    if (typeof input === 'string') {
+        return {
+            selected: null,
+            raw: input,
+            autoUpdate: true
+        };
+    }
+
+    if (!input || typeof input !== 'object' || Array.isArray(input)) {
+        return {
+            selected: null,
+            raw: '',
+            autoUpdate: true
+        };
+    }
+
+    const selected = normalizeSelectedItem(input.selected || input.game || null);
+    const selectedFromRoot = normalizeSelectedItem(input);
+    return {
+        selected: selected || selectedFromRoot,
+        raw: typeof input.raw === 'string'
+            ? input.raw
+            : typeof input.input === 'string'
+                ? input.input
+                : typeof input.link === 'string'
+                    ? input.link
+                    : '',
+        autoUpdate: input.autoUpdate !== false
     };
 }
 
@@ -124,9 +157,17 @@ function createAddGamesService({
     }
 
     async function resolveInput(input) {
-        const selected = normalizeSelectedItem(input);
-        if (selected) return { success: true, item: selected };
-        const raw = String(input || '').trim();
+        const payload = normalizeInputPayload(input);
+        if (payload.selected) {
+            return {
+                success: true,
+                item: {
+                    ...payload.selected,
+                    autoUpdate: payload.autoUpdate
+                }
+            };
+        }
+        const raw = String(payload.raw || '').trim();
         if (!raw) {
             return {
                 success: false,
@@ -134,8 +175,17 @@ function createAddGamesService({
                 message: 'Selecione um jogo antes de continuar.'
             };
         }
-        if (/^https?:\/\//i.test(raw)) return resolveLink(raw);
-        return resolveCatalogGame(raw);
+        const resolved = /^https?:\/\//i.test(raw)
+            ? await resolveLink(raw)
+            : await resolveCatalogGame(raw);
+        if (!resolved.success) return resolved;
+        return {
+            ...resolved,
+            item: {
+                ...resolved.item,
+                autoUpdate: payload.autoUpdate
+            }
+        };
     }
 
     async function searchCatalog(query) {
@@ -219,6 +269,7 @@ function createAddGamesService({
             const result = friendlyInstallResult(await gameInstaller.install({
                 appId: resolved.item.appId,
                 steamPath: configStore.get().steamPath,
+                autoUpdate: resolved.item.autoUpdate !== false,
                 onProgress: progress => events.progress?.({
                     ...progress,
                     appId: resolved.item.appId,
@@ -262,6 +313,7 @@ function createAddGamesService({
                 const result = friendlyInstallResult(await gameInstaller.install({
                     appId: item.appId,
                     steamPath: configStore.get().steamPath,
+                    autoUpdate: item.autoUpdate !== false,
                     onProgress: progress => events.progress?.({
                         ...progress,
                         appId: item.appId,

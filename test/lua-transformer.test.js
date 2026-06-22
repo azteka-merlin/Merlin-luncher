@@ -22,3 +22,16 @@ test('comments every active line containing setmanifestid', () => {
     assert.doesNotMatch(result.content, /----setManifestid/);
     assert.match(result.content, /^addappid\(1805110\)$/m);
 });
+
+test('preserves setmanifestid lines when automatic updates are disabled', () => {
+    const source = [
+        'addappid(1805110)',
+        'setmanifestid(1)',
+        '  if ready then setManifestId (2) end'
+    ].join('\n');
+
+    const result = transformLuaContent(source, { autoUpdate: false });
+
+    assert.equal(result.commentedLines, 0);
+    assert.equal(result.content, source);
+});

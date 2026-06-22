@@ -54,6 +54,10 @@ function createLibraryService({
         return !entry.notFoundInCatalog;
     }
 
+    function needsMetadata(entry) {
+        return !entry || !entry.name || !entry.coverUrl;
+    }
+
     function applyCatalogData(appId, catalogEntry) {
         if (!catalogEntry) return false;
         return cacheStore.merge(appId, {
@@ -71,12 +75,12 @@ function createLibraryService({
 
         for (const appId of appIds) {
             const entry = cacheStore.get(appId);
-            if (!shouldResolveFromRemote(entry, forceCatalogRefresh)) continue;
             const localCatalogEntry = catalogStore.get(appId);
-            if (localCatalogEntry) {
+            if (localCatalogEntry && needsMetadata(entry)) {
                 applyCatalogData(appId, localCatalogEntry);
                 continue;
             }
+            if (!shouldResolveFromRemote(entry, forceCatalogRefresh)) continue;
             unresolved.add(appId);
         }
 
@@ -99,7 +103,7 @@ function createLibraryService({
         const luaFiles = managedLuaFiles(paths.luaDirectory);
         const appIdsNeedingMetadata = luaFiles
             .map(file => file.appId)
-            .filter(appId => shouldResolveFromRemote(cacheStore.get(appId), forceCatalogRefresh));
+            .filter(appId => forceCatalogRefresh || needsMetadata(cacheStore.get(appId)));
 
         if (appIdsNeedingMetadata.length > 0 && (catalogStore.needsBootstrap() || forceCatalogRefresh)) {
             await resolveMetadata(luaFiles.map(file => file.appId), { forceCatalogRefresh: true });

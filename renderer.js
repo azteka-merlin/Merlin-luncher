@@ -8,8 +8,8 @@ const translations = {
         select_steam: 'Procurar',
         verify_files: 'Reparar',
         status: 'Status',
-        steam_offline: 'Offline',
-        steam_online: 'Online',
+        steam_offline: 'Não detectada',
+        steam_online: 'Detectada',
         app_id: 'App ID',
         actions: 'Ações',
         add_to_steam: 'Adicionar ao Steam',
@@ -53,8 +53,8 @@ const translations = {
         select_steam: 'Browse',
         verify_files: 'Repair',
         status: 'Status',
-        steam_offline: 'Offline',
-        steam_online: 'Online',
+        steam_offline: 'Not detected',
+        steam_online: 'Detected',
         app_id: 'App ID',
         actions: 'Actions',
         add_to_steam: 'Add to Steam',
@@ -98,8 +98,8 @@ const translations = {
         select_steam: 'Explorar',
         verify_files: 'Reparar',
         status: 'Estado',
-        steam_offline: 'Desconectado',
-        steam_online: 'Conectado',
+        steam_offline: 'No detectado',
+        steam_online: 'Detectado',
         app_id: 'App ID',
         actions: 'Acciones',
         add_to_steam: 'Agregar a Steam',
@@ -143,8 +143,8 @@ const translations = {
         select_steam: 'Parcourir',
         verify_files: 'Réparer',
         status: 'Statut',
-        steam_offline: 'Hors ligne',
-        steam_online: 'En ligne',
+        steam_offline: 'Non détecté',
+        steam_online: 'Détecté',
         app_id: 'App ID',
         actions: 'Actions',
         add_to_steam: 'Ajouter à Steam',
@@ -188,8 +188,8 @@ const translations = {
         select_steam: 'Durchsuchen',
         verify_files: 'Reparieren',
         status: 'Status',
-        steam_offline: 'Offline',
-        steam_online: 'Online',
+        steam_offline: 'Nicht erkannt',
+        steam_online: 'Erkannt',
         app_id: 'App ID',
         actions: 'Aktionen',
         add_to_steam: 'Zu Steam hinzufügen',
@@ -401,6 +401,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Load configuration
 async function loadConfig() {
+    const steamDetectedPromise = window.electronAPI.isSteamDetected().catch(() => false);
     config = await window.electronAPI.getConfig();
     currentLanguage = config.language || 'fr';
 
@@ -415,14 +416,48 @@ async function loadConfig() {
     updateLanguage(currentLanguage);
     updateSteamPathDisplay();
 
-    if (config.steamPath) {
-        const result = await window.electronAPI.checkFilesStatus();
-        updateFilesStatus(result.ok);
-    } else {
-        updateFilesStatus(false);
-    }
+    const filesStatusPromise = config.steamPath
+        ? window.electronAPI.checkFilesStatus().catch(() => ({ ok: false }))
+        : Promise.resolve({ ok: false });
+
+    const [isDetected, filesStatus] = await Promise.all([
+        steamDetectedPromise,
+        filesStatusPromise
+    ]);
+
+    updateSteamStatus(isDetected);
+    updateFilesStatus(Boolean(filesStatus?.ok));
 
     document.getElementById('languageSelect').value = currentLanguage;
+}
+
+function updateSteamStatus(isDetected) {
+    const indicator = document.getElementById('steamStatus');
+    const text = document.getElementById('steamStatusText');
+
+    if (isDetected) {
+        indicator.classList.add('online');
+        text.textContent = t('steam_online');
+    } else {
+        indicator.classList.remove('online');
+        text.textContent = t('steam_offline');
+    }
+}
+
+// Check Steam status
+async function checkSteamStatus() {
+    const isDetected = await window.electronAPI.isSteamDetected();
+    updateSteamStatus(isDetected);
+}
+
+async function refreshStatusIndicators() {
+    const [isDetected, filesStatus] = await Promise.all([
+        window.electronAPI.isSteamDetected().catch(() => false),
+        window.electronAPI.checkFilesStatus().catch(() => ({ ok: false }))
+    ]);
+
+    updateSteamStatus(isDetected);
+    updateFilesStatus(Boolean(filesStatus?.ok));
 }
 
 // Update Steam path display
@@ -496,6 +531,7 @@ function setupEventListeners() {
             await window.electronAPI.saveConfig(config);
 
             updateSteamPathDisplay();
+            await refreshStatusIndicators();
             showNotification(t('steam_detected'));
 
             // Só pergunta se realmente instalou as DLLs
@@ -518,8 +554,7 @@ function setupEventListeners() {
 
         const result = await window.electronAPI.verifyFiles();
 
-        const status = await window.electronAPI.checkFilesStatus();
-        updateFilesStatus(status.ok);
+        await refreshStatusIndicators();
 
         if (result.installed) {
             showNotification(t('files_verified'));
@@ -542,6 +577,7 @@ function setupEventListeners() {
             config.steamPath = steamPath;
             await window.electronAPI.saveConfig(config);
             updateSteamPathDisplay();
+            await refreshStatusIndicators();
             showNotification(t('config_saved'));
         }
     });
@@ -665,21 +701,6 @@ function extractAppId(url) {
         currentAppId = null;
         document.getElementById('appIdDisplay').textContent = '-';
         document.getElementById('addToSteamBtn').disabled = true;
-    }
-}
-
-// Check Steam status
-async function checkSteamStatus() {
-    const isRunning = await window.electronAPI.isSteamRunning();
-    const indicator = document.getElementById('steamStatus');
-    const text = document.getElementById('steamStatusText');
-
-    if (isRunning) {
-        indicator.classList.add('online');
-        text.textContent = t('steam_online');
-    } else {
-        indicator.classList.remove('online');
-        text.textContent = t('steam_offline');
     }
 }
 

@@ -903,6 +903,93 @@ webview {
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
 }
 
+.add-games-option-row {
+    display: block;
+    margin: -0.2rem 0 1.1rem;
+}
+
+.auto-update-option {
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    cursor: pointer;
+}
+
+.auto-update-switch {
+    position: relative;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 26px;
+    margin-top: 0.1rem;
+}
+
+.auto-update-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.auto-update-slider {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(124, 58, 237, 0.45);
+    border-radius: 999px;
+    background: rgba(10, 14, 26, 0.82);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auto-update-slider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #f8fafc;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+    transition: transform 0.2s ease;
+}
+
+.auto-update-switch input:checked + .auto-update-slider {
+    border-color: rgba(167, 139, 250, 0.78);
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.auto-update-switch input:checked + .auto-update-slider::after {
+    transform: translateX(20px);
+}
+
+.auto-update-switch input:focus-visible + .auto-update-slider {
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.22);
+}
+
+.auto-update-switch input:disabled + .auto-update-slider {
+    opacity: 0.55;
+}
+
+.auto-update-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.auto-update-title {
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.auto-update-description {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
 .game-suggestion-item {
     width: 100%;
     display: flex;
@@ -1776,6 +1863,10 @@ webview {
 
     .add-games-actions {
         grid-template-columns: 1fr;
+    }
+
+    .add-games-option-row {
+        align-items: flex-start;
     }
 
     .add-games-view {

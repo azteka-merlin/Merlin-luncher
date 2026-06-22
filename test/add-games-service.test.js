@@ -7,10 +7,12 @@ const { createGameQueue } = require('../src/main/games/game-queue');
 test('installs queued games sequentially, removing successes and retaining failures', async () => {
     let active = 0;
     let maximumActive = 0;
+    const autoUpdateByAppId = {};
     const gameInstaller = {
-        install: async ({ appId, onProgress }) => {
+        install: async ({ appId, onProgress, autoUpdate }) => {
             active++;
             maximumActive = Math.max(maximumActive, active);
+            autoUpdateByAppId[appId] = autoUpdate;
             onProgress({ message: 'Installing', percent: 50 });
             await new Promise(resolve => setTimeout(resolve, 5));
             active--;
@@ -33,9 +35,9 @@ test('installs queued games sequentially, removing successes and retaining failu
         steamService: {}
     });
 
-    await service.add('1');
-    await service.add('2');
-    await service.add('3');
+    await service.add({ raw: '1', autoUpdate: true });
+    await service.add({ raw: '2', autoUpdate: false });
+    await service.add({ raw: '3', autoUpdate: true });
     const progress = [];
     const result = await service.installAll({ progress: item => progress.push(item) });
 
@@ -44,6 +46,8 @@ test('installs queued games sequentially, removing successes and retaining failu
     assert.deepEqual(result.failed.map(item => item.appId), ['2']);
     assert.deepEqual(service.queueState().items.map(item => item.appId), ['2']);
     assert.equal(service.queueState().items[0].coverUrl, 'https://example.com/2.jpg');
+    assert.equal(service.queueState().items[0].autoUpdate, false);
+    assert.deepEqual(autoUpdateByAppId, { '1': true, '2': false, '3': true });
     assert.deepEqual(progress.map(item => item.current), [1, 2, 3]);
 });
 
@@ -62,7 +66,7 @@ test('blocks install now while the queue contains any game', async () => {
         steamService: {}
     });
 
-    await service.add('1');
+    await service.add({ raw: '1', autoUpdate: true });
     const result = await service.installNow('2');
 
     assert.equal(result.success, false);
@@ -70,6 +74,7 @@ test('blocks install now while the queue contains any game', async () => {
 });
 
 test('searches the catalog and installs a selected game with cover metadata', async () => {
+    let receivedAutoUpdate = null;
     const service = createAddGamesService({
         parseSteamGameLink: link => ({ appId: link, fallbackName: `Game ${link}` }),
         nameResolver: { resolve: async (_appId, fallback) => fallback },
@@ -84,17 +89,22 @@ test('searches the catalog and installs a selected game with cover metadata', as
         },
         queue: createGameQueue(),
         gameInstaller: {
-            install: async () => ({ success: true, message: 'Installed' })
+            install: async ({ autoUpdate }) => {
+                receivedAutoUpdate = autoUpdate;
+                return { success: true, message: 'Installed' };
+            }
         },
         configStore: { get: () => ({ steamPath: 'C:\\Steam' }) },
         steamService: {}
     });
 
     const search = await service.searchCatalog('final fantasy');
-    const install = await service.installNow(search.items[0]);
+    const install = await service.installNow({ selected: search.items[0], autoUpdate: false });
 
     assert.equal(search.success, true);
     assert.equal(search.items.length, 2);
     assert.equal(install.success, true);
     assert.equal(install.item.coverUrl, 'https://example.com/10.jpg');
+    assert.equal(install.item.autoUpdate, false);
+    assert.equal(receivedAutoUpdate, false);
 });

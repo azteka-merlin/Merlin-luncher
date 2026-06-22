@@ -14,7 +14,8 @@ function createGameQueue() {
         items.push({
             appId: item.appId,
             name: item.name,
-            coverUrl: item.coverUrl || null
+            coverUrl: item.coverUrl || null,
+            autoUpdate: item.autoUpdate !== false
         });
         return { success: true, item: { ...item } };
     }

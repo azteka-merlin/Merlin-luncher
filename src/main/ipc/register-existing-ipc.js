@@ -55,6 +55,10 @@ function registerExistingIpc({
     });
 
     ipcMain.handle('is-steam-running', async () => steamService.isRunning());
+    ipcMain.handle('is-steam-detected', async () => {
+        const readiness = steamService.getActivationReadiness(configStore.get().steamPath);
+        return readiness.reason !== 'steam_path_missing' && readiness.reason !== 'steam_path_invalid';
+    });
 
     ipcMain.handle('check-files-status', async () =>
         steamService.getFilesStatus(configStore.get().steamPath));

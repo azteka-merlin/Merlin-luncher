@@ -1,3 +1,5 @@
+const { fallbackCoverForAppId } = require('./library-catalog-client');
+
 function scoreMatch(game, normalizedQuery) {
     const name = String(game.name || '').toLocaleLowerCase();
     const appId = String(game.appId || '');
@@ -11,6 +13,16 @@ function scoreMatch(game, normalizedQuery) {
 
 function createLibraryCatalogService({ catalogStore, catalogClient }) {
     let refreshPromise = null;
+
+    function normalizeEntry(appId, entry) {
+        if (!entry) return null;
+        const fallbackCoverUrl = fallbackCoverForAppId(appId);
+        return {
+            name: entry.name,
+            coverUrl: entry.coverUrl || fallbackCoverUrl || null,
+            coverSource: entry.coverSource || (entry.coverUrl ? null : fallbackCoverUrl ? 'ryuu_image' : null)
+        };
+    }
 
     async function refresh() {
         if (!refreshPromise) {
@@ -36,7 +48,7 @@ function createLibraryCatalogService({ catalogStore, catalogClient }) {
     }
 
     function findByAppId(appId) {
-        const entry = catalogStore.get(appId);
+        const entry = normalizeEntry(appId, catalogStore.get(appId));
         if (!entry) return null;
         return {
             appId: String(appId),
@@ -50,7 +62,7 @@ function createLibraryCatalogService({ catalogStore, catalogClient }) {
         const matches = [];
 
         for (const [appId, entry] of Object.entries(games)) {
-            const game = { appId, ...entry };
+            const game = { appId, ...normalizeEntry(appId, entry) };
             const score = scoreMatch(game, normalizedQuery);
             if (score < 0) continue;
             matches.push({ ...game, score });

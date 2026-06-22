@@ -195,6 +195,36 @@ test('marks missing catalog entries during normal loads and retries them on refr
     assert.equal(fixture.cache['4'].notFoundInCatalog, false);
 });
 
+test('reuses a local catalog fallback image even when the cache was previously marked as not found', async t => {
+    const fixture = createFixture();
+    t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
+    fs.writeFileSync(path.join(fixture.luaDirectory, '1736800.lua'), 'addappid(1736800)');
+    fixture.cache['1736800'] = {
+        name: 'PRAGMATA',
+        coverUrl: null,
+        coverSource: null,
+        notFoundInCatalog: true
+    };
+    fixture.catalog['1736800'] = {
+        name: 'PRAGMATA',
+        coverUrl: 'https://generator.ryuu.lol/files/images/1736800.jpg',
+        coverSource: 'ryuu_image'
+    };
+    let downloads = 0;
+    const service = serviceFor(fixture, async () => {
+        downloads += 1;
+        return { games: {}, syncedAt: '2026-06-21T00:00:00Z' };
+    });
+
+    const result = await service.list();
+
+    assert.equal(result.success, true);
+    assert.equal(downloads, 0);
+    assert.equal(result.items[0].coverUrl, 'https://generator.ryuu.lol/files/images/1736800.jpg');
+    assert.equal(fixture.cache['1736800'].coverUrl, 'https://generator.ryuu.lol/files/images/1736800.jpg');
+    assert.equal(fixture.cache['1736800'].notFoundInCatalog, false);
+});
+
 test('removes the Lua and exclusive manifests but preserves shared manifests', async t => {
     const fixture = createFixture();
     t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));

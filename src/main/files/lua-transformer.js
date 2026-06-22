@@ -1,4 +1,8 @@
-function transformLuaContent(source) {
+function transformLuaContent(source, { autoUpdate = true } = {}) {
+    if (!autoUpdate) {
+        return { content: source, commentedLines: 0 };
+    }
+
     let commentedLines = 0;
     const content = source.replace(/(^|\r?\n)([^\r\n]*)/g, (match, separator, line) => {
         const bom = line.startsWith('\uFEFF') ? '\uFEFF' : '';
@@ -16,9 +20,9 @@ function transformLuaContent(source) {
     return { content, commentedLines };
 }
 
-function installLuaFile(fs, sourcePath, destinationPath) {
+function installLuaFile(fs, sourcePath, destinationPath, options) {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    const result = transformLuaContent(source);
+    const result = transformLuaContent(source, options);
     fs.writeFileSync(destinationPath, result.content, 'utf8');
     return result.commentedLines;
 }

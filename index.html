@@ -90,7 +90,7 @@
                             <span class="label">Steam</span>
                             <div class="status-indicator-wrapper">
                                 <span class="status-dot" id="steamStatus"></span>
-                                <span id="steamStatusText" data-i18n="steam_offline">Offline</span>
+                                <span id="steamStatusText" data-i18n="steam_offline">Not detected</span>
                             </div>
                         </div>
                         <div class="status-item">
@@ -199,6 +199,19 @@
                             </div>
 
                             <div id="gameSuggestions" class="game-suggestions" hidden></div>
+
+                            <div class="add-games-option-row">
+                                <label class="auto-update-option" for="autoUpdateToggle">
+                                    <span class="auto-update-switch">
+                                        <input id="autoUpdateToggle" type="checkbox" checked>
+                                        <span class="auto-update-slider" aria-hidden="true"></span>
+                                    </span>
+                                    <span class="auto-update-copy">
+                                        <span class="auto-update-title" data-i18n="auto_update_title">Atualizar automaticamente</span>
+                                        <span class="auto-update-description" data-i18n="auto_update_description">Recomendado para a maioria dos jogos. Se estiver em dúvida, deixe ativado.</span>
+                                    </span>
+                                </label>
+                            </div>
 
                             <div class="add-games-actions">
                                 <button id="installNowBtn" class="add-games-btn add-games-btn-primary" type="button">
