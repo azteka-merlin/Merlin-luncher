@@ -94,6 +94,14 @@ function createAuthSession({
         if (status === 401 && normalized.includes('not active')) {
             return new AuthError('revoked', 'This license has been revoked.');
         }
+        const looksRateLimited = normalized.includes('rate limit')
+            || normalized.includes('too many')
+            || normalized.includes('limite tempor')
+            || normalized.includes('tentativas de acesso');
+
+        if (status === 429 || looksRateLimited) {
+            return new AuthError('rate_limited', 'The temporary access attempt limit was reached. Wait about 1 minute and try again.');
+        }
         if (status === 401) {
             return new AuthError('invalid_key', 'Invalid license key.');
         }

@@ -23,6 +23,14 @@ function friendlyInstallResult(result) {
         };
     }
 
+    if (result.reason === 'rate_limited') {
+        return {
+            ...result,
+            code: 'rate_limited',
+            message: 'O limite temporário de solicitações desta licença foi atingido. Aguarde alguns instantes e tente novamente.'
+        };
+    }
+
     const message = String(result.message || '');
     if (/unable to download/i.test(message)) {
         return {

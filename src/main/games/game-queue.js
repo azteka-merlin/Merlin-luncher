@@ -1,3 +1,5 @@
+const MAX_QUEUE_ITEMS = 30;
+
 function createGameQueue() {
     const items = [];
     let locked = false;
@@ -10,6 +12,9 @@ function createGameQueue() {
         if (locked) return { success: false, code: 'queue_locked' };
         if (items.some(existing => existing.appId === item.appId)) {
             return { success: false, code: 'duplicate' };
+        }
+        if (items.length >= MAX_QUEUE_ITEMS) {
+            return { success: false, code: 'queue_full' };
         }
         items.push({
             appId: item.appId,

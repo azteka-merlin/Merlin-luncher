@@ -150,7 +150,7 @@ const steamService = createSteamService({
 });
 
 const apiBaseUrl = process.env.MERLIN_API_BASE_URL
-    || 'https://merlin-api.azteka-merlin.workers.dev/api';
+    || 'https://api-merlin.com/api';
 const manifestApiUrl = process.env.MERLIN_API_URL || `${apiBaseUrl}/manifests`;
 const apiAgent = createApiAgent();
 const downloadManager = createDownloadManager({ fs, path, axios, httpsAgent: apiAgent });
@@ -319,3 +319,4 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
+

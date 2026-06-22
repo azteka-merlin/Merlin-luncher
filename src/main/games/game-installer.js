@@ -244,7 +244,12 @@ function createGameInstaller({
             };
         } catch (error) {
             console.error('Error download-game:', error);
-            return { success: false, reason: error.code, message: error.message };
+            const status = error?.response?.status;
+            return {
+                success: false,
+                reason: status === 429 ? 'rate_limited' : error.code,
+                message: error.message
+            };
         } finally {
             activeDownloads.delete(appId);
         }

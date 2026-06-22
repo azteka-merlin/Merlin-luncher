@@ -85,3 +85,31 @@ test('auth session allows retry after transient server validation failure', asyn
     assert.equal(accessToken, 'token-123');
     assert.equal(attempts, 2);
 });
+
+test('auth session returns rate_limited when the API throttles license attempts', async () => {
+    const session = createAuthSession({
+        app: { getPath: () => 'C:\\Users\\AZTEKA\\AppData\\Roaming\\Merlin' },
+        safeStorage: createSafeStorage(),
+        fs: createMemoryFs(),
+        path,
+        axios: {
+            post: async () => {
+                const error = new Error('too many requests');
+                error.response = {
+                    status: 429,
+                    data: 'O limite temporario de tentativas de acesso foi atingido.'
+                };
+                throw error;
+            }
+        },
+        httpsAgent: {},
+        machineIdentity: {
+            getHwid: async () => 'merlin-hwid-123'
+        },
+        baseUrl: 'https://api-merlin.com/api'
+    });
+
+    const result = await session.login('MERLIN-ABCD-EFGH-JKLM');
+    assert.equal(result.authenticated, false);
+    assert.equal(result.code, 'rate_limited');
+});

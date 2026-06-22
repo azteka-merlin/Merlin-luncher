@@ -18,6 +18,9 @@ const licenseGateTranslations = {
         server_error: 'Não foi possível validar sua chave. Tente novamente.',
         invalid_response: 'Não foi possível validar sua chave. Tente novamente.',
         device_error: 'Não foi possível identificar este computador.',
+        rate_limited: 'O limite temporário de tentativas de acesso foi atingido. Aguarde aproximadamente 1 minuto e tente novamente.',
+        rate_limited_countdown: 'Tente novamente em {seconds}s.',
+        rate_limited_ready: 'Você já pode tentar novamente.',
         missing: 'Informe sua chave para continuar.'
     },
     en: {
@@ -39,6 +42,9 @@ const licenseGateTranslations = {
         server_error: 'Could not validate your key. Try again.',
         invalid_response: 'Could not validate your key. Try again.',
         device_error: 'This computer could not be identified.',
+        rate_limited: 'The temporary access attempt limit was reached. Wait about 1 minute and try again.',
+        rate_limited_countdown: 'Try again in {seconds}s.',
+        rate_limited_ready: 'You can try again now.',
         missing: 'Enter your key to continue.'
     },
     es: {
@@ -60,6 +66,9 @@ const licenseGateTranslations = {
         server_error: 'No se pudo validar tu clave. Inténtalo de nuevo.',
         invalid_response: 'No se pudo validar tu clave. Inténtalo de nuevo.',
         device_error: 'No se pudo identificar este equipo.',
+        rate_limited: 'Se alcanzó el límite temporal de intentos de acceso. Espere aproximadamente 1 minuto e inténtelo de nuevo.',
+        rate_limited_countdown: 'Inténtalo de nuevo en {seconds}s.',
+        rate_limited_ready: 'Ya puedes intentarlo de nuevo.',
         missing: 'Introduce tu clave para continuar.'
     },
     fr: {
@@ -81,6 +90,9 @@ const licenseGateTranslations = {
         server_error: 'Impossible de valider votre clé. Réessayez.',
         invalid_response: 'Impossible de valider votre clé. Réessayez.',
         device_error: 'Impossible d’identifier cet ordinateur.',
+        rate_limited: 'La limite temporaire de tentatives d’accès a été atteinte. Attendez environ 1 minute avant de réessayer.',
+        rate_limited_countdown: 'Réessayez dans {seconds}s.',
+        rate_limited_ready: 'Vous pouvez réessayer maintenant.',
         missing: 'Saisissez votre clé pour continuer.'
     },
     de: {
@@ -102,6 +114,9 @@ const licenseGateTranslations = {
         server_error: 'Ihr Schlüssel konnte nicht validiert werden. Versuchen Sie es erneut.',
         invalid_response: 'Ihr Schlüssel konnte nicht validiert werden. Versuchen Sie es erneut.',
         device_error: 'Dieser Computer konnte nicht identifiziert werden.',
+        rate_limited: 'Das temporäre Limit für Zugriffsversuche wurde erreicht. Warten Sie etwa 1 Minute und versuchen Sie es erneut.',
+        rate_limited_countdown: 'Versuchen Sie es in {seconds}s erneut.',
+        rate_limited_ready: 'Sie können es jetzt erneut versuchen.',
         missing: 'Geben Sie Ihren Schlüssel ein, um fortzufahren.'
     }
 };
@@ -117,6 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let language = 'ptbr';
     let busy = true;
     let mode = 'checking';
+    let rateLimitUntil = 0;
+    let rateLimitTimer = null;
 
     function setApplicationLocked(locked) {
         for (const element of document.body.children) {
@@ -136,6 +153,47 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('licenseGateLabel').textContent = text.label;
         document.getElementById('licenseGateSubmitText').textContent = text.submit;
         document.getElementById('licenseGatePrivacy').textContent = text.privacy;
+        if (isRateLimited()) renderRateLimitCountdown();
+    }
+
+    function isRateLimited() {
+        return Date.now() < rateLimitUntil;
+    }
+
+    function updateSubmitState() {
+        submit.disabled = busy || isRateLimited() || !isCompleteKey(input.value);
+    }
+
+    function renderRateLimitCountdown() {
+        const text = messages();
+        const remainingSeconds = Math.max(0, Math.ceil((rateLimitUntil - Date.now()) / 1000));
+
+        if (remainingSeconds <= 0) {
+            rateLimitUntil = 0;
+            if (rateLimitTimer) {
+                clearInterval(rateLimitTimer);
+                rateLimitTimer = null;
+            }
+            if (feedback.dataset.code === 'rate_limited') {
+                feedback.textContent = text.rate_limited_ready;
+                feedback.dataset.type = 'info';
+                feedback.dataset.code = '';
+            }
+            updateSubmitState();
+            return;
+        }
+
+        feedback.textContent = `${text.rate_limited} ${text.rate_limited_countdown.replace('{seconds}', remainingSeconds)}`;
+        feedback.dataset.type = 'error';
+        feedback.dataset.code = 'rate_limited';
+        updateSubmitState();
+    }
+
+    function startRateLimitCooldown(durationMs = 60_000) {
+        rateLimitUntil = Math.max(rateLimitUntil, Date.now() + durationMs);
+        if (rateLimitTimer) clearInterval(rateLimitTimer);
+        renderRateLimitCountdown();
+        rateLimitTimer = setInterval(renderRateLimitCountdown, 1000);
     }
 
     async function loadLanguage() {
@@ -182,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         busy = value;
         gate.classList.toggle('is-busy', value);
         input.disabled = value;
-        submit.disabled = value || !isCompleteKey(input.value);
+        updateSubmitState();
         feedback.dataset.type = value ? 'info' : feedback.dataset.type;
         if (message) feedback.textContent = message;
     }
@@ -193,8 +251,13 @@ document.addEventListener('DOMContentLoaded', () => {
         gate.classList.remove('is-authenticated');
         setMode('prompt');
         const text = messages();
-        feedback.textContent = text[code] || text.server_error;
         feedback.dataset.type = 'error';
+        feedback.dataset.code = code || '';
+        if (code === 'rate_limited') {
+            startRateLimitCooldown();
+        } else {
+            feedback.textContent = text[code] || text.server_error;
+        }
         setBusy(false);
         input.focus();
     }
@@ -211,14 +274,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const cursorAtEnd = input.selectionStart === input.value.length;
         input.value = formatLicenseKey(input.value);
         if (cursorAtEnd) input.setSelectionRange(input.value.length, input.value.length);
-        submit.disabled = busy || !isCompleteKey(input.value);
+        updateSubmitState();
+        if (isRateLimited()) {
+            renderRateLimitCountdown();
+            return;
+        }
         feedback.textContent = messages().missing;
         feedback.dataset.type = 'info';
+        feedback.dataset.code = '';
     });
 
     form.addEventListener('submit', async event => {
         event.preventDefault();
-        if (busy || !isCompleteKey(input.value)) return;
+        if (busy || isRateLimited() || !isCompleteKey(input.value)) return;
 
         setMode('prompt');
         setBusy(true, messages().validating);

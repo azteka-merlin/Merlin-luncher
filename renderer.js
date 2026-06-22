@@ -274,6 +274,8 @@ const addGamesTranslations = {
         games_error_required_files_missing: 'Os arquivos obrigatórios não estão instalados. Use Reparar primeiro.',
         games_error_download_unavailable: 'Não foi possível baixar os arquivos desse jogo.',
         games_error_archive_invalid: 'Os arquivos recebidos são inválidos ou estão incompletos.',
+        games_error_queue_full: 'A fila permite no máximo 30 jogos.',
+        games_error_rate_limited: 'O limite temporário de solicitações desta licença foi atingido. Aguarde alguns instantes e tente novamente.',
         games_error_generic: 'Não foi possível concluir esta operação.'
     },
     en: {
@@ -295,7 +297,8 @@ const addGamesTranslations = {
         games_error_queue_locked: 'The queue cannot be changed during installation.', games_error_not_found: 'The game is no longer in the queue.',
         games_error_steam_path_missing: 'Configure the Steam path before starting installation.', games_error_steam_path_invalid: 'The configured path is not a valid Steam installation.',
         games_error_required_files_missing: 'Required files are missing. Use Repair first.', games_error_download_unavailable: 'The files for this game could not be downloaded.',
-        games_error_archive_invalid: 'The received files are invalid or incomplete.', games_error_generic: 'This operation could not be completed.'
+        games_error_archive_invalid: 'The received files are invalid or incomplete.', games_error_queue_full: 'The queue allows a maximum of 30 games.',
+        games_error_rate_limited: 'The temporary request limit for this license was reached. Wait a few moments and try again.', games_error_generic: 'This operation could not be completed.'
     },
     es: {
         add_games_title: 'Añadir juego de Steam', add_games_description: 'Pegue el enlace de la página del juego en Steam.',
@@ -316,7 +319,8 @@ const addGamesTranslations = {
         games_error_queue_locked: 'No se puede modificar la cola durante la instalación.', games_error_not_found: 'El juego ya no está en la cola.',
         games_error_steam_path_missing: 'Configure la ruta de Steam antes de iniciar la instalación.', games_error_steam_path_invalid: 'La ruta configurada no es una instalación válida de Steam.',
         games_error_required_files_missing: 'Faltan archivos obligatorios. Use Reparar primero.', games_error_download_unavailable: 'No se pudieron descargar los archivos del juego.',
-        games_error_archive_invalid: 'Los archivos recibidos no son válidos o están incompletos.', games_error_generic: 'No se pudo completar esta operación.'
+        games_error_archive_invalid: 'Los archivos recibidos no son válidos o están incompletos.', games_error_queue_full: 'La cola permite un máximo de 30 juegos.',
+        games_error_rate_limited: 'Se alcanzó el límite temporal de solicitudes de esta licencia. Espere unos instantes e inténtelo de nuevo.', games_error_generic: 'No se pudo completar esta operación.'
     },
     fr: {
         add_games_title: 'Ajouter un jeu Steam', add_games_description: 'Collez le lien de la page du jeu sur Steam.',
@@ -337,7 +341,8 @@ const addGamesTranslations = {
         games_error_queue_locked: 'La file ne peut pas être modifiée pendant l’installation.', games_error_not_found: 'Le jeu n’est plus dans la file.',
         games_error_steam_path_missing: 'Configurez le chemin Steam avant de lancer l’installation.', games_error_steam_path_invalid: 'Le chemin configuré n’est pas une installation Steam valide.',
         games_error_required_files_missing: 'Des fichiers requis sont absents. Utilisez d’abord Réparer.', games_error_download_unavailable: 'Impossible de télécharger les fichiers de ce jeu.',
-        games_error_archive_invalid: 'Les fichiers reçus sont invalides ou incomplets.', games_error_generic: 'Impossible de terminer cette opération.'
+        games_error_archive_invalid: 'Les fichiers reçus sont invalides ou incomplets.', games_error_queue_full: 'La file est limitée à 30 jeux.',
+        games_error_rate_limited: 'La limite temporaire de requêtes pour cette licence a été atteinte. Attendez quelques instants puis réessayez.', games_error_generic: 'Impossible de terminer cette opération.'
     },
     de: {
         add_games_title: 'Steam-Spiel hinzufügen', add_games_description: 'Fügen Sie den Link zur Spielseite auf Steam ein.',
@@ -358,7 +363,8 @@ const addGamesTranslations = {
         games_error_queue_locked: 'Die Warteschlange kann während der Installation nicht geändert werden.', games_error_not_found: 'Das Spiel ist nicht mehr in der Warteschlange.',
         games_error_steam_path_missing: 'Konfigurieren Sie vor der Installation den Steam-Pfad.', games_error_steam_path_invalid: 'Der konfigurierte Pfad ist keine gültige Steam-Installation.',
         games_error_required_files_missing: 'Erforderliche Dateien fehlen. Verwenden Sie zuerst Reparieren.', games_error_download_unavailable: 'Die Dateien für dieses Spiel konnten nicht heruntergeladen werden.',
-        games_error_archive_invalid: 'Die empfangenen Dateien sind ungültig oder unvollständig.', games_error_generic: 'Dieser Vorgang konnte nicht abgeschlossen werden.'
+        games_error_archive_invalid: 'Die empfangenen Dateien sind ungültig oder unvollständig.', games_error_queue_full: 'Die Warteschlange ist auf 30 Spiele begrenzt.',
+        games_error_rate_limited: 'Das temporäre Anfragelimit für diese Lizenz wurde erreicht. Warten Sie einen Moment und versuchen Sie es erneut.', games_error_generic: 'Dieser Vorgang konnte nicht abgeschlossen werden.'
     }
 };
 
@@ -753,7 +759,11 @@ async function downloadAndInstallGame(appId) {
                 await restartSteam();
             }
         } else {
-            showNotification(`${t('download_error')}: ${result.message}`, 'error');
+            const translatedError = result.reason ? t(`games_error_${result.reason}`) : '';
+            const detail = translatedError && translatedError !== `games_error_${result.reason}`
+                ? translatedError
+                : result.message;
+            showNotification(`${t('download_error')}: ${detail}`, 'error');
         }
     } catch (error) {
         hideProgress();
