@@ -77,6 +77,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         list: () => ipcRenderer.invoke('library:list'),
         refresh: () => ipcRenderer.invoke('library:refresh'),
         remove: (appId) => ipcRenderer.invoke('library:remove', appId),
+        openGameFolder: (appId) => ipcRenderer.invoke('library:open-game-folder', appId),
         restartSteam: () => ipcRenderer.invoke('library:restart-steam'),
         onUpdated: (callback) => {
             ipcRenderer.on('library:updated', (_event, items) => callback(items));
@@ -87,6 +88,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
         removeListeners: () => {
             ipcRenderer.removeAllListeners('library:updated');
             ipcRenderer.removeAllListeners('library:operation-progress');
+        }
+    },
+
+    corrections: {
+        list: () => ipcRenderer.invoke('corrections:list'),
+        refresh: () => ipcRenderer.invoke('corrections:refresh'),
+        prepareInstall: (appId) => ipcRenderer.invoke('corrections:prepare-install', appId),
+        download: (payload) => ipcRenderer.invoke('corrections:download', payload),
+        install: (payload) => ipcRenderer.invoke('corrections:install', payload),
+        cancel: (operationId) => ipcRenderer.invoke('corrections:cancel', operationId),
+        openFolder: (folderPath) => ipcRenderer.invoke('corrections:open-folder', folderPath),
+        onProgress: (callback) => {
+            ipcRenderer.on('corrections:progress', (_event, state) => callback(state));
+        },
+        removeListeners: () => {
+            ipcRenderer.removeAllListeners('corrections:progress');
         }
     }
 });

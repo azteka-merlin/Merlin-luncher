@@ -4,10 +4,11 @@ const path = require('node:path').win32;
 
 const { createSteamService } = require('../src/main/steam/steam-service');
 
-function createService(existingPaths) {
+function createService(existingPaths, fileContents = {}) {
     const fs = {
         existsSync: filePath => existingPaths.has(path.normalize(filePath)),
-        statSync: () => ({ isDirectory: () => true })
+        statSync: () => ({ isDirectory: () => true }),
+        readFileSync: filePath => fileContents[path.normalize(filePath)] || ''
     };
     return createSteamService({
         fs,
@@ -42,4 +43,50 @@ test('reports missing LumaCore files without changing the path', () => {
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'required_files_missing');
     assert.deepEqual(result.missing, ['LumaCore.dll', 'dwmapi.dll']);
+});
+
+test('finds an installed game by validating libraryfolders and the appmanifest', () => {
+    const root = path.normalize('C:\\Steam');
+    const secondaryLibrary = path.normalize('D:\\SteamLibrary');
+    const libraryFoldersPath = path.join(root, 'steamapps', 'libraryfolders.vdf');
+    const manifestPath = path.join(secondaryLibrary, 'steamapps', 'appmanifest_4704690.acf');
+    const gamePath = path.join(secondaryLibrary, 'steamapps', 'common', 'PastaDoJogo');
+
+    const service = createService(new Set([
+        root,
+        path.join(root, 'steam.exe'),
+        path.join(root, 'LumaCore.dll'),
+        path.join(root, 'dwmapi.dll'),
+        libraryFoldersPath,
+        manifestPath,
+        gamePath
+    ]), {
+        [libraryFoldersPath]: `"libraryfolders"
+{
+  "0"
+  {
+    "path" "C:\\\\Program Files (x86)\\\\Steam"
+  }
+  "1"
+  {
+    "path" "D:\\\\SteamLibrary"
+    "apps"
+    {
+      "4704690" "0"
+    }
+  }
+}`,
+        [manifestPath]: `"AppState"
+{
+  "appid" "4704690"
+  "installdir" "PastaDoJogo"
+}`
+    });
+
+    const result = service.findInstalledGame('4704690', root);
+
+    assert.equal(result.installed, true);
+    assert.equal(result.libraryPath, secondaryLibrary);
+    assert.equal(result.manifestPath, manifestPath);
+    assert.equal(result.gamePath, gamePath);
 });

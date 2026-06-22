@@ -397,13 +397,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.electronAPI.onFilesStatus((data) => {
         updateFilesStatus(data.ok);
     });
+
+    window.merlinView.set(document.body.dataset.merlinView || 'add-games');
 });
 
 // Load configuration
 async function loadConfig() {
     const steamDetectedPromise = window.electronAPI.isSteamDetected().catch(() => false);
     config = await window.electronAPI.getConfig();
-    currentLanguage = config.language || 'fr';
+    currentLanguage = config.language || 'ptbr';
 
     if (!config.steamPath) {
         const detectedSteamPath = await window.electronAPI.findSteam();
@@ -483,6 +485,19 @@ window.merlinI18n = {
         for (const [language, messages] of Object.entries(messagesByLanguage)) {
             if (translations[language]) Object.assign(translations[language], messages);
         }
+    }
+};
+
+window.merlinView = {
+    get() {
+        return document.body.dataset.merlinView || 'add-games';
+    },
+    set(view) {
+        const nextView = String(view || '').trim() || 'add-games';
+        document.body.dataset.merlinView = nextView;
+        window.dispatchEvent(new CustomEvent('merlin-view-changed', {
+            detail: { view: nextView }
+        }));
     }
 };
 
@@ -733,6 +748,7 @@ async function downloadAndInstallGame(appId) {
 
         if (result.success) {
             showNotification(t('download_success'), 'success');
+            await window.merlinCorrections?.offerFor?.(appId);
             if (await askToRestartSteam()) {
                 await restartSteam();
             }
@@ -821,6 +837,8 @@ function showNotification(message, type = 'info') {
         }, 300);
     }, 3000);
 }
+
+window.showNotification = showNotification;
 
 // Add CSS animations for notifications
 const style = document.createElement('style');

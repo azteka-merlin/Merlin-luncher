@@ -282,19 +282,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateVisibleView() {
-        const showAddGames = siteSelector.value === 'add-games';
+        const currentView = window.merlinView?.get?.() || 'add-games';
+        const showAddGames = currentView === 'add-games';
+        const showSteamStore = currentView === 'steam-store';
         addGamesView.hidden = !showAddGames;
-        webview.hidden = showAddGames;
-        if (showAddGames) webview.blur();
+        webview.hidden = !showSteamStore;
+        if (!showSteamStore) webview.blur();
+        browserToolbar.hidden = currentView === 'library' || currentView === 'corrections';
         browserToolbar.classList.toggle('native-content-active', showAddGames);
-        steamActionsCard.hidden = showAddGames;
+        steamActionsCard.hidden = !showSteamStore;
+        addGamesNavBtn.classList.toggle('active', showAddGames || showSteamStore);
+        addGamesNavBtn.setAttribute('aria-pressed', String(showAddGames || showSteamStore));
         linkModeBtn.classList.toggle('active', showAddGames);
         linkModeBtn.setAttribute('aria-pressed', String(showAddGames));
-        steamStoreModeBtn.classList.toggle('active', !showAddGames);
-        steamStoreModeBtn.setAttribute('aria-pressed', String(!showAddGames));
+        steamStoreModeBtn.classList.toggle('active', showSteamStore);
+        steamStoreModeBtn.setAttribute('aria-pressed', String(showSteamStore));
     }
 
     function selectMode(value) {
+        window.merlinView?.set?.(value === 'add-games' ? 'add-games' : 'steam-store');
         siteSelector.value = value;
         siteSelector.dispatchEvent(new Event('change', { bubbles: true }));
     }
@@ -375,6 +381,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             resetAutoUpdate();
             clearSuggestions();
             showFeedback(tr('games_install_success', { name: result.item.name }), 'success');
+            await window.merlinCorrections?.offerFor?.(result.item.appId);
             if (await window.merlinRestartPrompt.ask({ message: tr('games_restart_prompt') })) {
                 const restart = await api.restartSteam();
                 showFeedback(
@@ -404,6 +411,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const summary = tr('games_batch_summary', { installed, failed });
             showFeedback(summary, failed > 0 ? 'error' : 'success');
 
+            for (const item of result.installed) {
+                await window.merlinCorrections?.offerFor?.(item.appId);
+            }
+
             if (installed > 0 && await window.merlinRestartPrompt.ask({
                 message: tr('games_batch_restart_prompt', { summary })
             })) {
@@ -424,6 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     addGamesNavBtn.addEventListener('click', () => selectMode('add-games'));
     linkModeBtn.addEventListener('click', () => selectMode('add-games'));
     steamStoreModeBtn.addEventListener('click', () => selectMode('https://store.steampowered.com'));
+    window.addEventListener('merlin-view-changed', updateVisibleView);
     window.addEventListener('merlin-language-changed', () => {
         renderQueue(queueState);
         renderSuggestions(suggestionItems);

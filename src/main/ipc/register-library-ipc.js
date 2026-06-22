@@ -30,6 +30,8 @@ function registerLibraryIpc({ ipcMain, libraryService }) {
     });
 
     ipcMain.handle('library:restart-steam', async () => libraryService.restartSteam());
+    ipcMain.handle('library:open-game-folder', async (_event, appId) =>
+        libraryService.openGameFolder(appId));
 }
 
 module.exports = { registerLibraryIpc };

@@ -8,6 +8,9 @@ const axios = require('axios');
 const AdmZip = require('adm-zip');
 
 const { createConfigStore } = require('./src/main/config/config-store');
+const { createCorrectionsCatalogClient } = require('./src/main/corrections/corrections-catalog-client');
+const { createCorrectionsCatalogStore } = require('./src/main/corrections/corrections-catalog-store');
+const { createCorrectionsService } = require('./src/main/corrections/corrections-service');
 const { createAuthSession } = require('./src/main/auth/auth-session');
 const { installLuaFile } = require('./src/main/files/lua-transformer');
 const { createAddGamesService } = require('./src/main/games/add-games-service');
@@ -15,6 +18,7 @@ const { createGameNameResolver } = require('./src/main/games/game-name-resolver'
 const { createGameQueue } = require('./src/main/games/game-queue');
 const { createGameInstaller } = require('./src/main/games/game-installer');
 const { parseSteamGameLink } = require('./src/main/games/steam-link-parser');
+const { registerCorrectionsIpc } = require('./src/main/ipc/register-corrections-ipc');
 const { registerExistingIpc } = require('./src/main/ipc/register-existing-ipc');
 const { registerAuthIpc } = require('./src/main/ipc/register-auth-ipc');
 const { registerGamesIpc } = require('./src/main/ipc/register-games-ipc');
@@ -27,6 +31,7 @@ const { createLibraryService } = require('./src/main/library/library-service');
 const { createDllInstaller } = require('./src/main/lumacore/dll-installer');
 const { createArchiveClient } = require('./src/main/network/archive-client');
 const { createApiAgent } = require('./src/main/network/api-agent');
+const { createDownloadManager } = require('./src/main/network/download-manager');
 const { createMachineIdentity } = require('./src/main/security/machine-identity');
 const { REQUIRED_DLLS, createSteamService } = require('./src/main/steam/steam-service');
 const { createUpdateService } = require('./src/main/updates/update-service');
@@ -118,6 +123,10 @@ function getLibraryCatalogFilePath() {
     return path.join(app.getPath('userData'), 'games-catalog.json');
 }
 
+function getCorrectionsCatalogFilePath() {
+    return path.join(app.getPath('userData'), 'corrections-catalog.json');
+}
+
 function getBundledDllPath(dll) {
     const dllDirectory = app.isPackaged
         ? path.join(process.resourcesPath, 'dlls')
@@ -144,6 +153,7 @@ const apiBaseUrl = process.env.MERLIN_API_BASE_URL
     || 'https://merlin-api.azteka-merlin.workers.dev/api';
 const manifestApiUrl = process.env.MERLIN_API_URL || `${apiBaseUrl}/manifests`;
 const apiAgent = createApiAgent();
+const downloadManager = createDownloadManager({ fs, path, axios, httpsAgent: apiAgent });
 const machineIdentity = createMachineIdentity({ crypto, execFile, os });
 const authSession = createAuthSession({
     app,
@@ -180,7 +190,27 @@ const libraryService = createLibraryService({
     }),
     catalogStore: libraryCatalogStore,
     catalogService: libraryCatalogService,
-    steamService
+    steamService,
+    shell
+});
+const correctionsCatalogStore = createCorrectionsCatalogStore({
+    fs,
+    path,
+    getFilePath: getCorrectionsCatalogFilePath
+});
+const correctionsService = createCorrectionsService({
+    app,
+    fs,
+    path,
+    AdmZip,
+    dialog,
+    shell,
+    configStore,
+    steamService,
+    catalogStore: correctionsCatalogStore,
+    catalogClient: createCorrectionsCatalogClient({ axios }),
+    libraryCatalogService,
+    downloadManager
 });
 
 const gameInstaller = createGameInstaller({
@@ -251,6 +281,7 @@ registerExistingIpc({
 
 registerGamesIpc({ ipcMain, addGamesService });
 registerLibraryIpc({ ipcMain, libraryService });
+registerCorrectionsIpc({ ipcMain, correctionsService });
 registerAuthIpc({ ipcMain, authSession });
 ipcMain.handle('app:set-menu-language', (_event, language) => {
     setApplicationMenu(language);

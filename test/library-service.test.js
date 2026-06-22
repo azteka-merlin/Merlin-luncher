@@ -56,7 +56,7 @@ function createFixture() {
     return { root, luaDirectory, manifestDirectory, cache, cacheStore, catalog, catalogStore };
 }
 
-function serviceFor(fixture, download) {
+function serviceFor(fixture, download, overrides = {}) {
     return createLibraryService({
         fs,
         path,
@@ -70,7 +70,8 @@ function serviceFor(fixture, download) {
                 return downloaded.games;
             }
         },
-        steamService: { isRunning: async () => true }
+        steamService: overrides.steamService || { isRunning: async () => true },
+        shell: overrides.shell || { openPath: async () => '' }
     });
 }
 
@@ -254,4 +255,33 @@ test('removes the Lua and exclusive manifests but preserves shared manifests', a
     assert.equal(fs.existsSync(sharedManifest), true);
     assert.equal(fs.existsSync(otherLua), true);
     assert.equal(fixture.cache['10'].name, 'Remembered Game');
+});
+
+test('opens the installed game root resolved from the Steam libraries', async t => {
+    const fixture = createFixture();
+    t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
+    const gamePath = path.join(fixture.root, 'steamapps', 'common', 'Example Game');
+    fs.mkdirSync(gamePath, { recursive: true });
+    let openedPath = null;
+    const service = serviceFor(
+        fixture,
+        async () => ({ games: {}, syncedAt: '2026-06-21T00:00:00Z' }),
+        {
+            steamService: {
+                findInstalledGame: appId => ({ installed: appId === '42', gamePath })
+            },
+            shell: {
+                openPath: async targetPath => {
+                    openedPath = targetPath;
+                    return '';
+                }
+            }
+        }
+    );
+
+    const result = await service.openGameFolder('42');
+
+    assert.equal(result.success, true);
+    assert.equal(result.gamePath, gamePath);
+    assert.equal(openedPath, gamePath);
 });

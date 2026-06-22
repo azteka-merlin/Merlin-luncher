@@ -1,6 +1,84 @@
 const REQUIRED_DLLS = ['LumaCore.dll', 'dwmapi.dll'];
 
 function createSteamService({ fs, path, exec, platform, userProfile }) {
+    function parseQuotedVdf(raw) {
+        const source = String(raw || '');
+        const tokens = [];
+        const matcher = /"((?:\\.|[^"])*)"|([{}])/g;
+        let match;
+
+        while ((match = matcher.exec(source)) !== null) {
+            if (match[2]) {
+                tokens.push({ type: match[2] });
+            } else {
+                tokens.push({
+                    type: 'string',
+                    value: match[1]
+                        .replace(/\\"/g, '"')
+                        .replace(/\\\\/g, '\\')
+                });
+            }
+        }
+
+        let index = 0;
+
+        function parseObject() {
+            const result = {};
+
+            while (index < tokens.length) {
+                const token = tokens[index];
+                if (token.type === '}') {
+                    index += 1;
+                    break;
+                }
+                if (token.type !== 'string') {
+                    index += 1;
+                    continue;
+                }
+
+                const key = token.value;
+                index += 1;
+                const valueToken = tokens[index];
+
+                if (!valueToken) {
+                    result[key] = '';
+                    break;
+                }
+
+                if (valueToken.type === '{') {
+                    index += 1;
+                    result[key] = parseObject();
+                    continue;
+                }
+
+                if (valueToken.type === 'string') {
+                    result[key] = valueToken.value;
+                    index += 1;
+                    continue;
+                }
+
+                if (valueToken.type === '}') {
+                    result[key] = '';
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        return parseObject();
+    }
+
+    function safeReadVdf(filePath) {
+        try {
+            if (!fs.existsSync(filePath)) return null;
+            return parseQuotedVdf(fs.readFileSync(filePath, 'utf8'));
+        } catch (error) {
+            console.warn(`Unable to parse Steam VDF ${filePath}:`, error.message);
+            return null;
+        }
+    }
+
     function getActivationReadiness(steamPath) {
         if (!steamPath || typeof steamPath !== 'string') {
             return { ok: false, reason: 'steam_path_missing', missing: [] };
@@ -84,9 +162,76 @@ function createSteamService({ fs, path, exec, platform, userProfile }) {
         return { ok: missing.length === 0 };
     }
 
+    function getLibraryFolders(steamPath) {
+        if (!steamPath || typeof steamPath !== 'string') return [];
+        const resolvedSteamPath = path.resolve(steamPath);
+        const folders = new Set([resolvedSteamPath]);
+        const libraryFoldersPath = path.join(resolvedSteamPath, 'steamapps', 'libraryfolders.vdf');
+        const parsed = safeReadVdf(libraryFoldersPath);
+        const libraries = parsed?.libraryfolders;
+
+        if (libraries && typeof libraries === 'object') {
+            for (const [key, value] of Object.entries(libraries)) {
+                if (!/^\d+$/.test(key) || !value || typeof value !== 'object') continue;
+                const libraryPath = typeof value.path === 'string'
+                    ? path.resolve(value.path)
+                    : '';
+                if (libraryPath) folders.add(libraryPath);
+            }
+        }
+
+        return [...folders];
+    }
+
+    function findInstalledGame(appId, steamPath) {
+        appId = String(appId || '').trim();
+        if (!/^\d+$/.test(appId)) {
+            return { installed: false, code: 'invalid_app_id' };
+        }
+
+        const readiness = getActivationReadiness(steamPath);
+        if (readiness.reason === 'steam_path_missing' || readiness.reason === 'steam_path_invalid') {
+            return { installed: false, code: readiness.reason };
+        }
+
+        for (const libraryPath of getLibraryFolders(steamPath)) {
+            const manifestPath = path.join(libraryPath, 'steamapps', `appmanifest_${appId}.acf`);
+            if (!fs.existsSync(manifestPath)) continue;
+
+            const parsed = safeReadVdf(manifestPath);
+            const appState = parsed?.AppState;
+            const manifestAppId = String(appState?.appid || '').trim();
+            const installDir = String(appState?.installdir || '').trim();
+
+            if (manifestAppId !== appId || !installDir) continue;
+
+            const gamePath = path.join(libraryPath, 'steamapps', 'common', installDir);
+            if (!fs.existsSync(gamePath)) continue;
+
+            try {
+                if (!fs.statSync(gamePath).isDirectory()) continue;
+            } catch {
+                continue;
+            }
+
+            return {
+                installed: true,
+                appId,
+                libraryPath,
+                manifestPath,
+                installDir,
+                gamePath
+            };
+        }
+
+        return { installed: false, code: 'not_installed' };
+    }
+
     return {
         close,
+        findInstalledGame,
         findDefaultPath,
+        getLibraryFolders,
         getActivationReadiness,
         getFilesStatus,
         isRunning,

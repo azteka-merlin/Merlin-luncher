@@ -11,7 +11,8 @@ function createLibraryService({
     cacheStore,
     catalogStore,
     catalogService,
-    steamService
+    steamService,
+    shell
 }) {
     let cachedItems = null;
 
@@ -238,7 +239,33 @@ function createLibraryService({
         return { success, code: success ? null : 'restart_failed' };
     }
 
-    return { invalidate, list, recordName, remove, restartSteam };
+    async function openGameFolder(appId) {
+        appId = String(appId || '').trim();
+        if (!/^\d+$/.test(appId)) return { success: false, code: 'invalid_app_id' };
+
+        try {
+            const paths = steamPaths();
+            if (!paths.success) return paths;
+            const installation = steamService.findInstalledGame(appId, paths.steamPath);
+            if (!installation.installed) {
+                return {
+                    success: false,
+                    code: installation.code === 'not_installed'
+                        ? 'game_not_installed'
+                        : installation.code
+                };
+            }
+
+            const error = await shell.openPath(installation.gamePath);
+            if (error) return { success: false, code: 'open_folder_failed', message: error };
+            return { success: true, gamePath: installation.gamePath };
+        } catch (error) {
+            console.error(`Unable to open game folder for ${appId}:`, error);
+            return { success: false, code: 'open_folder_failed' };
+        }
+    }
+
+    return { invalidate, list, openGameFolder, recordName, remove, restartSteam };
 }
 
 module.exports = { createLibraryService };

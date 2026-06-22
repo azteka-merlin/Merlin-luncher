@@ -34,6 +34,12 @@
                             </svg>
                             <span data-i18n="library_button">Library</span>
                         </button>
+                        <button id="correctionsBtn" class="header-nav-btn" type="button" aria-pressed="false">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 3v6M12 15v6M5.64 5.64l4.24 4.24M14.12 14.12l4.24 4.24M3 12h6M15 12h6M5.64 18.36l4.24-4.24M14.12 9.88l4.24-4.24"></path>
+                            </svg>
+                            <span data-i18n="corrections_button">Corrections</span>
+                        </button>
                     </nav>
                     <select id="languageSelect" class="language-selector">
                         <option value="en">English</option>
@@ -324,6 +330,64 @@
                             </footer>
                         </div>
                     </section>
+
+                    <section id="correctionsView" class="library-view corrections-view" aria-labelledby="correctionsTitle" hidden>
+                        <div class="library-card corrections-card">
+                            <header class="library-header">
+                                <h2 id="correctionsTitle" data-i18n="corrections_title">Corrections</h2>
+                                <p data-i18n="corrections_subtitle">Find available fixes for your games.</p>
+                            </header>
+
+                            <div class="library-notice">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 11v5M12 8h.01"></path>
+                                </svg>
+                                <p data-i18n="corrections_notice">Available catalog fixes will appear here.</p>
+                            </div>
+
+                            <div class="library-controls">
+                                <button id="correctionsRefreshBtn" class="library-refresh-btn" type="button">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"></path>
+                                    </svg>
+                                    <span data-i18n="corrections_refresh">Refresh list</span>
+                                </button>
+                                <div class="library-search-wrap">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <circle cx="11" cy="11" r="7"></circle>
+                                        <path d="m20 20-4-4"></path>
+                                    </svg>
+                                    <label class="sr-only" for="correctionsSearchInput" data-i18n="corrections_search_label">Search corrections</label>
+                                    <input id="correctionsSearchInput" type="search" data-i18n="corrections_search_placeholder" placeholder="Search by name or AppID..." autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div id="correctionsLoadingState" class="library-state">
+                                <span class="library-spinner" aria-hidden="true"></span>
+                                <p data-i18n="corrections_loading">Loading corrections...</p>
+                            </div>
+
+                            <div id="correctionsEmptyState" class="library-state" hidden>
+                                <strong data-i18n="corrections_empty_title">No corrections available right now.</strong>
+                                <p data-i18n="corrections_empty_description">New catalog fixes will appear here when available.</p>
+                            </div>
+
+                            <div id="correctionsNoResultsState" class="library-state" hidden>
+                                <strong data-i18n="corrections_no_results_title">No game found.</strong>
+                                <p data-i18n="corrections_no_results_description">Try another name or AppID.</p>
+                            </div>
+
+                            <div id="correctionsGridWrap" class="corrections-grid-wrap" hidden>
+                                <div id="correctionsGrid" class="corrections-grid"></div>
+                            </div>
+
+                            <footer id="correctionsFooter" class="library-footer" hidden>
+                                <p id="correctionsResultCount"></p>
+                                <nav id="correctionsPagination" class="library-pagination" aria-label=""></nav>
+                            </footer>
+                        </div>
+                    </section>
                 </div>
                 <div class="progress-container" id="progressContainer" style="display: none;">
                     <div class="progress-info">
@@ -398,6 +462,85 @@
         </div>
     </div>
 
+    <div id="correctionsConfirmModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="correctionsConfirmTitle" hidden>
+        <div class="library-modal-card">
+            <h2 id="correctionsConfirmTitle" data-i18n="corrections_confirm_title">Apply correction?</h2>
+            <p id="correctionsConfirmMessage" data-i18n="corrections_confirm_message">Files will be copied to the game folder.</p>
+            <div class="library-modal-actions">
+                <button id="correctionsConfirmCancelBtn" class="btn btn-secondary" type="button" data-i18n="corrections_confirm_cancel">Cancel</button>
+                <button id="correctionsConfirmActionBtn" class="btn btn-primary" type="button" data-i18n="corrections_confirm_action">Download and install</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="correctionAvailableModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="correctionAvailableTitle" hidden>
+        <div class="library-modal-card correction-offer-card">
+            <div class="corrections-progress-heading">
+                <span class="correction-offer-icon" aria-hidden="true"></span>
+                <div>
+                    <p class="corrections-progress-eyebrow" data-i18n="correction_offer_eyebrow">CORREÇÃO DISPONÍVEL</p>
+                    <h2 id="correctionAvailableTitle" data-i18n="correction_offer_title">Este jogo possui uma correção</h2>
+                </div>
+            </div>
+            <div class="correction-offer-game">
+                <img id="correctionAvailableCover" alt="" hidden>
+                <div>
+                    <strong id="correctionAvailableGame"></strong>
+                    <span id="correctionAvailableFile"></span>
+                </div>
+            </div>
+            <p class="correction-offer-description" data-i18n="correction_offer_description">Esta correção da comunidade pode ser necessária para abrir o jogo ou utilizar seus recursos online.</p>
+            <div class="correction-offer-notes">
+                <p data-i18n="correction_offer_install_note">Depois que o jogo estiver instalado pela Steam, extraia o ZIP na pasta raiz dele e substitua os arquivos quando solicitado. Para abrir essa pasta, use o ícone de pasta (Explorar arquivos) na Biblioteca.</p>
+                <p data-i18n="correction_offer_online_note">Em jogos online, todos os jogadores precisam instalar a mesma correção para jogarem juntos.</p>
+                <p data-i18n="correction_offer_community_note">As correções são criadas pela comunidade, não pelo Merlin, e podem deixar de funcionar no futuro.</p>
+                <p data-i18n="correction_offer_singleplayer_note">Em jogos single-player que dependem de correção, recomendamos adicioná-los com Atualizar automaticamente desativado.</p>
+            </div>
+            <p class="correction-offer-hint" data-i18n="correction_offer_hint">Você também poderá baixar e instalar esta correção depois na aba Correções.</p>
+            <div class="library-modal-actions correction-offer-actions">
+                <button id="correctionAvailableLaterBtn" class="btn btn-secondary" type="button" data-i18n="correction_offer_later">Fazer depois</button>
+                <button id="correctionAvailableDownloadBtn" class="btn btn-primary" type="button" data-i18n="corrections_download">Baixar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="correctionsProgressModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="correctionsProgressTitle" hidden>
+        <div id="correctionsProgressCard" class="library-modal-card corrections-progress-card" data-state="progress">
+            <div class="corrections-progress-heading">
+                <span id="correctionsProgressIcon" class="corrections-progress-icon" aria-hidden="true"></span>
+                <div>
+                    <p class="corrections-progress-eyebrow" data-i18n="corrections_progress_eyebrow">CORREÇÃO DO MERLIN</p>
+                    <h2 id="correctionsProgressTitle" data-i18n="corrections_progress_download_title">Baixando arquivos</h2>
+                </div>
+            </div>
+            <div class="corrections-progress-file-info">
+                <p id="correctionsProgressGame" class="corrections-progress-game"></p>
+                <p id="correctionsProgressFile" class="corrections-progress-file"></p>
+            </div>
+            <div class="corrections-progress-row">
+                <span id="correctionsProgressStage" data-i18n="corrections_stage_preparing">Preparing download...</span>
+                <span class="corrections-progress-percentage-wrap">
+                    <span class="corrections-progress-check" aria-hidden="true"></span>
+                    <span id="correctionsProgressPercent" class="progress-percent">0%</span>
+                </span>
+            </div>
+            <div class="progress-bar corrections-progress-bar">
+                <div id="correctionsProgressBar" class="progress-fill"></div>
+            </div>
+            <div class="corrections-progress-meta">
+                <p><span class="corrections-meta-icon corrections-meta-download" aria-hidden="true"></span><span data-i18n="corrections_progress_size">Tamanho</span><strong id="correctionsProgressTransferred">—</strong></p>
+                <p><span class="corrections-meta-icon corrections-meta-speed" aria-hidden="true"></span><span id="correctionsProgressSpeedLabel" data-i18n="corrections_progress_speed">Velocidade</span><strong id="correctionsProgressSpeed">—</strong></p>
+                <p><span class="corrections-meta-icon corrections-meta-time" aria-hidden="true"></span><span id="correctionsProgressRemainingLabel" data-i18n="corrections_progress_remaining">Tempo restante</span><strong id="correctionsProgressRemaining">—</strong></p>
+            </div>
+            <p id="correctionsProgressSuccessMessage" class="corrections-progress-success" hidden></p>
+            <div class="library-modal-actions">
+                <button id="correctionsProgressCancelBtn" class="btn btn-secondary" type="button" data-i18n="corrections_progress_cancel">Cancel</button>
+                <button id="correctionsProgressOpenFolderBtn" class="btn btn-secondary corrections-folder-button" type="button" hidden><span class="corrections-button-folder" aria-hidden="true"></span><span data-i18n="corrections_progress_open_folder">Open folder</span></button>
+                <button id="correctionsProgressCloseBtn" class="btn btn-primary" type="button" data-i18n="corrections_progress_done" hidden>Done</button>
+            </div>
+        </div>
+    </div>
+
     <div id="steamRestartModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="steamRestartModalTitle" hidden>
         <div class="library-modal-card">
             <h2 id="steamRestartModalTitle" data-i18n="restart_prompt_title">Restart Steam?</h2>
@@ -466,6 +609,7 @@
     <script src="src/renderer/add-games/add-games.js"></script>
     <script src="src/renderer/library/library-model.js"></script>
     <script src="src/renderer/library/library.js"></script>
+    <script src="src/renderer/corrections/corrections.js"></script>
     <script src="gamepad.js"></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ test('registers isolated Library IPC channels', () => {
         'library:list',
         'library:refresh',
         'library:remove',
-        'library:restart-steam'
+        'library:restart-steam',
+        'library:open-game-folder'
     ]);
 });

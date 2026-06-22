@@ -14,6 +14,9 @@ window.merlinI18n.register({
         library_remove_warning: 'Isso não desinstalará o jogo da Steam nem removerá seus arquivos.',
         library_cancel: 'Cancelar', library_confirm_remove: 'Remover do Merlin', library_removing: 'Removendo...',
         library_remove_success: 'Jogo removido do Merlin com sucesso.', library_remove_error: 'Não foi possível remover o jogo do Merlin.',
+        library_explore_files: 'Explorar arquivos', library_explore_tooltip: 'Abrir a pasta do jogo',
+        library_error_game_not_installed: 'O jogo precisa estar instalado pela Steam para abrir seus arquivos.',
+        library_error_open_folder_failed: 'Não foi possível abrir a pasta do jogo.',
         library_restart_prompt: 'A Steam está aberta. Deseja reiniciá-la para aplicar a remoção agora?',
         library_restart_success: 'Steam reiniciada.', library_restart_error: 'Não foi possível reiniciar a Steam.',
         library_error_steam_path_missing: 'Configure o caminho da Steam para carregar a biblioteca.',
@@ -34,6 +37,9 @@ window.merlinI18n.register({
         library_remove_warning: 'This will not uninstall the game from Steam or remove its game files.',
         library_cancel: 'Cancel', library_confirm_remove: 'Remove from Merlin', library_removing: 'Removing...',
         library_remove_success: 'Game removed from Merlin successfully.', library_remove_error: 'The game could not be removed from Merlin.',
+        library_explore_files: 'Browse files', library_explore_tooltip: 'Open the game folder',
+        library_error_game_not_installed: 'The game must be installed through Steam before its files can be opened.',
+        library_error_open_folder_failed: 'Could not open the game folder.',
         library_restart_prompt: 'Steam is running. Restart it now to apply the removal?',
         library_restart_success: 'Steam restarted.', library_restart_error: 'Steam could not be restarted.',
         library_error_steam_path_missing: 'Configure the Steam path to load the library.',
@@ -54,6 +60,9 @@ window.merlinI18n.register({
         library_remove_warning: 'Esto no desinstalará el juego de Steam ni eliminará sus archivos.',
         library_cancel: 'Cancelar', library_confirm_remove: 'Eliminar de Merlin', library_removing: 'Eliminando...',
         library_remove_success: 'Juego eliminado de Merlin correctamente.', library_remove_error: 'No se pudo eliminar el juego de Merlin.',
+        library_explore_files: 'Explorar archivos', library_explore_tooltip: 'Abrir la carpeta del juego',
+        library_error_game_not_installed: 'El juego debe estar instalado mediante Steam para abrir sus archivos.',
+        library_error_open_folder_failed: 'No se pudo abrir la carpeta del juego.',
         library_restart_prompt: 'Steam está abierto. ¿Reiniciarlo ahora para aplicar la eliminación?',
         library_restart_success: 'Steam se reinició.', library_restart_error: 'No se pudo reiniciar Steam.',
         library_error_steam_path_missing: 'Configure la ruta de Steam para cargar la biblioteca.',
@@ -74,6 +83,9 @@ window.merlinI18n.register({
         library_remove_warning: 'Cela ne désinstallera pas le jeu de Steam et ne supprimera pas ses fichiers.',
         library_cancel: 'Annuler', library_confirm_remove: 'Retirer de Merlin', library_removing: 'Suppression...',
         library_remove_success: 'Jeu retiré de Merlin.', library_remove_error: 'Impossible de retirer le jeu de Merlin.',
+        library_explore_files: 'Parcourir les fichiers', library_explore_tooltip: 'Ouvrir le dossier du jeu',
+        library_error_game_not_installed: 'Le jeu doit être installé via Steam pour pouvoir ouvrir ses fichiers.',
+        library_error_open_folder_failed: 'Impossible d’ouvrir le dossier du jeu.',
         library_restart_prompt: 'Steam est ouvert. Le redémarrer maintenant pour appliquer la suppression ?',
         library_restart_success: 'Steam a redémarré.', library_restart_error: 'Impossible de redémarrer Steam.',
         library_error_steam_path_missing: 'Configurez le chemin Steam pour charger la bibliothèque.',
@@ -94,6 +106,9 @@ window.merlinI18n.register({
         library_remove_warning: 'Das Spiel wird dadurch nicht aus Steam deinstalliert und seine Dateien werden nicht gelöscht.',
         library_cancel: 'Abbrechen', library_confirm_remove: 'Aus Merlin entfernen', library_removing: 'Entfernen...',
         library_remove_success: 'Spiel erfolgreich aus Merlin entfernt.', library_remove_error: 'Das Spiel konnte nicht aus Merlin entfernt werden.',
+        library_explore_files: 'Dateien durchsuchen', library_explore_tooltip: 'Spielordner öffnen',
+        library_error_game_not_installed: 'Das Spiel muss über Steam installiert sein, bevor seine Dateien geöffnet werden können.',
+        library_error_open_folder_failed: 'Der Spielordner konnte nicht geöffnet werden.',
         library_restart_prompt: 'Steam läuft. Jetzt neu starten, um die Entfernung anzuwenden?',
         library_restart_success: 'Steam wurde neu gestartet.', library_restart_error: 'Steam konnte nicht neu gestartet werden.',
         library_error_steam_path_missing: 'Konfigurieren Sie den Steam-Pfad, um die Bibliothek zu laden.',
@@ -106,13 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageSize = 10;
     const elements = {
         button: document.getElementById('libraryBtn'),
-        addGamesButton: document.getElementById('addGamesNavBtn'),
-        toolbar: document.querySelector('.browser-toolbar'),
-        steamActions: document.getElementById('steamActionsCard'),
         view: document.getElementById('libraryView'),
-        addGamesView: document.getElementById('addGamesView'),
-        webview: document.getElementById('webview'),
-        siteSelector: document.getElementById('siteSelector'),
         refresh: document.getElementById('libraryRefreshBtn'),
         refreshLabel: document.querySelector('#libraryRefreshBtn span'),
         search: document.getElementById('librarySearchInput'),
@@ -232,6 +241,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
     }
 
+    async function exploreGameFiles(item, button) {
+        button.disabled = true;
+        try {
+            const result = await api.openGameFolder(item.appId);
+            if (result.success) return;
+            const key = `library_error_${result.code || 'open_folder_failed'}`;
+            const translated = tr(key);
+            notify(translated === key ? tr('library_error_open_folder_failed') : translated, 'error');
+        } catch (_) {
+            notify(tr('library_error_open_folder_failed'), 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
     function render() {
         const filtered = filteredItems();
         const page = window.libraryModel.paginate(filtered, currentPage, pageSize);
@@ -254,6 +278,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const appIdCell = document.createElement('td');
             appIdCell.textContent = item.appId;
             const actionCell = document.createElement('td');
+            const actions = document.createElement('div');
+            actions.className = 'library-row-actions';
+
+            const exploreButton = document.createElement('button');
+            exploreButton.type = 'button';
+            exploreButton.className = 'library-explore-btn';
+            exploreButton.title = tr('library_explore_tooltip');
+            exploreButton.setAttribute('aria-label', `${tr('library_explore_tooltip')}: ${gameName}`);
+            exploreButton.innerHTML = `
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3.5 6.8A2.3 2.3 0 0 1 5.8 4.5h4l1.6 1.8h6.8a2.3 2.3 0 0 1 2.3 2.3v8.6a2.3 2.3 0 0 1-2.3 2.3H5.8a2.3 2.3 0 0 1-2.3-2.3V6.8Z"></path>
+                </svg>`;
+            exploreButton.addEventListener('click', () => exploreGameFiles(item, exploreButton));
+
             const removeButton = document.createElement('button');
             removeButton.type = 'button';
             removeButton.className = 'library-remove-btn';
@@ -261,7 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
             removeButton.setAttribute('aria-label', `${tr('library_remove_tooltip')}: ${gameName}`);
             removeButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 10v6m4-6v6"></path></svg>';
             removeButton.addEventListener('click', () => openRemoveModal(item));
-            actionCell.append(removeButton);
+            actions.append(exploreButton, removeButton);
+            actionCell.append(actions);
             row.append(gameCell, appIdCell, actionCell);
             elements.tableBody.append(row);
         }
@@ -321,32 +360,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showLibrary() {
-        elements.view.hidden = false;
-        elements.addGamesView.hidden = true;
-        elements.webview.hidden = true;
-        elements.webview.blur();
-        elements.toolbar.hidden = true;
-        elements.steamActions.hidden = true;
-        elements.button.classList.add('active');
-        elements.button.setAttribute('aria-pressed', 'true');
-        elements.addGamesButton.classList.remove('active');
-        elements.addGamesButton.setAttribute('aria-pressed', 'false');
+    function syncVisibility() {
+        const isActive = (window.merlinView?.get?.() || '') === 'library';
+        elements.view.hidden = !isActive;
+        elements.button.classList.toggle('active', isActive);
+        elements.button.setAttribute('aria-pressed', String(isActive));
+        if (!isActive) return;
         if (!loaded) loadLibrary();
-    }
-
-    function hideLibrary() {
-        elements.view.hidden = true;
-        elements.toolbar.hidden = false;
-        elements.toolbar.classList.toggle(
-            'native-content-active',
-            elements.siteSelector.value === 'add-games'
-        );
-        elements.steamActions.hidden = elements.siteSelector.value === 'add-games';
-        elements.button.classList.remove('active');
-        elements.button.setAttribute('aria-pressed', 'false');
-        elements.addGamesButton.classList.add('active');
-        elements.addGamesButton.setAttribute('aria-pressed', 'true');
     }
 
     function openRemoveModal(item) {
@@ -400,8 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    elements.button.addEventListener('click', showLibrary);
-    elements.siteSelector.addEventListener('change', hideLibrary);
+    elements.button.addEventListener('click', () => window.merlinView?.set?.('library'));
     elements.refresh.addEventListener('click', () => loadLibrary(true));
     elements.retry.addEventListener('click', () => loadLibrary(true));
     elements.search.addEventListener('input', () => {
@@ -416,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('keydown', event => {
         if (event.key === 'Escape' && !elements.modal.hidden) closeRemoveModal();
     });
+    window.addEventListener('merlin-view-changed', syncVisibility);
     window.addEventListener('merlin-language-changed', () => {
         if (pendingRemoval) {
             elements.modalMessage.textContent = tr('library_remove_message', {
@@ -429,4 +449,5 @@ document.addEventListener('DOMContentLoaded', () => {
         loaded = true;
         render();
     });
+    syncVisibility();
 });
