@@ -9,6 +9,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getVersion: () => ipcRenderer.invoke('app:get-version'),
     checkForUpdates: () => ipcRenderer.invoke('app:check-for-updates'),
     openUpdateDownload: (downloadUrl) => ipcRenderer.invoke('app:open-update-download', downloadUrl),
+    downloadUpdate: (payload) => ipcRenderer.invoke('app:download-update', payload),
+    cancelUpdateDownload: (operationId) => ipcRenderer.invoke('app:cancel-update-download', operationId),
+    openDownloadedUpdate: (filePath) => ipcRenderer.invoke('app:open-downloaded-update', filePath),
+    openDownloadedUpdateFolder: (folderPath) => ipcRenderer.invoke('app:open-downloaded-update-folder', folderPath),
+    onUpdateDownloadProgress: (callback) => {
+        ipcRenderer.on('app:update-download-progress', (_event, progress) => callback(progress));
+    },
+    removeUpdateDownloadListeners: () => {
+        ipcRenderer.removeAllListeners('app:update-download-progress');
+    },
     onOpenTutorial: (callback) => ipcRenderer.on('tutorial:open', callback),
 
     // Authentication

@@ -227,17 +227,61 @@ function createCorrectionsService({
         return destinationPath;
     }
 
-    function extractZipToDirectory(zipFilePath, destinationRoot, operation) {
-        try {
-            const zip = new AdmZip(zipFilePath);
-            const entries = validateZipEntries(zip);
+    function extractZipEntries(zip, destinationRoot, operation) {
+        const entries = validateZipEntries(zip);
+
+        for (const entry of entries) {
+            throwIfCancelled(operation);
+            const destinationPath = safeExtractEntry(path, destinationRoot, entry.entryName);
+            fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+            fs.writeFileSync(destinationPath, entry.getData());
+        }
+    }
+
+    function extractNestedZipFiles(rootPath, operation) {
+        const pending = [rootPath];
+        let extractedNestedCount = 0;
+        const maxNestedArchives = 100;
+
+        while (pending.length > 0) {
+            throwIfCancelled(operation);
+            const current = pending.pop();
+            const entries = fs.readdirSync(current, { withFileTypes: true });
 
             for (const entry of entries) {
                 throwIfCancelled(operation);
-                const destinationPath = safeExtractEntry(path, destinationRoot, entry.entryName);
-                fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
-                fs.writeFileSync(destinationPath, entry.getData());
+                const entryPath = path.join(current, entry.name);
+
+                if (entry.isDirectory()) {
+                    pending.push(entryPath);
+                    continue;
+                }
+
+                if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== '.zip') {
+                    continue;
+                }
+
+                extractedNestedCount += 1;
+                if (extractedNestedCount > maxNestedArchives) {
+                    const error = new Error('Too many nested ZIP archives');
+                    error.code = 'invalid_zip';
+                    throw error;
+                }
+
+                const targetDirectory = path.dirname(entryPath);
+                const nestedZip = new AdmZip(entryPath);
+                extractZipEntries(nestedZip, targetDirectory, operation);
+                fs.unlinkSync(entryPath);
+                pending.push(targetDirectory);
             }
+        }
+    }
+
+    function extractZipToDirectory(zipFilePath, destinationRoot, operation) {
+        try {
+            const zip = new AdmZip(zipFilePath);
+            extractZipEntries(zip, destinationRoot, operation);
+            extractNestedZipFiles(destinationRoot, operation);
         } catch (error) {
             if (error.code === 'cancelled' || error.code === 'invalid_zip') throw error;
             const wrapped = new Error(error.message || 'Extraction failed');

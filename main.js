@@ -138,7 +138,7 @@ const configStore = createConfigStore({
     fs,
     path,
     getFilePath: getConfigFilePath,
-    defaults: { steamPath: '', language: 'ptbr', tutorialPromptSeen: true }
+    defaults: { steamPath: '', language: 'ptbr', tutorialPromptSeen: true, correctionsDisclaimerSeen: false }
 });
 
 const steamService = createSteamService({
@@ -167,7 +167,7 @@ const authSession = createAuthSession({
     onAuthRequired: code => mainWindow?.webContents.send('auth:required', { code })
 });
 const archiveClient = createArchiveClient({ axios, httpsAgent: apiAgent });
-const updateService = createUpdateService({ app, axios, shell });
+const updateService = createUpdateService({ app, axios, shell, path, downloadManager });
 const libraryCatalogStore = createLibraryCatalogStore({
     fs,
     path,
@@ -290,6 +290,17 @@ ipcMain.handle('app:set-menu-language', (_event, language) => {
 ipcMain.handle('app:get-version', () => app.getVersion());
 ipcMain.handle('app:check-for-updates', () => updateService.check());
 ipcMain.handle('app:open-update-download', (_event, downloadUrl) => updateService.openDownload(downloadUrl));
+ipcMain.handle('app:download-update', (event, payload) => updateService.downloadUpdate({
+    ...payload,
+    onProgress: progress => {
+        if (!event.sender.isDestroyed()) {
+            event.sender.send('app:update-download-progress', progress);
+        }
+    }
+}));
+ipcMain.handle('app:cancel-update-download', (_event, operationId) => updateService.cancelDownload(operationId));
+ipcMain.handle('app:open-downloaded-update', (_event, filePath) => updateService.openDownloadedFile(filePath));
+ipcMain.handle('app:open-downloaded-update-folder', (_event, folderPath) => updateService.openDownloadedFolder(folderPath));
 
 app.on('web-contents-created', (_event, contents) => {
     contents.setWindowOpenHandler(({ url }) => {

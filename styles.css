@@ -60,8 +60,11 @@ body {
 .logo-icon {
     width: 32px;
     height: 32px;
-    background: linear-gradient(135deg, var(--accent), #8b5cf6);
     border-radius: 6px;
+    object-fit: cover;
+    display: block;
+    border: 1px solid rgba(139, 92, 246, 0.28);
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.25);
 }
 
 .title {
@@ -2128,6 +2131,15 @@ webview {
     text-align: center;
 }
 
+.corrections-disclaimer-card {
+    max-width: 540px;
+    text-align: center;
+}
+
+.corrections-disclaimer-icon {
+    margin-inline: auto;
+}
+
 .tutorial-icon {
     display: grid;
     width: 3rem;
@@ -2147,12 +2159,33 @@ webview {
     font-size: 0.8rem !important;
 }
 
+.corrections-disclaimer-hint {
+    max-width: 420px;
+    margin-inline: auto;
+}
+
 .tutorial-prompt-card .library-modal-actions {
     justify-content: center;
 }
 
+.corrections-disclaimer-card .library-modal-actions {
+    justify-content: center;
+}
+
 .update-modal-card {
+    position: relative;
     text-align: center;
+}
+
+.update-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.update-close-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .update-icon {
@@ -2171,6 +2204,47 @@ webview {
 
 .update-modal-card .library-modal-actions {
     justify-content: center;
+}
+
+.update-download-progress {
+    margin: 1.25rem 0 0;
+    padding: 1rem;
+    border: 1px solid rgba(139, 92, 246, 0.28);
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.45);
+    text-align: left;
+}
+
+.update-download-row,
+.update-download-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.update-download-row strong {
+    color: #c4b5fd;
+}
+
+.update-download-track {
+    height: 0.55rem;
+    margin: 0.8rem 0;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.15);
+}
+
+.update-download-track span {
+    display: block;
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #7c3aed, #a855f7, #c084fc);
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+    transition: width 0.18s ease;
 }
 
 .tutorial-video-card {

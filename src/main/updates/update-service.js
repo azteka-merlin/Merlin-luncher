@@ -27,9 +27,34 @@ function isOfficialDownloadUrl(value) {
     }
 }
 
-function createUpdateService({ app, axios, shell }) {
+function getDownloadFileName(downloadUrl, fallbackVersion) {
+    try {
+        const url = new URL(downloadUrl);
+        const name = decodeURIComponent(url.pathname.split('/').pop() || '');
+        if (/\.exe$/i.test(name)) return name;
+    } catch {}
+    return `Merlin-Setup-${normalizeVersion(fallbackVersion) || 'latest'}.exe`;
+}
+
+function createUpdateService({ app, axios, shell, path, downloadManager }) {
     async function check() {
         const currentVersion = app.getVersion();
+        if (!app.isPackaged && process.env.MERLIN_SIMULATE_UPDATE === '1') {
+            const downloadUrl = process.env.MERLIN_SIMULATE_UPDATE_URL || '';
+            if (!isOfficialDownloadUrl(downloadUrl)) {
+                console.warn('[updates] MERLIN_SIMULATE_UPDATE_URL must be an official Merlin release asset URL.');
+                return { success: false, currentVersion };
+            }
+
+            return {
+                success: true,
+                updateAvailable: true,
+                currentVersion,
+                latestVersion: normalizeVersion(process.env.MERLIN_SIMULATE_UPDATE_VERSION || '99.0.0'),
+                downloadUrl
+            };
+        }
+
         try {
             const response = await axios.get(RELEASE_API_URL, {
                 timeout: 10000,
@@ -70,7 +95,51 @@ function createUpdateService({ app, axios, shell }) {
         return { success: true };
     }
 
-    return { check, openDownload };
+    async function downloadUpdate({ operationId, downloadUrl, latestVersion, onProgress = () => {} }) {
+        if (!isOfficialDownloadUrl(downloadUrl)) {
+            return { success: false, code: 'invalid_download_url' };
+        }
+
+        const fileName = getDownloadFileName(downloadUrl, latestVersion);
+        const destinationPath = path.join(app.getPath('downloads'), fileName);
+        const result = await downloadManager.download({
+            operationId,
+            url: downloadUrl,
+            destinationPath,
+            headers: {
+                Accept: 'application/octet-stream',
+                'User-Agent': `Merlin/${app.getVersion()}`
+            },
+            onProgress
+        });
+
+        if (!result.success) return result;
+        return {
+            ...result,
+            fileName,
+            folderPath: path.dirname(result.filePath)
+        };
+    }
+
+    function cancelDownload(operationId) {
+        return downloadManager.cancel(operationId);
+    }
+
+    async function openDownloadedFile(filePath) {
+        if (!filePath || !/\.exe$/i.test(filePath)) {
+            return { success: false, code: 'invalid_file' };
+        }
+        const error = await shell.openPath(filePath);
+        return error ? { success: false, code: 'open_failed', message: error } : { success: true };
+    }
+
+    async function openDownloadedFolder(folderPath) {
+        if (!folderPath) return { success: false, code: 'invalid_folder' };
+        const error = await shell.openPath(folderPath);
+        return error ? { success: false, code: 'open_failed', message: error } : { success: true };
+    }
+
+    return { cancelDownload, check, downloadUpdate, openDownload, openDownloadedFile, openDownloadedFolder };
 }
 
 module.exports = { createUpdateService, compareVersions, normalizeVersion };

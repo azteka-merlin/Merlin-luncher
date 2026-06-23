@@ -30,6 +30,11 @@ window.merlinI18n.register({
         correction_offer_hint: 'Você também poderá baixar e instalar esta correção depois na aba Correções.',
         correction_offer_later: 'Fazer depois',
         correction_offer_later_notice: 'Tudo bem. Esta correção continuará disponível na aba Correções.',
+        corrections_disclaimer_eyebrow: 'AVISO IMPORTANTE',
+        corrections_disclaimer_title: 'Sobre as correções',
+        corrections_disclaimer_message: 'As correções disponíveis nesta aba são feitas pela comunidade e não fazem parte do Merlin.',
+        corrections_disclaimer_hint: 'Elas podem ser necessárias para alguns jogos, mas não podemos garantir que todas continuarão funcionando.',
+        corrections_disclaimer_continue: 'Entendi',
         corrections_refresh_stale: 'Não foi possível atualizar agora. Exibindo a última lista salva.',
         corrections_error_load: 'Não foi possível carregar a lista de correções.',
         corrections_error_refresh_failed: 'Não foi possível atualizar a lista de correções.',
@@ -103,6 +108,11 @@ window.merlinI18n.register({
         correction_offer_hint: 'You can also download and install this correction later from the Corrections tab.',
         correction_offer_later: 'Do it later',
         correction_offer_later_notice: 'No problem. This correction will remain available in the Corrections tab.',
+        corrections_disclaimer_eyebrow: 'IMPORTANT NOTICE',
+        corrections_disclaimer_title: 'About corrections',
+        corrections_disclaimer_message: 'The corrections available in this tab are made by the community and are not part of Merlin.',
+        corrections_disclaimer_hint: 'They may be required for some games, but we cannot guarantee that all of them will keep working.',
+        corrections_disclaimer_continue: 'Got it',
         corrections_refresh_stale: 'Could not refresh right now. Showing the last saved list.',
         corrections_error_load: 'Could not load the corrections list.',
         corrections_error_refresh_failed: 'Could not refresh the corrections list.',
@@ -176,6 +186,11 @@ window.merlinI18n.register({
         correction_offer_hint: 'También podrá descargar e instalar esta corrección más tarde desde la pestaña Correcciones.',
         correction_offer_later: 'Hacerlo después',
         correction_offer_later_notice: 'No hay problema. Esta corrección seguirá disponible en la pestaña Correcciones.',
+        corrections_disclaimer_eyebrow: 'AVISO IMPORTANTE',
+        corrections_disclaimer_title: 'Sobre las correcciones',
+        corrections_disclaimer_message: 'Las correcciones disponibles en esta pestaña están hechas por la comunidad y no forman parte de Merlin.',
+        corrections_disclaimer_hint: 'Pueden ser necesarias para algunos juegos, pero no podemos garantizar que todas sigan funcionando.',
+        corrections_disclaimer_continue: 'Entendido',
         corrections_refresh_stale: 'No se pudo actualizar ahora. Se muestra la última lista guardada.',
         corrections_error_load: 'No se pudo cargar la lista de correcciones.',
         corrections_error_refresh_failed: 'No se pudo actualizar la lista de correcciones.',
@@ -249,6 +264,11 @@ window.merlinI18n.register({
         correction_offer_hint: 'Vous pourrez également télécharger et installer ce correctif plus tard depuis l’onglet Correctifs.',
         correction_offer_later: 'Plus tard',
         correction_offer_later_notice: 'Pas de problème. Ce correctif restera disponible dans l’onglet Correctifs.',
+        corrections_disclaimer_eyebrow: 'AVIS IMPORTANT',
+        corrections_disclaimer_title: 'À propos des correctifs',
+        corrections_disclaimer_message: 'Les correctifs disponibles dans cet onglet sont créés par la communauté et ne font pas partie de Merlin.',
+        corrections_disclaimer_hint: 'Ils peuvent être nécessaires pour certains jeux, mais nous ne pouvons pas garantir qu’ils continueront tous à fonctionner.',
+        corrections_disclaimer_continue: 'Compris',
         corrections_refresh_stale: 'Impossible d’actualiser pour le moment. La dernière liste enregistrée est affichée.',
         corrections_error_load: 'Impossible de charger la liste des correctifs.',
         corrections_error_refresh_failed: 'Impossible d’actualiser la liste des correctifs.',
@@ -322,6 +342,11 @@ window.merlinI18n.register({
         correction_offer_hint: 'Sie können diese Korrektur später auch im Bereich Korrekturen herunterladen und installieren.',
         correction_offer_later: 'Später erledigen',
         correction_offer_later_notice: 'Kein Problem. Diese Korrektur bleibt im Bereich Korrekturen verfügbar.',
+        corrections_disclaimer_eyebrow: 'WICHTIGER HINWEIS',
+        corrections_disclaimer_title: 'Über Korrekturen',
+        corrections_disclaimer_message: 'Die in diesem Bereich verfügbaren Korrekturen werden von der Community erstellt und sind kein Teil von Merlin.',
+        corrections_disclaimer_hint: 'Sie können für manche Spiele nötig sein, aber wir können nicht garantieren, dass sie dauerhaft funktionieren.',
+        corrections_disclaimer_continue: 'Verstanden',
         corrections_refresh_stale: 'Aktualisierung derzeit nicht möglich. Die zuletzt gespeicherte Liste wird angezeigt.',
         corrections_error_load: 'Die Korrekturliste konnte nicht geladen werden.',
         corrections_error_refresh_failed: 'Die Korrekturliste konnte nicht aktualisiert werden.',
@@ -383,6 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
         footer: document.getElementById('correctionsFooter'),
         resultCount: document.getElementById('correctionsResultCount'),
         pagination: document.getElementById('correctionsPagination'),
+        disclaimerModal: document.getElementById('correctionsDisclaimerModal'),
+        disclaimerAcknowledge: document.getElementById('correctionsDisclaimerAcknowledgeBtn'),
         confirmModal: document.getElementById('correctionsConfirmModal'),
         confirmMessage: document.getElementById('correctionsConfirmMessage'),
         confirmCancel: document.getElementById('correctionsConfirmCancelBtn'),
@@ -421,6 +448,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeOperation = null;
     let progressCloseResolver = null;
     let offerCatalogRefreshed = false;
+    let correctionsDisclaimerSeen = null;
+    let correctionsDisclaimerLoading = null;
+    let correctionsDisclaimerOpened = false;
 
     function tr(key, values = {}) {
         const template = window.merlinI18n.t(key);
@@ -459,6 +489,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const key = `corrections_stage_${stage}`;
         const translated = tr(key);
         return translated === key ? stage : translated;
+    }
+
+    async function getCorrectionsDisclaimerSeen() {
+        if (typeof correctionsDisclaimerSeen === 'boolean') return correctionsDisclaimerSeen;
+        if (!correctionsDisclaimerLoading) {
+            correctionsDisclaimerLoading = window.electronAPI.getConfig()
+                .then(config => {
+                    correctionsDisclaimerSeen = Boolean(config?.correctionsDisclaimerSeen);
+                    return correctionsDisclaimerSeen;
+                })
+                .catch(() => {
+                    correctionsDisclaimerSeen = true;
+                    return true;
+                })
+                .finally(() => {
+                    correctionsDisclaimerLoading = null;
+                });
+        }
+
+        return correctionsDisclaimerLoading;
+    }
+
+    async function showCorrectionsDisclaimerIfNeeded() {
+        if (correctionsDisclaimerOpened || currentView() !== 'corrections') return;
+        const seen = await getCorrectionsDisclaimerSeen();
+        if (seen || correctionsDisclaimerOpened || currentView() !== 'corrections') return;
+        correctionsDisclaimerOpened = true;
+        elements.disclaimerModal.hidden = false;
+        elements.disclaimerAcknowledge.focus();
+    }
+
+    async function acknowledgeCorrectionsDisclaimer() {
+        correctionsDisclaimerSeen = true;
+        elements.disclaimerModal.hidden = true;
+
+        try {
+            await window.electronAPI.saveConfig({ correctionsDisclaimerSeen: true });
+        } catch (_) {
+            // ignore persistence failures to avoid blocking the user
+        }
     }
 
     function fallbackCoverUrl(appId) {
@@ -647,6 +717,9 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.button.setAttribute('aria-pressed', String(isActive));
         if (isActive && !loaded) {
             loadCorrections();
+        }
+        if (isActive) {
+            void showCorrectionsDisclaimerIfNeeded();
         }
     }
 
@@ -983,7 +1056,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pendingOffer === offer) finishOffer('download');
     }
 
-    elements.button.addEventListener('click', () => window.merlinView?.set?.('corrections'));
+    elements.button.addEventListener('click', () => {
+        window.merlinView?.set?.('corrections');
+        if (!loaded && !loading) {
+            loadCorrections();
+        }
+        void showCorrectionsDisclaimerIfNeeded();
+    });
+    elements.disclaimerAcknowledge.addEventListener('click', acknowledgeCorrectionsDisclaimer);
     elements.refresh.addEventListener('click', () => loadCorrections(true));
     elements.search.addEventListener('input', () => {
         currentPage = 1;
@@ -993,6 +1073,9 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.confirmAction.addEventListener('click', confirmInstall);
     elements.confirmModal.addEventListener('click', event => {
         if (event.target === elements.confirmModal) closeConfirmModal();
+    });
+    elements.disclaimerModal.addEventListener('click', event => {
+        if (event.target === elements.disclaimerModal) acknowledgeCorrectionsDisclaimer();
     });
     elements.offerLater.addEventListener('click', () => finishOffer('later', { notifyLater: true }));
     elements.offerDownload.addEventListener('click', runOfferDownload);
@@ -1013,6 +1096,11 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.progressModal.addEventListener('click', event => {
         if (event.target === elements.progressModal && !elements.progressClose.hidden) {
             resetProgressModal();
+        }
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !elements.disclaimerModal.hidden) {
+            acknowledgeCorrectionsDisclaimer();
         }
     });
     window.addEventListener('merlin-view-changed', syncVisibility);

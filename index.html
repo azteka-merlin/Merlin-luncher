@@ -12,7 +12,7 @@
         <header class="header">
             <div class="header-content">
                 <div class="logo-section">
-                    <div class="logo-icon"></div>
+                    <img class="logo-icon" src="assets/wizard-avatar.jpg" alt="Merlin">
                     <h1 class="title">Merlin</h1>
                     <span id="appVersion" class="version">v--</span>
                     <button id="updateNoticeBadge" class="update-notice-badge" type="button" hidden>
@@ -473,6 +473,19 @@
         </div>
     </div>
 
+    <div id="correctionsDisclaimerModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="correctionsDisclaimerTitle" hidden>
+        <div class="library-modal-card corrections-disclaimer-card">
+            <div class="tutorial-icon corrections-disclaimer-icon" aria-hidden="true">✦</div>
+            <p class="corrections-progress-eyebrow" data-i18n="corrections_disclaimer_eyebrow">AVISO IMPORTANTE</p>
+            <h2 id="correctionsDisclaimerTitle" data-i18n="corrections_disclaimer_title">Sobre as correções</h2>
+            <p data-i18n="corrections_disclaimer_message">As correções disponíveis nesta aba são feitas pela comunidade e não fazem parte do Merlin.</p>
+            <p class="tutorial-prompt-hint corrections-disclaimer-hint" data-i18n="corrections_disclaimer_hint">Elas podem ser necessárias para alguns jogos, mas não podemos garantir que todas continuarão funcionando.</p>
+            <div class="library-modal-actions">
+                <button id="correctionsDisclaimerAcknowledgeBtn" class="btn btn-primary" type="button" data-i18n="corrections_disclaimer_continue">Entendi</button>
+            </div>
+        </div>
+    </div>
+
     <div id="correctionAvailableModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="correctionAvailableTitle" hidden>
         <div class="library-modal-card correction-offer-card">
             <div class="corrections-progress-heading">
@@ -590,9 +603,23 @@
 
     <div id="updateAvailableModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="updateAvailableTitle" hidden>
         <div class="library-modal-card update-modal-card">
+            <button id="updateModalCloseBtn" class="tutorial-close-btn update-close-btn" type="button" aria-label="Close">&times;</button>
             <div class="update-icon" aria-hidden="true">&#8593;</div>
             <h2 id="updateAvailableTitle">New version available</h2>
             <p id="updateAvailableMessage"></p>
+            <div id="updateDownloadProgress" class="update-download-progress" hidden>
+                <div class="update-download-row">
+                    <span id="updateDownloadStage">Preparing download...</span>
+                    <strong id="updateDownloadPercent">0%</strong>
+                </div>
+                <div class="update-download-track" aria-hidden="true">
+                    <span id="updateDownloadBar"></span>
+                </div>
+                <div class="update-download-meta">
+                    <span id="updateDownloadSize">—</span>
+                    <span id="updateDownloadSpeed">—</span>
+                </div>
+            </div>
             <div class="library-modal-actions">
                 <button id="updateLaterBtn" class="btn btn-secondary" type="button">Later</button>
                 <button id="updateDownloadBtn" class="btn btn-primary" type="button">Download update</button>
