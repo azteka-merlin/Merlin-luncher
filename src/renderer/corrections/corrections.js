@@ -394,6 +394,7 @@ window.merlinI18n.register({
 document.addEventListener('DOMContentLoaded', () => {
     const api = window.electronAPI.corrections;
     const pageSize = 9;
+    const offerSuppressedAppIds = new Set(['2483190', '1551360']);
     const elements = {
         button: document.getElementById('correctionsBtn'),
         view: document.getElementById('correctionsView'),
@@ -819,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function findOfferedCorrection(appId) {
         const normalizedAppId = String(appId || '').trim();
         if (!/^\d+$/.test(normalizedAppId)) return null;
+        if (offerSuppressedAppIds.has(normalizedAppId)) return null;
 
         let result = await api.list();
         let item = result.success
