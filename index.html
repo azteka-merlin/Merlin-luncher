@@ -603,6 +603,63 @@
         </div>
     </div>
 
+    <div id="faqModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="faqTitle" hidden>
+        <div class="library-modal-card faq-modal-card">
+            <div class="faq-modal-header">
+                <div class="faq-modal-brand">
+                    <img class="faq-modal-brand-image" src="assets/wizard-avatar.jpg" alt="Merlin">
+                    <div>
+                        <h2 id="faqTitle" data-i18n="faq_title">Central de ajuda</h2>
+                        <p data-i18n="faq_subtitle">Respostas rápidas sobre o Merlin</p>
+                    </div>
+                </div>
+                <button id="faqCloseBtn" class="tutorial-close-btn faq-close-btn" type="button" data-i18n-aria-label="faq_close" aria-label="Fechar FAQ">×</button>
+            </div>
+
+            <div class="faq-search-wrap">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"></path>
+                </svg>
+                <label class="sr-only" for="faqSearchInput" data-i18n="faq_search_label">Buscar uma pergunta</label>
+                <input id="faqSearchInput" type="search" data-i18n="faq_search_placeholder" placeholder="Buscar uma pergunta..." autocomplete="off">
+            </div>
+
+            <div class="faq-layout">
+                <aside class="faq-sidebar" aria-label="FAQ sections">
+                    <button id="faqSectionAbout" class="faq-section-btn active" type="button" data-section="about">
+                        <span class="faq-section-icon" aria-hidden="true">i</span>
+                        <span data-i18n="faq_section_about">Sobre o Merlin</span>
+                    </button>
+                    <button id="faqSectionCompatibility" class="faq-section-btn" type="button" data-section="compatibility">
+                        <span class="faq-section-icon" aria-hidden="true">🎮</span>
+                        <span data-i18n="faq_section_compatibility">Compatibilidade</span>
+                    </button>
+                    <button id="faqSectionCorrections" class="faq-section-btn" type="button" data-section="corrections">
+                        <span class="faq-section-icon" aria-hidden="true">✦</span>
+                        <span data-i18n="faq_section_corrections">Correções</span>
+                    </button>
+                    <button id="faqSectionSteam" class="faq-section-btn" type="button" data-section="steam">
+                        <span class="faq-section-icon" aria-hidden="true">↻</span>
+                        <span data-i18n="faq_section_steam">Steam e Atualizações</span>
+                    </button>
+                    <button id="faqSectionTroubleshooting" class="faq-section-btn" type="button" data-section="troubleshooting">
+                        <span class="faq-section-icon" aria-hidden="true">?</span>
+                        <span data-i18n="faq_section_troubleshooting">Solução de Problemas</span>
+                    </button>
+                </aside>
+
+                <section class="faq-content">
+                    <div id="faqList" class="faq-accordion" role="list"></div>
+                    <div id="faqEmptyState" class="faq-empty-state" hidden>
+                        <strong data-i18n="faq_empty_title">Nenhuma pergunta encontrada</strong>
+                        <p data-i18n="faq_empty_description">Tente buscar por outro termo.</p>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
     <div id="updateAvailableModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="updateAvailableTitle" hidden>
         <div class="library-modal-card update-modal-card">
             <button id="updateModalCloseBtn" class="tutorial-close-btn update-close-btn" type="button" aria-label="Close">&times;</button>
@@ -634,6 +691,7 @@
     <script src="src/renderer/shared/restart-prompt.js"></script>
     <script src="src/renderer/shared/game-install-prompt.js"></script>
     <script src="src/renderer/shared/tutorial.js"></script>
+    <script src="src/renderer/shared/faq.js"></script>
     <script src="src/renderer/shared/update-checker.js"></script>
     <script src="src/renderer/add-games/add-games.js"></script>
     <script src="src/renderer/library/library-model.js"></script>

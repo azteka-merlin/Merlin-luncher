@@ -3,6 +3,7 @@ function createCorrectionsService({
     fs,
     path,
     AdmZip,
+    nodeUnrar,
     dialog,
     shell,
     configStore,
@@ -277,11 +278,85 @@ function createCorrectionsService({
         }
     }
 
-    function extractZipToDirectory(zipFilePath, destinationRoot, operation) {
+    async function extractRarToDirectory(rarFilePath, destinationRoot, operation) {
         try {
-            const zip = new AdmZip(zipFilePath);
-            extractZipEntries(zip, destinationRoot, operation);
+            const archiveData = fs.readFileSync(rarFilePath);
+            const extractor = await nodeUnrar.createExtractorFromData({ data: Uint8Array.from(archiveData).buffer });
+            const extracted = extractor.extract();
+            let extractedFileCount = 0;
+
+            for (const entry of extracted.files) {
+                throwIfCancelled(operation);
+                const header = entry.fileHeader || {};
+                const entryName = header.name || '';
+                const destinationPath = safeExtractEntry(path, destinationRoot, entryName);
+
+                if (header.flags?.directory) {
+                    fs.mkdirSync(destinationPath, { recursive: true });
+                    continue;
+                }
+
+                if (!(entry.extraction instanceof Uint8Array)) {
+                    const error = new Error(`Unable to extract RAR entry: ${entryName}`);
+                    error.code = 'extract_failed';
+                    throw error;
+                }
+
+                fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+                fs.writeFileSync(destinationPath, Buffer.from(entry.extraction));
+                extractedFileCount += 1;
+            }
+
+            if (extractedFileCount === 0) {
+                const error = new Error('Empty archive');
+                error.code = 'invalid_zip';
+                throw error;
+            }
+        } catch (error) {
+            if (error.code === 'cancelled' || error.code === 'invalid_zip' || error.code === 'extract_failed') throw error;
+            const wrapped = new Error(error.message || 'Extraction failed');
+            wrapped.code = 'extract_failed';
+            throw wrapped;
+        }
+    }
+
+    async function extractArchiveToDirectory(archiveFilePath, destinationRoot, operation) {
+        const extension = path.extname(String(archiveFilePath || '')).toLowerCase();
+
+        if (extension === '.rar') {
+            await extractRarToDirectory(archiveFilePath, destinationRoot, operation);
             extractNestedZipFiles(destinationRoot, operation);
+            return;
+        }
+
+        if (extension !== '.zip') {
+            const error = new Error(`Unsupported archive type: ${extension || 'unknown'}`);
+            error.code = 'invalid_zip';
+            throw error;
+        }
+
+        const zip = new AdmZip(archiveFilePath);
+        extractZipEntries(zip, destinationRoot, operation);
+        extractNestedZipFiles(destinationRoot, operation);
+    }
+
+    function validateArchiveFile(archiveFilePath) {
+        const extension = path.extname(String(archiveFilePath || '')).toLowerCase();
+        if (extension === '.rar') return;
+
+        try {
+            const zip = new AdmZip(archiveFilePath);
+            validateZipEntries(zip);
+        } catch (error) {
+            const wrapped = new Error(error.message || 'Invalid archive');
+            wrapped.code = error.code || 'invalid_zip';
+            throw wrapped;
+        }
+    }
+
+    async function extractZipToDirectory(zipFilePath, destinationRoot, operation) {
+        try {
+            await extractArchiveToDirectory(zipFilePath, destinationRoot, operation);
         } catch (error) {
             if (error.code === 'cancelled' || error.code === 'invalid_zip') throw error;
             const wrapped = new Error(error.message || 'Extraction failed');
@@ -440,12 +515,10 @@ function createCorrectionsService({
                 percent: 68
             });
 
-            let zip;
             try {
-                zip = new AdmZip(zipPath);
-                validateZipEntries(zip);
+                validateArchiveFile(zipPath);
             } catch (error) {
-                const wrapped = new Error(error.message || 'Invalid ZIP archive');
+                const wrapped = new Error(error.message || 'Invalid archive');
                 wrapped.code = error.code || 'invalid_zip';
                 throw wrapped;
             }
@@ -457,7 +530,7 @@ function createCorrectionsService({
                 stage: 'extracting',
                 percent: 80
             });
-            extractZipToDirectory(zipPath, extractedPath, operation);
+            await extractZipToDirectory(zipPath, extractedPath, operation);
 
             throwIfCancelled(operation);
             emitProgress(onProgress, item, {

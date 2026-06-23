@@ -6,6 +6,7 @@ const os = require('os');
 const { exec, execFile } = require('child_process');
 const axios = require('axios');
 const AdmZip = require('adm-zip');
+const nodeUnrar = require('node-unrar-js');
 
 const { createConfigStore } = require('./src/main/config/config-store');
 const { createCorrectionsCatalogClient } = require('./src/main/corrections/corrections-catalog-client');
@@ -39,11 +40,11 @@ const { createUpdateService } = require('./src/main/updates/update-service');
 let mainWindow;
 
 const menuTranslations = {
-    ptbr: { help: 'Ajuda', tutorial: 'Tutorial' },
-    en: { help: 'Help', tutorial: 'Tutorial' },
-    es: { help: 'Ayuda', tutorial: 'Tutorial' },
-    fr: { help: 'Aide', tutorial: 'Tutoriel' },
-    de: { help: 'Hilfe', tutorial: 'Tutorial' }
+    ptbr: { help: 'Ajuda', tutorial: 'Tutorial', faq: 'FAQ' },
+    en: { help: 'Help', tutorial: 'Tutorial', faq: 'FAQ' },
+    es: { help: 'Ayuda', tutorial: 'Tutorial', faq: 'FAQ' },
+    fr: { help: 'Aide', tutorial: 'Tutoriel', faq: 'FAQ' },
+    de: { help: 'Hilfe', tutorial: 'Tutorial', faq: 'FAQ' }
 };
 
 function setApplicationMenu(language = 'en') {
@@ -54,6 +55,9 @@ function setApplicationMenu(language = 'en') {
             submenu: [{
                 label: labels.tutorial,
                 click: () => mainWindow?.webContents.send('tutorial:open')
+            }, {
+                label: labels.faq,
+                click: () => mainWindow?.webContents.send('faq:open')
             }]
         }
     ]));
@@ -203,6 +207,7 @@ const correctionsService = createCorrectionsService({
     fs,
     path,
     AdmZip,
+    nodeUnrar,
     dialog,
     shell,
     configStore,

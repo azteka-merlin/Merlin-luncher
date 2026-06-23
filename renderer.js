@@ -832,7 +832,7 @@ function showNotification(message, type = 'info') {
         padding: 1rem 1.5rem;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        z-index: 10000;
+        z-index: 60000;
         animation: slideInRight 0.3s ease;
         max-width: 300px;
     `;

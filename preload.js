@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         ipcRenderer.removeAllListeners('app:update-download-progress');
     },
     onOpenTutorial: (callback) => ipcRenderer.on('tutorial:open', callback),
+    onOpenFaq: (callback) => ipcRenderer.on('faq:open', callback),
 
     // Authentication
     auth: {
