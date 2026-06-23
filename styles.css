@@ -2085,6 +2085,17 @@ webview {
     color: var(--text-primary) !important;
 }
 
+.correction-offer-priority,
+.corrections-disclaimer-priority {
+    margin-top: 0.75rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(91, 33, 182, 0.18), rgba(30, 41, 59, 0.36));
+    color: #ede9fe !important;
+    line-height: 1.45;
+}
+
 .correction-offer-notes {
     display: grid;
     gap: 0.6rem;
