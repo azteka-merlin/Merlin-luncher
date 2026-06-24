@@ -90,6 +90,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     let searchTimer = null;
     let searchRequestId = 0;
 
+    const localErrorTranslations = {
+        ptbr: {
+            games_error_catalog_not_found: 'Nenhum jogo foi encontrado para essa busca.',
+            games_error_resolve_failed: 'Nao foi possivel interpretar esse link da Steam.'
+        },
+        en: {
+            games_error_catalog_not_found: 'No game was found for this search.',
+            games_error_resolve_failed: 'Could not understand this Steam link.'
+        },
+        es: {
+            games_error_catalog_not_found: 'No se encontro ningun juego para esta busqueda.',
+            games_error_resolve_failed: 'No se pudo interpretar este enlace de Steam.'
+        },
+        fr: {
+            games_error_catalog_not_found: 'Aucun jeu n a ete trouve pour cette recherche.',
+            games_error_resolve_failed: 'Impossible d interpreter ce lien Steam.'
+        },
+        de: {
+            games_error_catalog_not_found: 'Fuer diese Suche wurde kein Spiel gefunden.',
+            games_error_resolve_failed: 'Dieser Steam-Link konnte nicht verarbeitet werden.'
+        }
+    };
+
     function resetAutoUpdate() {
         autoUpdateToggle.checked = true;
     }
@@ -106,7 +129,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const code = result?.code || result?.reason;
         const key = code ? `games_error_${code}` : fallbackKey;
         const translated = tr(key);
-        return translated === key ? tr(fallbackKey) : translated;
+        if (translated !== key) return translated;
+
+        const language = window.merlinI18n?.current?.() || document.documentElement.lang || 'en';
+        const localTranslation = localErrorTranslations[language]?.[key]
+            || localErrorTranslations.en[key];
+
+        return localTranslation || tr(fallbackKey);
     }
 
     function progressMessage(message, stage) {

@@ -1,33 +1,23 @@
-const QUEUE_MESSAGES = {
-    duplicate: 'Este jogo já está na fila.',
-    empty_queue: 'A fila está vazia.',
-    install_busy: 'Já existe uma instalação em andamento.',
-    queue_not_empty: 'Instalar agora só pode ser usado quando a fila estiver vazia.',
-    queue_locked: 'A fila não pode ser alterada durante a instalação.',
-    not_found: 'O jogo não está mais na fila.'
-};
-
 function friendlyInstallResult(result) {
     if (result.success) return result;
 
-    const prerequisiteMessages = {
-        steam_path_missing: 'Configure o caminho da Steam antes de iniciar a instalação.',
-        steam_path_invalid: 'O caminho configurado não é uma instalação válida da Steam.',
-        required_files_missing: 'Os arquivos obrigatórios não estão instalados. Use Reparar primeiro.'
-    };
-    if (prerequisiteMessages[result.reason]) {
+    const prerequisiteReasons = new Set([
+        'steam_path_missing',
+        'steam_path_invalid',
+        'required_files_missing'
+    ]);
+
+    if (prerequisiteReasons.has(result.reason)) {
         return {
             ...result,
-            code: result.reason,
-            message: prerequisiteMessages[result.reason]
+            code: result.reason
         };
     }
 
     if (result.reason === 'rate_limited') {
         return {
             ...result,
-            code: 'rate_limited',
-            message: 'O limite temporário de solicitações desta licença foi atingido. Aguarde alguns instantes e tente novamente.'
+            code: 'rate_limited'
         };
     }
 
@@ -35,21 +25,18 @@ function friendlyInstallResult(result) {
     if (/unable to download/i.test(message)) {
         return {
             ...result,
-            code: 'download_unavailable',
-            message: 'Não foi possível baixar os arquivos desse jogo.'
+            code: 'download_unavailable'
         };
     }
     if (/invalid zip|empty zip|archive|no files found|no valid steam files/i.test(message)) {
         return {
             ...result,
-            code: 'archive_invalid',
-            message: 'Os arquivos recebidos para esse jogo são inválidos ou estão incompletos.'
+            code: 'archive_invalid'
         };
     }
     return {
         ...result,
-        code: 'generic',
-        message: 'Não foi possível concluir a instalação desse jogo.'
+        code: 'generic'
     };
 }
 
@@ -133,9 +120,7 @@ function createAddGamesService({
             return {
                 success: false,
                 code: error.code || 'resolve_failed',
-                message: error.code
-                    ? error.message
-                    : 'Não foi possível interpretar esse link da Steam.'
+                message: error.message
             };
         }
     }
@@ -145,8 +130,7 @@ function createAddGamesService({
         if (!term) {
             return {
                 success: false,
-                code: 'selection_required',
-                message: 'Selecione um jogo antes de continuar.'
+                code: 'selection_required'
             };
         }
         const match = /^\d+$/.test(term)
@@ -156,8 +140,7 @@ function createAddGamesService({
         if (!match) {
             return {
                 success: false,
-                code: 'not_found',
-                message: 'Nenhum jogo foi encontrado para essa busca.'
+                code: 'catalog_not_found'
             };
         }
 
@@ -179,8 +162,7 @@ function createAddGamesService({
         if (!raw) {
             return {
                 success: false,
-                code: 'selection_required',
-                message: 'Selecione um jogo antes de continuar.'
+                code: 'selection_required'
             };
         }
         const resolved = /^https?:\/\//i.test(raw)
@@ -206,7 +188,7 @@ function createAddGamesService({
             return {
                 success: false,
                 code: 'search_failed',
-                message: error.message || 'Não foi possível pesquisar agora.',
+                message: error.message,
                 items: []
             };
         }
@@ -218,7 +200,7 @@ function createAddGamesService({
 
         const result = queue.add(resolved.item);
         if (!result.success) {
-            return { ...result, message: QUEUE_MESSAGES[result.code] };
+            return result;
         }
 
         onQueueUpdated(queueState());
@@ -227,27 +209,26 @@ function createAddGamesService({
 
     function remove(appId, onQueueUpdated = () => {}) {
         const result = queue.remove(String(appId || ''));
-        if (!result.success) return { ...result, message: QUEUE_MESSAGES[result.code] };
+        if (!result.success) return result;
         onQueueUpdated(queueState());
         return { success: true, queue: queueState() };
     }
 
     function clear(onQueueUpdated = () => {}) {
         const result = queue.clear();
-        if (!result.success) return { ...result, message: QUEUE_MESSAGES[result.code] };
+        if (!result.success) return result;
         onQueueUpdated(queueState());
         return { success: true, queue: queueState() };
     }
 
     async function installNow(input, events = {}) {
         if (installing) {
-            return { success: false, code: 'install_busy', message: QUEUE_MESSAGES.install_busy };
+            return { success: false, code: 'install_busy' };
         }
         if (queue.list().length > 0) {
             return {
                 success: false,
-                code: 'queue_not_empty',
-                message: QUEUE_MESSAGES.queue_not_empty
+                code: 'queue_not_empty'
             };
         }
 
@@ -256,17 +237,16 @@ function createAddGamesService({
         if (queue.list().length > 0) {
             return {
                 success: false,
-                code: 'queue_not_empty',
-                message: QUEUE_MESSAGES.queue_not_empty
+                code: 'queue_not_empty'
             };
         }
         if (queue.has(resolved.item.appId)) {
-            return { success: false, code: 'duplicate', message: QUEUE_MESSAGES.duplicate };
+            return { success: false, code: 'duplicate' };
         }
 
         const added = queue.add(resolved.item);
         if (!added.success) {
-            return { ...added, message: QUEUE_MESSAGES[added.code] };
+            return added;
         }
 
         installing = true;
@@ -301,12 +281,12 @@ function createAddGamesService({
 
     async function installAll(events = {}) {
         if (installing) {
-            return { success: false, code: 'install_busy', message: QUEUE_MESSAGES.install_busy };
+            return { success: false, code: 'install_busy' };
         }
 
         const snapshot = queue.list();
         if (snapshot.length === 0) {
-            return { success: false, code: 'empty_queue', message: QUEUE_MESSAGES.empty_queue };
+            return { success: false, code: 'empty_queue' };
         }
 
         installing = true;
@@ -356,8 +336,7 @@ function createAddGamesService({
         if (!readiness.ok) {
             return {
                 success: false,
-                code: readiness.reason,
-                message: 'A instalação da Steam não está pronta para ser reiniciada.'
+                code: readiness.reason
             };
         }
 
@@ -366,7 +345,7 @@ function createAddGamesService({
         const started = await steamService.start(steamPath);
         return {
             success: started,
-            message: started ? 'Steam reiniciada.' : 'Não foi possível iniciar a Steam.'
+            code: started ? 'restart_success' : 'restart_failed'
         };
     }
 

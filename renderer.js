@@ -487,6 +487,9 @@ function t(key) {
 
 window.merlinI18n = {
     t,
+    current() {
+        return currentLanguage;
+    },
     register(messagesByLanguage) {
         for (const [language, messages] of Object.entries(messagesByLanguage)) {
             if (translations[language]) Object.assign(translations[language], messages);
