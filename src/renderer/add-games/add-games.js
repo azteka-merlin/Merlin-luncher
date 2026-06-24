@@ -382,7 +382,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearSuggestions();
             showFeedback(tr('games_install_success', { name: result.item.name }), 'success');
             await window.merlinCorrections?.offerFor?.(result.item.appId);
-            if (await window.merlinRestartPrompt.ask({ message: tr('games_restart_prompt') })) {
+            if (await window.merlinRestartPrompt.ask({
+                titleKey: 'restart_prompt_title',
+                title: window.merlinI18n.t('restart_prompt_title'),
+                message: tr('games_restart_prompt'),
+                cancelKey: 'restart_prompt_later',
+                cancelLabel: window.merlinI18n.t('restart_prompt_later'),
+                actionKey: 'restart_prompt_action',
+                actionLabel: window.merlinI18n.t('restart_prompt_action')
+            })) {
                 const restart = await api.restartSteam();
                 showFeedback(
                     tr(restart.success ? 'games_restart_success' : 'games_restart_failed'),
@@ -416,7 +424,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (installed > 0 && await window.merlinRestartPrompt.ask({
-                message: tr('games_batch_restart_prompt', { summary })
+                titleKey: 'restart_prompt_title',
+                title: window.merlinI18n.t('restart_prompt_title'),
+                message: tr('games_batch_restart_prompt', { summary }),
+                cancelKey: 'restart_prompt_later',
+                cancelLabel: window.merlinI18n.t('restart_prompt_later'),
+                actionKey: 'restart_prompt_action',
+                actionLabel: window.merlinI18n.t('restart_prompt_action')
             })) {
                 const restart = await api.restartSteam();
                 showFeedback(

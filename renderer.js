@@ -494,6 +494,41 @@ window.merlinI18n = {
     }
 };
 
+Object.assign(translations.ptbr, {
+    repair_steam_running_title: 'Fechar a Steam para continuar?',
+    repair_steam_running_message: 'Para atualizar os arquivos do Merlin, a Steam precisa ser fechada por alguns instantes. Deseja fechar a Steam e continuar agora?',
+    repair_steam_running_cancel: 'Cancelar',
+    repair_steam_running_action: 'Fechar Steam e continuar'
+});
+
+Object.assign(translations.en, {
+    repair_steam_running_title: 'Close Steam to continue?',
+    repair_steam_running_message: 'Steam needs to close for a moment so Merlin can update its files. Do you want to close Steam and continue now?',
+    repair_steam_running_cancel: 'Cancel',
+    repair_steam_running_action: 'Close Steam and continue'
+});
+
+Object.assign(translations.es, {
+    repair_steam_running_title: '¿Cerrar Steam para continuar?',
+    repair_steam_running_message: 'Steam debe cerrarse por un momento para que Merlin actualice sus archivos. ¿Desea cerrar Steam y continuar ahora?',
+    repair_steam_running_cancel: 'Cancelar',
+    repair_steam_running_action: 'Cerrar Steam y continuar'
+});
+
+Object.assign(translations.fr, {
+    repair_steam_running_title: 'Fermer Steam pour continuer ?',
+    repair_steam_running_message: 'Steam doit se fermer un instant pour que Merlin mette ses fichiers à jour. Voulez-vous fermer Steam et continuer maintenant ?',
+    repair_steam_running_cancel: 'Annuler',
+    repair_steam_running_action: 'Fermer Steam et continuer'
+});
+
+Object.assign(translations.de, {
+    repair_steam_running_title: 'Steam zum Fortfahren schliessen?',
+    repair_steam_running_message: 'Steam muss kurz geschlossen werden, damit Merlin seine Dateien aktualisieren kann. Moechten Sie Steam jetzt schliessen und fortfahren?',
+    repair_steam_running_cancel: 'Abbrechen',
+    repair_steam_running_action: 'Steam schliessen und fortfahren'
+});
+
 window.merlinView = {
     get() {
         return document.body.dataset.merlinView || 'add-games';
@@ -544,9 +579,10 @@ function setupEventListeners() {
 
     // Detect Steam
     document.getElementById('detectSteamBtn').addEventListener('click', async () => {
-        const result = await window.electronAPI.detectSteam();
+        try {
+            const result = await window.electronAPI.detectSteam();
 
-        if (result) {
+            if (result) {
             config.steamPath = result.steamPath;
 
             await window.electronAPI.saveConfig(config);
@@ -562,8 +598,11 @@ function setupEventListeners() {
                 }
             }
 
-        } else {
-            showNotification(t('steam_not_found'), 'error');
+            } else {
+                showNotification(t('steam_not_found'), 'error');
+            }
+        } catch (error) {
+            showNotification(`${t('download_error')}: ${error.message}`, 'error');
         }
     });
 
@@ -573,21 +612,33 @@ function setupEventListeners() {
             return;
         }
 
-        const result = await window.electronAPI.verifyFiles();
-
-        await refreshStatusIndicators();
-
-        if (result.installed) {
-            showNotification(t('files_verified'));
-
-            if (await askToRestartSteam()) {
-                await restartSteam();
+        try {
+            if (await window.electronAPI.isSteamRunning()) {
+                const shouldCloseSteam = await askToCloseSteamForRepair();
+                if (!shouldCloseSteam) return;
+                showNotification(t('closing_steam'));
+                await window.electronAPI.closeSteam();
+                await new Promise(resolve => setTimeout(resolve, 3000));
             }
-            return;
-        }
 
-        if (result.alreadyInstalled) {
-            showNotification(t('files_already_ok'));
+            const result = await window.electronAPI.verifyFiles();
+
+            await refreshStatusIndicators();
+
+            if (result.installed) {
+                showNotification(t('files_verified'));
+
+                if (await askToRestartSteam()) {
+                    await restartSteam();
+                }
+                return;
+            }
+
+            if (result.alreadyInstalled) {
+                showNotification(t('files_already_ok'));
+            }
+        } catch (error) {
+            showNotification(`${t('download_error')}: ${error.message}`, 'error');
         }
     });
 
@@ -775,7 +826,28 @@ async function downloadAndInstallGame(appId) {
 
 // Restart Steam
 async function askToRestartSteam() {
-    return window.merlinRestartPrompt.ask({ message: t('restart_confirm') });
+    return window.merlinRestartPrompt.ask({
+        titleKey: 'restart_prompt_title',
+        title: t('restart_prompt_title'),
+        message: t('restart_confirm'),
+        cancelKey: 'restart_prompt_later',
+        cancelLabel: t('restart_prompt_later'),
+        actionKey: 'restart_prompt_action',
+        actionLabel: t('restart_prompt_action')
+    });
+}
+
+async function askToCloseSteamForRepair() {
+    return window.merlinRestartPrompt.ask({
+        titleKey: 'repair_steam_running_title',
+        title: t('repair_steam_running_title'),
+        messageKey: 'repair_steam_running_message',
+        message: t('repair_steam_running_message'),
+        cancelKey: 'repair_steam_running_cancel',
+        cancelLabel: t('repair_steam_running_cancel'),
+        actionKey: 'repair_steam_running_action',
+        actionLabel: t('repair_steam_running_action')
+    });
 }
 
 async function restartSteam() {

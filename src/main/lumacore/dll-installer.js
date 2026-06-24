@@ -31,11 +31,40 @@ const MESSAGES = {
     }
 };
 
+const LEGACY_DLLS = ['LumaCore.dll'];
+
 function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, getMainWindow }) {
     function notify(ok) {
         const mainWindow = getMainWindow();
         if (mainWindow?.webContents) {
             mainWindow.webContents.send('files-status', { ok });
+        }
+    }
+
+    function removeLegacyDlls(steamPath) {
+        for (const dll of LEGACY_DLLS) {
+            const legacyPath = path.join(steamPath, dll);
+            if (!fs.existsSync(legacyPath)) continue;
+            fs.rmSync(legacyPath, { force: true });
+            console.log(`Removed legacy DLL: ${legacyPath}`);
+        }
+    }
+
+    function copyRequiredDlls(steamPath) {
+        for (const dll of requiredDlls) {
+            const srcPath = getSourcePath(dll);
+            const destPath = path.join(steamPath, dll);
+            try {
+                fs.copyFileSync(srcPath, destPath);
+            } catch (error) {
+                if (error && (error.code === 'EBUSY' || error.code === 'EPERM')) {
+                    throw new Error(
+                        `Steam appears to be using ${dll}. Close Steam completely and try Repair again.`
+                    );
+                }
+                throw error;
+            }
+            console.log(`Installed: ${dll} -> ${destPath}`);
         }
     }
 
@@ -46,6 +75,7 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
         );
 
         if (missing.length === 0) {
+            removeLegacyDlls(steamPath);
             notify(true);
             return { installed: false, alreadyInstalled: true, cancelled: false };
         }
@@ -67,13 +97,9 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
                 }
             }
 
-            for (const dll of requiredDlls) {
-                const srcPath = getSourcePath(dll);
-                const destPath = path.join(steamPath, dll);
-                fs.copyFileSync(srcPath, destPath);
-                console.log(`Installed: ${dll} -> ${destPath}`);
-            }
+            copyRequiredDlls(steamPath);
 
+            removeLegacyDlls(steamPath);
             notify(true);
             return { installed: true, alreadyInstalled: false, cancelled: false };
         }
@@ -85,4 +111,4 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
     return { checkAndInstall };
 }
 
-module.exports = { createDllInstaller };
+module.exports = { LEGACY_DLLS, createDllInstaller };
