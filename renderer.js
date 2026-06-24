@@ -593,9 +593,7 @@ function setupEventListeners() {
 
             // Só pergunta se realmente instalou as DLLs
             if (result.installed) {
-                if (await askToRestartSteam()) {
-                    await restartSteam();
-                }
+                await promptRestartSteamIfRunning();
             }
 
             } else {
@@ -613,12 +611,21 @@ function setupEventListeners() {
         }
 
         try {
+            let steamWasClosedForRepair = false;
+            const filesStatus = await window.electronAPI.checkFilesStatus();
+            if (filesStatus?.ok) {
+                await refreshStatusIndicators();
+                showNotification(t('files_already_ok'));
+                return;
+            }
+
             if (await window.electronAPI.isSteamRunning()) {
                 const shouldCloseSteam = await askToCloseSteamForRepair();
                 if (!shouldCloseSteam) return;
                 showNotification(t('closing_steam'));
                 await window.electronAPI.closeSteam();
                 await new Promise(resolve => setTimeout(resolve, 3000));
+                steamWasClosedForRepair = true;
             }
 
             const result = await window.electronAPI.verifyFiles();
@@ -627,10 +634,6 @@ function setupEventListeners() {
 
             if (result.installed) {
                 showNotification(t('files_verified'));
-
-                if (await askToRestartSteam()) {
-                    await restartSteam();
-                }
                 return;
             }
 
@@ -806,9 +809,7 @@ async function downloadAndInstallGame(appId) {
         if (result.success) {
             showNotification(t('download_success'), 'success');
             await window.merlinCorrections?.offerFor?.(appId);
-            if (await askToRestartSteam()) {
-                await restartSteam();
-            }
+            await promptRestartSteamIfRunning();
         } else {
             const translatedError = result.reason ? t(`games_error_${result.reason}`) : '';
             const detail = translatedError && translatedError !== `games_error_${result.reason}`
@@ -835,6 +836,19 @@ async function askToRestartSteam() {
         actionKey: 'restart_prompt_action',
         actionLabel: t('restart_prompt_action')
     });
+}
+
+async function promptRestartSteamIfRunning() {
+    if (!await window.electronAPI.isSteamRunning()) {
+        return false;
+    }
+
+    if (!await askToRestartSteam()) {
+        return false;
+    }
+
+    await restartSteam();
+    return true;
 }
 
 async function askToCloseSteamForRepair() {

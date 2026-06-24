@@ -382,6 +382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearSuggestions();
             showFeedback(tr('games_install_success', { name: result.item.name }), 'success');
             await window.merlinCorrections?.offerFor?.(result.item.appId);
+            setRequestBusy(false);
             if (await window.merlinRestartPrompt.ask({
                 titleKey: 'restart_prompt_title',
                 title: window.merlinI18n.t('restart_prompt_title'),
@@ -397,6 +398,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     restart.success ? 'success' : 'error'
                 );
             }
+            requestAnimationFrame(() => {
+                if (!linkInput.disabled) linkInput.focus();
+            });
         } catch (_) {
             showFeedback(tr('games_install_failed'), 'error');
         } finally {
@@ -423,6 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await window.merlinCorrections?.offerFor?.(item.appId);
             }
 
+            setRequestBusy(false);
             if (installed > 0 && await window.merlinRestartPrompt.ask({
                 titleKey: 'restart_prompt_title',
                 title: window.merlinI18n.t('restart_prompt_title'),
@@ -438,6 +443,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     restart.success ? 'success' : 'error'
                 );
             }
+            requestAnimationFrame(() => {
+                if (!linkInput.disabled) linkInput.focus();
+            });
         } catch (_) {
             showFeedback(tr('games_batch_failed'), 'error');
         } finally {
