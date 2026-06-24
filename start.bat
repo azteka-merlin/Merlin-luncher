@@ -42,15 +42,21 @@ if %ERRORLEVEL% NEQ 0 (
 echo [OK] Dependencies are ready
 echo.
 
-if not exist "assets\dlls\LumaCore.dll" (
-    echo [ERROR] assets\dlls\LumaCore.dll was not found.
-    echo Run npm run build:lumacore after installing CMake and VS Build Tools.
+if not exist "assets\dlls\OpenSteamTool.dll" (
+    echo [ERROR] assets\dlls\OpenSteamTool.dll was not found.
+    echo Run npm run build:opensteamtool after installing CMake and VS Build Tools.
     pause
     exit /b 1
 )
 if not exist "assets\dlls\dwmapi.dll" (
     echo [ERROR] assets\dlls\dwmapi.dll was not found.
-    echo Run npm run build:lumacore after installing CMake and VS Build Tools.
+    echo Run npm run build:opensteamtool after installing CMake and VS Build Tools.
+    pause
+    exit /b 1
+)
+if not exist "assets\dlls\xinput1_4.dll" (
+    echo [ERROR] assets\dlls\xinput1_4.dll was not found.
+    echo Run npm run build:opensteamtool after installing CMake and VS Build Tools.
     pause
     exit /b 1
 )

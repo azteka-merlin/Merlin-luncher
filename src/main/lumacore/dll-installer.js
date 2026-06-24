@@ -63,7 +63,7 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
             for (const dll of requiredDlls) {
                 const srcPath = getSourcePath(dll);
                 if (!fs.existsSync(srcPath)) {
-                    throw new Error(`LumaCore build output not found: ${srcPath}`);
+                    throw new Error(`Native DLL build output not found: ${srcPath}`);
                 }
             }
 

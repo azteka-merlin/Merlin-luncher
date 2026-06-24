@@ -1,16 +1,17 @@
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const JavaScriptObfuscator = require('javascript-obfuscator');
 
 const rootDir = __dirname;
-const lumaCoreBuild = path.join(rootDir, 'LumaCore', 'build.bat');
-const lumaCoreBuildDir = path.join(rootDir, 'LumaCore', 'build');
-const lumaCoreReleaseDir = path.join(rootDir, 'LumaCore', 'Releases', 'Release');
+const nativeProjectDir = path.join(rootDir, 'OpenSteamTool');
+const nativeBuildDir = path.join(nativeProjectDir, 'build');
+const nativeReleaseDir = path.join(nativeBuildDir, 'Release');
+const nativeSourceDir = nativeProjectDir;
 const appDllDir = path.join(rootDir, 'assets', 'dlls');
 const distDir = path.join(rootDir, 'dist');
-const requiredDlls = ['LumaCore.dll', 'dwmapi.dll'];
+const requiredDlls = ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll'];
 
 const obfuscationOptions = {
     compact: true,
@@ -126,39 +127,62 @@ function cleanBuildDirectory(buildDir) {
 }
 
 // Prevent MSBuild worker processes from surviving a completed build and
-// briefly locking files when the next clean build removes LumaCore/build.
+// briefly locking files when the next clean build removes OpenSteamTool/build.
 process.env.MSBUILDDISABLENODEREUSE = '1';
 
-console.log('Building LumaCore (Release)...');
-// Clean here with retries. Windows may keep MSBuild handles alive briefly;
-// removing the directory before entering build.bat also skips its brittle
-// rmdir path and makes consecutive builds deterministic.
-cleanBuildDirectory(lumaCoreBuildDir);
-fs.rmSync(lumaCoreReleaseDir, { recursive: true, force: true });
-execSync(`"${lumaCoreBuild}" --release-only --no-pause`, {
-    cwd: rootDir,
+if (!fs.existsSync(path.join(nativeProjectDir, 'CMakeLists.txt'))) {
+    throw new Error(
+        `OpenSteamTool source tree not found: ${nativeProjectDir}`
+    );
+}
+
+const hasNinja = (() => {
+    try {
+        execSync('where ninja', { stdio: 'ignore' });
+        return true;
+    } catch {
+        return false;
+    }
+})();
+const generator = hasNinja ? 'Ninja Multi-Config' : 'Visual Studio 17 2022';
+
+console.log(`Building OpenSteamTool DLLs from ${nativeProjectDir} (Release)...`);
+cleanBuildDirectory(nativeBuildDir);
+const configureArgs = ['-S', nativeSourceDir, '-B', nativeBuildDir, '-G', generator];
+if (!hasNinja) {
+    configureArgs.push('-A', 'x64');
+}
+execFileSync('cmake', configureArgs, {
+    cwd: nativeProjectDir,
     stdio: 'inherit',
-    env: { ...process.env, LUMACORE_SKIP_CLEAN: '1' }
+    env: { ...process.env }
+});
+execFileSync('cmake', ['--build', nativeBuildDir, '--config', 'Release'], {
+    cwd: nativeProjectDir,
+    stdio: 'inherit',
+    env: { ...process.env }
 });
 
 for (const dll of requiredDlls) {
-    const output = path.join(lumaCoreReleaseDir, dll);
+    const output = path.join(nativeReleaseDir, dll);
     if (!fs.existsSync(output)) {
-        throw new Error(`LumaCore did not produce ${output}`);
+        throw new Error(`OpenSteamTool did not produce ${output}`);
     }
 }
 
 fs.mkdirSync(appDllDir, { recursive: true });
 for (const dll of requiredDlls) {
     fs.copyFileSync(
-        path.join(lumaCoreReleaseDir, dll),
+        path.join(nativeReleaseDir, dll),
         path.join(appDllDir, dll)
     );
 }
-console.log(`LumaCore DLLs copied to ${appDllDir}`);
+console.log(`OpenSteamTool DLLs copied to ${appDllDir}`);
 
-if (process.argv.includes('--lumacore-only')) {
-    console.log('LumaCore Release DLLs are ready.');
+const dllsOnly = process.argv.includes('--opensteamtool-only') || process.argv.includes('--lumacore-only');
+
+if (dllsOnly) {
+    console.log('OpenSteamTool Release DLLs are ready.');
 } else {
     console.log('Cleaning previous Electron build artifacts...');
     cleanBuildDirectory(distDir);

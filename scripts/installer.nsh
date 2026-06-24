@@ -14,7 +14,7 @@
   ${If} ${FileExists} "$0\steam.exe"
     StrCpy $1 "0"
 
-    ; Steam locks the LumaCore files while it is running. Ask for consent before
+    ; Steam locks the OpenSteamTool files while it is running. Ask for consent before
     ; closing it, then verify that the process really stopped before copying.
     nsExec::ExecToStack 'powershell.exe -NoProfile -NonInteractive -Command "if (Get-Process steam -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }"'
     Pop $2
@@ -36,9 +36,9 @@
     ${EndIf}
 
     ${If} $1 == "0"
-      ${If} ${FileExists} "$INSTDIR\resources\dlls\LumaCore.dll"
+      ${If} ${FileExists} "$INSTDIR\resources\dlls\OpenSteamTool.dll"
         ClearErrors
-        CopyFiles /SILENT "$INSTDIR\resources\dlls\LumaCore.dll" "$0\LumaCore.dll"
+        CopyFiles /SILENT "$INSTDIR\resources\dlls\OpenSteamTool.dll" "$0\OpenSteamTool.dll"
         ${If} ${Errors}
           StrCpy $1 "1"
         ${EndIf}
@@ -59,8 +59,20 @@
       ${EndIf}
     ${EndIf}
 
+    ${If} $1 == "0"
+      ${If} ${FileExists} "$INSTDIR\resources\dlls\xinput1_4.dll"
+        ClearErrors
+        CopyFiles /SILENT "$INSTDIR\resources\dlls\xinput1_4.dll" "$0\xinput1_4.dll"
+        ${If} ${Errors}
+          StrCpy $1 "1"
+        ${EndIf}
+      ${Else}
+        StrCpy $1 "1"
+      ${EndIf}
+    ${EndIf}
+
     ${If} $1 == "1"
-      MessageBox MB_ICONEXCLAMATION|MB_OK "Merlin was installed, but the LumaCore files could not be copied to the default Steam folder. Make sure Steam is closed and use Repair inside Merlin."
+      MessageBox MB_ICONEXCLAMATION|MB_OK "Merlin was installed, but the OpenSteamTool files could not be copied to the default Steam folder. Make sure Steam is closed and use Repair inside Merlin."
     ${EndIf}
   ${EndIf}
 !macroend

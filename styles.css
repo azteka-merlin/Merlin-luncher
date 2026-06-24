@@ -1580,6 +1580,42 @@ webview {
     stroke-linejoin: round;
 }
 
+.library-unpack-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+
+.library-unpack-btn:hover:not(:disabled) {
+    border-color: rgba(245, 158, 11, 0.55);
+    background: rgba(245, 158, 11, 0.1);
+    color: #fbbf24;
+}
+
+.library-unpack-btn:disabled {
+    cursor: wait;
+    opacity: 0.55;
+}
+
+.library-unpack-btn svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .library-remove-btn {
     width: 34px;
     height: 34px;

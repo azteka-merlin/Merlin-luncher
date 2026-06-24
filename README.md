@@ -13,7 +13,7 @@
 - **Automatic App ID Detection** - Automatically detects Steam game App IDs from URLs
 - **Background Downloads** - Routed through Merlin API, which handles upstream fallbacks centrally
 - **Smart Steam Management** - Automatically restarts Steam after installation
-- **LumaCore Integration** - Builds and packages the required `LumaCore.dll` and `dwmapi.dll`
+- **OpenSteamTool Integration** - Builds and packages the required `OpenSteamTool.dll`, `dwmapi.dll`, and `xinput1_4.dll`
 
 ### User Experience
 - **Experimental Gamepad Support** - Control the entire app with Xbox/PlayStation controllers
@@ -47,7 +47,7 @@ Download the latest installer from the [releases](https://github.com/devGaSantos
 
 The Windows installer requests administrator permission. If Steam is found at
 the default `C:\Program Files (x86)\Steam` location, it automatically installs
-the generated `LumaCore.dll` and `dwmapi.dll` there. Steam installations in
+the generated `OpenSteamTool.dll`, `dwmapi.dll`, and `xinput1_4.dll` there. Steam installations in
 custom locations can still be configured and repaired from inside Merlin.
 
 ### Option 2: From Source
@@ -74,7 +74,7 @@ Simply double-click `start.bat` - it will automatically:
 - Check for Node.js installation
 - Install or update Node.js dependencies
 - Validate the local `.env` and generate the encrypted development security bundle
-- Check that the required LumaCore DLLs are available
+- Check that the required OpenSteamTool DLLs are available
 - Launch the application
 
 The launcher prepares everything required to **run** Merlin. Building the native
@@ -86,14 +86,14 @@ the launcher shows the command that must be run after installing those tools.
 ```bash
 npm run build
 ```
-This first builds the Release version of `LumaCore.dll` and `dwmapi.dll`, copies
+This first builds the Release version of `OpenSteamTool.dll`, `dwmapi.dll`, and `xinput1_4.dll`, copies
 them to `assets/dlls`, then packages those generated DLLs with Merlin. The `.exe`
 file will be generated in the `dist/` folder.
 
 To build only the DLLs during development:
 
 ```bash
-npm run build:lumacore
+npm run build:opensteamtool
 ```
 
 ---
@@ -173,13 +173,13 @@ Change language via the dropdown in the top-right corner.
 ```text
 Merlin/
 |-- assets/             Icons and generated DLLs used by the application
-|-- LumaCore/           Native C++ component and its build system
+|-- OpenSteamTool/      Native C++ component and its build system
 |-- scripts/            Electron packaging and hardening hooks
 |-- src/
 |   |-- main/           Config, Steam, downloads, DLLs, security, and IPC modules
 |   `-- renderer/       Feature-specific renderer modules
 |-- test/               Node regression and contract tests
-|-- build.js            LumaCore + Electron secured build pipeline
+|-- build.js            OpenSteamTool + Electron secured build pipeline
 |-- main.js             Electron composition and application lifecycle
 |-- preload.js          Restricted IPC bridge
 |-- renderer.js         Existing Steam browsing interface logic
@@ -190,21 +190,17 @@ Merlin/
 
 ## Credits
 
-### LumaCore
+### OpenSteamTool
 
-Merlin integrates and distributes DLLs built from
-[KoriaPolis/LumaCore](https://github.com/KoriaPolis/LumaCore). LumaCore was
-written by **Midrag** for the **SteaMidra** project.
+Merlin integrates and distributes DLLs built from the internalized
+OpenSteamTool core under [`OpenSteamTool`](C:\Users\AZTEKA\Videos\Merlin\OpenSteamTool).
 
-LumaCore acknowledges
-[OpenSteamTool](https://github.com/OpenSteam001/OpenSteamTool) as an early
-inspiration and uses third-party components including Microsoft Detours, Lua,
-spdlog, toml++, and Protocol Buffers. Full acknowledgements are available in
-[`LumaCore/CREDITS.md`](LumaCore/CREDITS.md).
+This native component comes from the OpenSteamTool codebase and uses
+third-party components including Microsoft Detours, Lua, spdlog, toml++, and
+Protocol Buffers.
 
 ### License notice
 
-LumaCore and the DLLs generated from it are distributed under the
-**GNU General Public License v3.0**. Its license text is available in
-[`LumaCore/LICENSE`](LumaCore/LICENSE). Other Merlin components and third-party
+OpenSteamTool and the DLLs generated from it are distributed under the
+**GNU General Public License v3.0**. Other Merlin components and third-party
 dependencies retain their respective licenses.

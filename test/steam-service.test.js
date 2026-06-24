@@ -24,8 +24,9 @@ test('reports a valid Steam installation only when exe and DLLs exist', () => {
     const service = createService(new Set([
         root,
         path.join(root, 'steam.exe'),
-        path.join(root, 'LumaCore.dll'),
-        path.join(root, 'dwmapi.dll')
+        path.join(root, 'OpenSteamTool.dll'),
+        path.join(root, 'dwmapi.dll'),
+        path.join(root, 'xinput1_4.dll')
     ]));
 
     assert.deepEqual(service.getActivationReadiness(root), {
@@ -35,14 +36,14 @@ test('reports a valid Steam installation only when exe and DLLs exist', () => {
     });
 });
 
-test('reports missing LumaCore files without changing the path', () => {
+test('reports missing OpenSteamTool files without changing the path', () => {
     const root = path.normalize('C:\\Steam');
     const service = createService(new Set([root, path.join(root, 'steam.exe')]));
     const result = service.getActivationReadiness(root);
 
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'required_files_missing');
-    assert.deepEqual(result.missing, ['LumaCore.dll', 'dwmapi.dll']);
+    assert.deepEqual(result.missing, ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll']);
 });
 
 test('finds an installed game by validating libraryfolders and the appmanifest', () => {
@@ -55,8 +56,9 @@ test('finds an installed game by validating libraryfolders and the appmanifest',
     const service = createService(new Set([
         root,
         path.join(root, 'steam.exe'),
-        path.join(root, 'LumaCore.dll'),
+        path.join(root, 'OpenSteamTool.dll'),
         path.join(root, 'dwmapi.dll'),
+        path.join(root, 'xinput1_4.dll'),
         libraryFoldersPath,
         manifestPath,
         gamePath

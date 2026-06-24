@@ -1,4 +1,4 @@
-const REQUIRED_DLLS = ['LumaCore.dll', 'dwmapi.dll'];
+const REQUIRED_DLLS = ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll'];
 
 function createSteamService({ fs, path, exec, platform, userProfile }) {
     function parseQuotedVdf(raw) {

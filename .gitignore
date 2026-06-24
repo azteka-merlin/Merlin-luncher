@@ -13,10 +13,9 @@ yarn-error.log*
 # Arquivos gerados pelo Electron Builder
 dist/
 
-# Saidas geradas pelo LumaCore
-LumaCore/build/
-LumaCore/Releases/
-LumaCore/.deps/
+# Cache e saídas geradas pelo OpenSteamTool internalizado
+.deps/
+OpenSteamTool/build/
 
 # Manifesto de integridade gerado durante o build
 dist/integrity.json

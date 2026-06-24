@@ -1,4 +1,4 @@
-const DEFAULT_CORRECTIONS_CATALOG_URL = 'https://generator.ryuu.lol/files/fixes.json';
+const DEFAULT_CORRECTIONS_CATALOG_URL = 'https://api-merlin.com/api/fixes/catalog';
 
 function firstEligibleCorrection(fixes) {
     if (!Array.isArray(fixes)) return null;
