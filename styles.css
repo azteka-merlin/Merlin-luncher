@@ -1853,8 +1853,16 @@ webview {
     font-size: 0.9rem;
     font-weight: 700;
     line-height: 1;
-    cursor: help;
+    cursor: pointer;
     z-index: 1;
+    transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.correction-card-note:hover {
+    transform: translateY(-1px);
+    border-color: rgba(139, 92, 246, 0.48);
+    background: rgba(31, 41, 55, 0.94);
+    color: #ede9fe;
 }
 
 .correction-card-votes {
@@ -2303,6 +2311,62 @@ webview {
 
 .corrections-disclaimer-card .library-modal-actions {
     justify-content: center;
+}
+
+.corrections-admin-note-card {
+    width: min(560px, calc(100vw - 2rem));
+    gap: 1.2rem;
+}
+
+.corrections-admin-note-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.corrections-admin-note-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.95rem;
+}
+
+.corrections-admin-note-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(139, 92, 246, 0.28);
+    background: linear-gradient(180deg, rgba(76, 29, 149, 0.34), rgba(30, 41, 59, 0.88));
+    color: #d8b4fe;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.corrections-admin-note-body {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.corrections-admin-note-game {
+    color: var(--text-primary);
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.corrections-admin-note-text {
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(139, 92, 246, 0.16);
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.58);
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .update-modal-card {

@@ -21,7 +21,7 @@
     Pop $3
 
     ${If} $2 == "0"
-      MessageBox MB_ICONEXCLAMATION|MB_OK "Steam is currently open and must be closed to finish installing Merlin. Click OK to close Steam and continue."
+      MessageBox MB_ICONEXCLAMATION|MB_OK "Steam is currently open. Merlin needs to close Steam for a moment to finish installing the required files. Click OK to continue. If Steam stays open, close it manually and try again."
       nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /T /IM steam.exe'
       Pop $2
       Pop $3

@@ -23,6 +23,10 @@ window.merlinI18n.register({
         corrections_vote_up: 'Aprovar correção',
         corrections_vote_down: 'Reprovar correção',
         corrections_admin_note: 'Observação',
+        corrections_admin_note_eyebrow: 'OBSERVAÇÃO',
+        corrections_admin_note_title: 'Instruções',
+        corrections_admin_note_close: 'Fechar observação',
+        corrections_admin_note_done: 'Fechar',
         corrections_error_vote_failed: 'Não foi possível registrar sua avaliação agora.',
         corrections_error_auth_required: 'Faça login novamente para avaliar esta correção.',
         correction_offer_eyebrow: 'CORREÇÃO DISPONÍVEL',
@@ -108,6 +112,10 @@ window.merlinI18n.register({
         corrections_vote_up: 'Upvote correction',
         corrections_vote_down: 'Downvote correction',
         corrections_admin_note: 'Note',
+        corrections_admin_note_eyebrow: 'NOTE',
+        corrections_admin_note_title: 'Instructions',
+        corrections_admin_note_close: 'Close note',
+        corrections_admin_note_done: 'Close',
         corrections_error_vote_failed: 'Could not save your vote right now.',
         corrections_error_auth_required: 'Please sign in again to rate this correction.',
         correction_offer_eyebrow: 'CORRECTION AVAILABLE',
@@ -193,6 +201,10 @@ window.merlinI18n.register({
         corrections_vote_up: 'Aprobar corrección',
         corrections_vote_down: 'Desaprobar corrección',
         corrections_admin_note: 'Observación',
+        corrections_admin_note_eyebrow: 'OBSERVACIÓN',
+        corrections_admin_note_title: 'Instrucciones',
+        corrections_admin_note_close: 'Cerrar observación',
+        corrections_admin_note_done: 'Cerrar',
         corrections_error_vote_failed: 'No se pudo registrar su valoración ahora.',
         corrections_error_auth_required: 'Vuelva a iniciar sesión para valorar esta corrección.',
         correction_offer_eyebrow: 'CORRECCIÓN DISPONIBLE',
@@ -278,6 +290,10 @@ window.merlinI18n.register({
         corrections_vote_up: 'Approuver le correctif',
         corrections_vote_down: 'Désapprouver le correctif',
         corrections_admin_note: 'Note',
+        corrections_admin_note_eyebrow: 'NOTE',
+        corrections_admin_note_title: 'Instructions',
+        corrections_admin_note_close: 'Fermer la note',
+        corrections_admin_note_done: 'Fermer',
         corrections_error_vote_failed: 'Impossible d’enregistrer votre vote pour le moment.',
         corrections_error_auth_required: 'Reconnectez-vous pour évaluer ce correctif.',
         correction_offer_eyebrow: 'CORRECTIF DISPONIBLE',
@@ -363,6 +379,10 @@ window.merlinI18n.register({
         corrections_vote_up: 'Korrektur positiv bewerten',
         corrections_vote_down: 'Korrektur negativ bewerten',
         corrections_admin_note: 'Hinweis',
+        corrections_admin_note_eyebrow: 'HINWEIS',
+        corrections_admin_note_title: 'Anweisungen',
+        corrections_admin_note_close: 'Hinweis schließen',
+        corrections_admin_note_done: 'Schließen',
         corrections_error_vote_failed: 'Ihre Bewertung konnte gerade nicht gespeichert werden.',
         corrections_error_auth_required: 'Melden Sie sich erneut an, um diese Korrektur zu bewerten.',
         correction_offer_eyebrow: 'KORREKTUR VERFÜGBAR',
@@ -446,6 +466,11 @@ document.addEventListener('DOMContentLoaded', () => {
         pagination: document.getElementById('correctionsPagination'),
         disclaimerModal: document.getElementById('correctionsDisclaimerModal'),
         disclaimerAcknowledge: document.getElementById('correctionsDisclaimerAcknowledgeBtn'),
+        adminNoteModal: document.getElementById('correctionsAdminNoteModal'),
+        adminNoteGame: document.getElementById('correctionsAdminNoteGame'),
+        adminNoteText: document.getElementById('correctionsAdminNoteText'),
+        adminNoteClose: document.getElementById('correctionsAdminNoteCloseBtn'),
+        adminNoteDone: document.getElementById('correctionsAdminNoteDoneBtn'),
         confirmModal: document.getElementById('correctionsConfirmModal'),
         confirmMessage: document.getElementById('correctionsConfirmMessage'),
         confirmCancel: document.getElementById('correctionsConfirmCancelBtn'),
@@ -488,6 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let correctionsDisclaimerSeen = null;
     let correctionsDisclaimerLoading = null;
     let correctionsDisclaimerOpened = false;
+    let pendingAdminNoteItem = null;
 
     function tr(key, values = {}) {
         const template = window.merlinI18n.t(key);
@@ -499,6 +525,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function notify(message, type = 'info') {
         window.showNotification?.(message, type);
+    }
+
+    function openAdminNoteModal(item) {
+        if (!item?.correction?.adminNote) return;
+        pendingAdminNoteItem = item;
+        elements.adminNoteGame.textContent = item.gameName;
+        elements.adminNoteText.textContent = item.correction.adminNote;
+        elements.adminNoteModal.hidden = false;
+        elements.adminNoteDone.focus();
+    }
+
+    function closeAdminNoteModal() {
+        pendingAdminNoteItem = null;
+        elements.adminNoteModal.hidden = true;
+        elements.adminNoteGame.textContent = '';
+        elements.adminNoteText.textContent = '';
     }
 
     function currentView() {
@@ -728,8 +770,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 noteBadge.type = 'button';
                 noteBadge.className = 'correction-card-note';
                 noteBadge.textContent = 'i';
-                noteBadge.title = `${tr('corrections_admin_note')}: ${item.correction.adminNote}`;
-                noteBadge.setAttribute('aria-label', `${tr('corrections_admin_note')}: ${item.correction.adminNote}`);
+                noteBadge.title = tr('corrections_admin_note');
+                noteBadge.setAttribute('aria-label', `${tr('corrections_admin_note')}: ${item.gameName}`);
+                noteBadge.addEventListener('click', () => openAdminNoteModal(item));
                 card.append(noteBadge);
             }
 
@@ -1196,6 +1239,11 @@ document.addEventListener('DOMContentLoaded', () => {
         void showCorrectionsDisclaimerIfNeeded();
     });
     elements.disclaimerAcknowledge.addEventListener('click', acknowledgeCorrectionsDisclaimer);
+    elements.adminNoteClose.addEventListener('click', closeAdminNoteModal);
+    elements.adminNoteDone.addEventListener('click', closeAdminNoteModal);
+    elements.adminNoteModal.addEventListener('click', event => {
+        if (event.target === elements.adminNoteModal) closeAdminNoteModal();
+    });
     elements.refresh.addEventListener('click', () => loadCorrections(true));
     elements.search.addEventListener('input', () => {
         currentPage = 1;
@@ -1233,6 +1281,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape' && !elements.disclaimerModal.hidden) {
             acknowledgeCorrectionsDisclaimer();
+        } else if (event.key === 'Escape' && !elements.adminNoteModal.hidden) {
+            closeAdminNoteModal();
         }
     });
     window.addEventListener('merlin-view-changed', syncVisibility);
