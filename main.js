@@ -18,6 +18,7 @@ const { createAddGamesService } = require('./src/main/games/add-games-service');
 const { createGameNameResolver } = require('./src/main/games/game-name-resolver');
 const { createGameQueue } = require('./src/main/games/game-queue');
 const { createGameInstaller } = require('./src/main/games/game-installer');
+const { createManifestOverrideService } = require('./src/main/games/manifest-override-service');
 const { parseSteamGameLink } = require('./src/main/games/steam-link-parser');
 const { registerCorrectionsIpc } = require('./src/main/ipc/register-corrections-ipc');
 const { registerExistingIpc } = require('./src/main/ipc/register-existing-ipc');
@@ -34,7 +35,7 @@ const { createArchiveClient } = require('./src/main/network/archive-client');
 const { createApiAgent } = require('./src/main/network/api-agent');
 const { createDownloadManager } = require('./src/main/network/download-manager');
 const { createMachineIdentity } = require('./src/main/security/machine-identity');
-const { REQUIRED_DLLS, createSteamService } = require('./src/main/steam/steam-service');
+const { REQUIRED_STEAM_FILES, createSteamService } = require('./src/main/steam/steam-service');
 const { createUpdateService } = require('./src/main/updates/update-service');
 
 let mainWindow;
@@ -131,11 +132,12 @@ function getCorrectionsCatalogFilePath() {
     return path.join(app.getPath('userData'), 'corrections-catalog.json');
 }
 
-function getBundledDllPath(dll) {
-    const dllDirectory = app.isPackaged
-        ? path.join(process.resourcesPath, 'dlls')
-        : path.join(__dirname, 'assets', 'dlls');
-    return path.join(dllDirectory, dll);
+function getBundledSteamRuntimePath(file) {
+    const root = app.isPackaged
+        ? process.resourcesPath
+        : path.join(__dirname, 'assets');
+
+    return path.join(root, 'dlls', file.sourceName);
 }
 
 const configStore = createConfigStore({
@@ -156,6 +158,7 @@ const steamService = createSteamService({
 const apiBaseUrl = process.env.MERLIN_API_BASE_URL
     || 'https://api-merlin.com/api';
 const manifestApiUrl = process.env.MERLIN_API_URL || `${apiBaseUrl}/manifests`;
+const manifestStatusUrl = `${manifestApiUrl}/status`;
 const apiAgent = createApiAgent();
 const downloadManager = createDownloadManager({ fs, path, axios, httpsAgent: apiAgent });
 const machineIdentity = createMachineIdentity({ crypto, execFile, os });
@@ -171,6 +174,12 @@ const authSession = createAuthSession({
     onAuthRequired: code => mainWindow?.webContents.send('auth:required', { code })
 });
 const archiveClient = createArchiveClient({ axios, httpsAgent: apiAgent });
+const manifestOverrideService = createManifestOverrideService({
+    axios,
+    httpsAgent: apiAgent,
+    authSession,
+    statusUrl: manifestStatusUrl
+});
 const updateService = createUpdateService({ app, axios, shell, path, downloadManager });
 const libraryCatalogStore = createLibraryCatalogStore({
     fs,
@@ -212,6 +221,7 @@ const correctionsService = createCorrectionsService({
     shell,
     configStore,
     steamService,
+    authSession,
     catalogStore: correctionsCatalogStore,
     catalogClient: createCorrectionsCatalogClient({ axios }),
     libraryCatalogService,
@@ -239,15 +249,16 @@ const addGamesService = createAddGamesService({
     configStore,
     steamService,
     libraryService,
-    catalogService: libraryCatalogService
+    catalogService: libraryCatalogService,
+    manifestOverrideService
 });
 
 const dllInstaller = createDllInstaller({
     fs,
     path,
     dialog,
-    requiredDlls: REQUIRED_DLLS,
-    getSourcePath: getBundledDllPath,
+    requiredFiles: REQUIRED_STEAM_FILES,
+    getSourcePath: getBundledSteamRuntimePath,
     getMainWindow: () => mainWindow
 });
 

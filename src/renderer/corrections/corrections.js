@@ -20,6 +20,11 @@ window.merlinI18n.register({
         corrections_app_id: 'App ID',
         corrections_download: 'Baixar',
         corrections_download_install: 'Baixar e instalar',
+        corrections_vote_up: 'Aprovar correção',
+        corrections_vote_down: 'Reprovar correção',
+        corrections_admin_note: 'Observação',
+        corrections_error_vote_failed: 'Não foi possível registrar sua avaliação agora.',
+        corrections_error_auth_required: 'Faça login novamente para avaliar esta correção.',
         correction_offer_eyebrow: 'CORREÇÃO DISPONÍVEL',
         correction_offer_title: 'Este jogo possui uma correção',
         correction_offer_description: 'Esta correção da comunidade pode ser necessária para abrir o jogo ou utilizar seus recursos online.',
@@ -100,6 +105,11 @@ window.merlinI18n.register({
         corrections_app_id: 'App ID',
         corrections_download: 'Download',
         corrections_download_install: 'Download and install',
+        corrections_vote_up: 'Upvote correction',
+        corrections_vote_down: 'Downvote correction',
+        corrections_admin_note: 'Note',
+        corrections_error_vote_failed: 'Could not save your vote right now.',
+        corrections_error_auth_required: 'Please sign in again to rate this correction.',
         correction_offer_eyebrow: 'CORRECTION AVAILABLE',
         correction_offer_title: 'This game has a correction',
         correction_offer_description: 'This community correction may be required to launch the game or use its online features.',
@@ -180,6 +190,11 @@ window.merlinI18n.register({
         corrections_app_id: 'App ID',
         corrections_download: 'Descargar',
         corrections_download_install: 'Descargar e instalar',
+        corrections_vote_up: 'Aprobar corrección',
+        corrections_vote_down: 'Desaprobar corrección',
+        corrections_admin_note: 'Observación',
+        corrections_error_vote_failed: 'No se pudo registrar su valoración ahora.',
+        corrections_error_auth_required: 'Vuelva a iniciar sesión para valorar esta corrección.',
         correction_offer_eyebrow: 'CORRECCIÓN DISPONIBLE',
         correction_offer_title: 'Este juego tiene una corrección',
         correction_offer_description: 'Esta corrección de la comunidad puede ser necesaria para iniciar el juego o utilizar sus funciones en línea.',
@@ -260,6 +275,11 @@ window.merlinI18n.register({
         corrections_app_id: 'App ID',
         corrections_download: 'Télécharger',
         corrections_download_install: 'Télécharger et installer',
+        corrections_vote_up: 'Approuver le correctif',
+        corrections_vote_down: 'Désapprouver le correctif',
+        corrections_admin_note: 'Note',
+        corrections_error_vote_failed: 'Impossible d’enregistrer votre vote pour le moment.',
+        corrections_error_auth_required: 'Reconnectez-vous pour évaluer ce correctif.',
         correction_offer_eyebrow: 'CORRECTIF DISPONIBLE',
         correction_offer_title: 'Ce jeu dispose d’un correctif',
         correction_offer_description: 'Ce correctif communautaire peut être nécessaire pour lancer le jeu ou utiliser ses fonctionnalités en ligne.',
@@ -340,6 +360,11 @@ window.merlinI18n.register({
         corrections_app_id: 'App ID',
         corrections_download: 'Herunterladen',
         corrections_download_install: 'Herunterladen und installieren',
+        corrections_vote_up: 'Korrektur positiv bewerten',
+        corrections_vote_down: 'Korrektur negativ bewerten',
+        corrections_admin_note: 'Hinweis',
+        corrections_error_vote_failed: 'Ihre Bewertung konnte gerade nicht gespeichert werden.',
+        corrections_error_auth_required: 'Melden Sie sich erneut an, um diese Korrektur zu bewerten.',
         correction_offer_eyebrow: 'KORREKTUR VERFÜGBAR',
         correction_offer_title: 'Für dieses Spiel ist eine Korrektur verfügbar',
         correction_offer_description: 'Diese Community-Korrektur kann erforderlich sein, um das Spiel zu starten oder seine Online-Funktionen zu nutzen.',
@@ -457,6 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingInstall = null;
     let pendingOffer = null;
     let activeOperation = null;
+    let votingAppId = null;
     let progressCloseResolver = null;
     let offerCatalogRefreshed = false;
     let correctionsDisclaimerSeen = null;
@@ -548,12 +574,43 @@ document.addEventListener('DOMContentLoaded', () => {
             : null;
     }
 
+    function sortItems(collection) {
+        return [...collection].sort((left, right) => {
+            const scoreDelta = Number(right?.correction?.score || 0) - Number(left?.correction?.score || 0);
+            if (scoreDelta !== 0) return scoreDelta;
+            const upvotesDelta = Number(right?.correction?.upvotes || 0) - Number(left?.correction?.upvotes || 0);
+            if (upvotesDelta !== 0) return upvotesDelta;
+            return left.gameName.localeCompare(right.gameName);
+        });
+    }
+
     function filteredItems() {
         const term = String(elements.search.value || '').trim().toLocaleLowerCase();
-        if (!term) return [...items];
-        return items.filter(item =>
+        if (!term) return sortItems(items);
+        return sortItems(items.filter(item =>
             item.gameName.toLocaleLowerCase().includes(term)
-            || item.appId.includes(term));
+            || item.appId.includes(term)));
+    }
+
+    function mergeVoteResult(appId, result) {
+        let changed = false;
+        items = items.map(item => {
+            if (item.appId !== appId) return item;
+            changed = true;
+            return {
+                ...item,
+                correction: {
+                    ...item.correction,
+                    upvotes: Math.max(0, Math.trunc(Number(result.upvotes) || 0)),
+                    downvotes: Math.max(0, Math.trunc(Number(result.downvotes) || 0)),
+                    score: Math.trunc(Number(result.score) || 0),
+                    viewerVote: result.viewerVote === 'up' || result.viewerVote === 'down'
+                        ? result.viewerVote
+                        : item.correction.viewerVote || null
+                }
+            };
+        });
+        if (changed) items = sortItems(items);
     }
 
     function paginate(collection, requestedPage) {
@@ -666,6 +723,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('article');
             card.className = 'correction-card';
 
+            if (item.correction.adminNote) {
+                const noteBadge = document.createElement('button');
+                noteBadge.type = 'button';
+                noteBadge.className = 'correction-card-note';
+                noteBadge.textContent = 'i';
+                noteBadge.title = `${tr('corrections_admin_note')}: ${item.correction.adminNote}`;
+                noteBadge.setAttribute('aria-label', `${tr('corrections_admin_note')}: ${item.correction.adminNote}`);
+                card.append(noteBadge);
+            }
+
             const imageWrap = document.createElement('div');
             imageWrap.className = 'correction-card-image-wrap';
             imageWrap.append(coverElement(item));
@@ -678,6 +745,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const appId = document.createElement('p');
             appId.className = 'correction-card-appid';
             appId.textContent = `${tr('corrections_app_id')}: ${item.appId}`;
+
+            const votes = document.createElement('div');
+            votes.className = 'correction-card-votes';
+
+            const upvoteBtn = document.createElement('button');
+            upvoteBtn.type = 'button';
+            upvoteBtn.className = `correction-vote-btn${item.correction.viewerVote === 'up' ? ' active' : ''}`;
+            upvoteBtn.title = tr('corrections_vote_up');
+            upvoteBtn.setAttribute('aria-label', tr('corrections_vote_up'));
+            upvoteBtn.disabled = loading || Boolean(activeOperation) || votingAppId === item.appId;
+            upvoteBtn.innerHTML = `<span class="correction-vote-icon">👍</span><span>${Math.max(0, Math.trunc(Number(item.correction.upvotes) || 0))}</span>`;
+            upvoteBtn.addEventListener('click', () => handleVote(item, 'up'));
+
+            const downvoteBtn = document.createElement('button');
+            downvoteBtn.type = 'button';
+            downvoteBtn.className = `correction-vote-btn${item.correction.viewerVote === 'down' ? ' active' : ''}`;
+            downvoteBtn.title = tr('corrections_vote_down');
+            downvoteBtn.setAttribute('aria-label', tr('corrections_vote_down'));
+            downvoteBtn.disabled = loading || Boolean(activeOperation) || votingAppId === item.appId;
+            downvoteBtn.innerHTML = `<span class="correction-vote-icon">👎</span><span>${Math.max(0, Math.trunc(Number(item.correction.downvotes) || 0))}</span>`;
+            downvoteBtn.addEventListener('click', () => handleVote(item, 'down'));
+
+            votes.append(upvoteBtn, downvoteBtn);
 
             const actions = document.createElement('div');
             actions.className = 'correction-card-actions';
@@ -697,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
             installBtn.addEventListener('click', () => requestInstall(item));
 
             actions.append(downloadBtn, installBtn);
-            card.append(imageWrap, title, appId, actions);
+            card.append(imageWrap, title, appId, votes, actions);
             elements.grid.append(card);
         }
     }
@@ -727,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.button.classList.toggle('active', isActive);
         elements.button.setAttribute('aria-pressed', String(isActive));
         if (isActive && !loaded) {
-            loadCorrections();
+            loadCorrections(true);
         }
         if (isActive) {
             void showCorrectionsDisclaimerIfNeeded();
@@ -757,20 +847,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const [result] = await Promise.all([request, minimumLoadingTime]);
 
             if (!result.success) {
+                window.merlinServiceStatus?.report?.('corrections-catalog');
                 notify(tr(force ? 'corrections_error_refresh_failed' : 'corrections_error_load'), 'error');
                 elements.loading.hidden = true;
                 return;
             }
 
-            items = result.items;
+            items = sortItems(result.items);
             loaded = true;
             currentPage = 1;
             render();
 
             if (result.stale) {
+                window.merlinServiceStatus?.report?.('corrections-catalog');
                 notify(tr('corrections_refresh_stale'));
+            } else {
+                window.merlinServiceStatus?.clear?.('corrections-catalog');
             }
         } catch (_) {
+            window.merlinServiceStatus?.report?.('corrections-catalog');
             notify(tr(force ? 'corrections_error_refresh_failed' : 'corrections_error_load'), 'error');
             elements.loading.hidden = true;
         } finally {
@@ -844,7 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? result.items.find(candidate => candidate.appId === normalizedAppId)
                 : null;
             if (result.success) {
-                items = result.items;
+                items = sortItems(result.items);
                 loaded = true;
                 if (currentView() === 'corrections') render();
             }
@@ -1008,6 +1103,31 @@ document.addEventListener('DOMContentLoaded', () => {
         notify(message, result.code === 'cancelled' ? 'info' : 'error');
     }
 
+    async function handleVote(item, vote) {
+        if (!item || votingAppId === item.appId || loading || activeOperation) return;
+        votingAppId = item.appId;
+        render();
+
+        try {
+            const result = await api.vote({ appId: item.appId, vote });
+            if (!result?.success) {
+                const key = result?.code === 'auth_required'
+                    ? 'corrections_error_auth_required'
+                    : 'corrections_error_vote_failed';
+                notify(tr(key), 'error');
+                return;
+            }
+
+            mergeVoteResult(item.appId, result);
+            render();
+        } catch (_) {
+            notify(tr('corrections_error_vote_failed'), 'error');
+        } finally {
+            votingAppId = null;
+            render();
+        }
+    }
+
     async function startDownload(item) {
         const operationId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
         showProgressModal(item, 'download', operationId);
@@ -1071,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.button.addEventListener('click', () => {
         window.merlinView?.set?.('corrections');
         if (!loaded && !loading) {
-            loadCorrections();
+            loadCorrections(true);
         }
         void showCorrectionsDisclaimerIfNeeded();
     });

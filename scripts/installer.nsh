@@ -71,6 +71,18 @@
       ${EndIf}
     ${EndIf}
 
+    ${If} $1 == "0"
+      ${If} ${FileExists} "$INSTDIR\resources\dlls\merlin-helper.dll"
+        ClearErrors
+        CopyFiles /SILENT "$INSTDIR\resources\dlls\merlin-helper.dll" "$0\merlin-helper.dll"
+        ${If} ${Errors}
+          StrCpy $1 "1"
+        ${EndIf}
+      ${Else}
+        StrCpy $1 "1"
+      ${EndIf}
+    ${EndIf}
+
     ${If} $1 == "1"
       MessageBox MB_ICONEXCLAMATION|MB_OK "Merlin was installed, but the OpenSteamTool files could not be copied to the default Steam folder. Make sure Steam is closed and use Repair inside Merlin."
     ${EndIf}

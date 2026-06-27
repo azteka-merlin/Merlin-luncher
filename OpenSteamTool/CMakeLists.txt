@@ -109,6 +109,7 @@ add_library(OpenSteamTool SHARED
     Utils/Config/LuaFileWatcher.cpp
     Utils/HookSupport/VehCommon.cpp
     Utils/Logging/Log.cpp
+    Utils/SteamMetadata/MerlinLocalFallback.cpp
     Utils/SteamMetadata/IPCLoader.cpp
     Utils/SteamMetadata/ManifestClient.cpp
     Utils/SteamMetadata/PatternLoader.cpp
@@ -146,6 +147,11 @@ add_library(OpenSteamTool SHARED
     "${PROTO_GEN_DIR}/steam_messages.pb.cc"
 )
 
+add_library(MerlinHelper SHARED
+    MerlinHelper/MerlinHelper.cpp
+)
+set_target_properties(MerlinHelper PROPERTIES OUTPUT_NAME "merlin-helper")
+
 # Header search path — per-config include directory
 target_include_directories(OpenSteamTool PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -160,6 +166,15 @@ target_link_libraries(OpenSteamTool PRIVATE
     $<$<CONFIG:Release>:libprotobuf-lite>
     tomlplusplus::tomlplusplus
     $<$<CONFIG:Debug>:spdlog::spdlog>
+)
+
+target_include_directories(MerlinHelper PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/generated
+)
+
+target_link_libraries(MerlinHelper PRIVATE
+    OSTPlatform
 )
 
 # Logging is compiled in only for Debug; Release reduces LOG_* to no-ops.

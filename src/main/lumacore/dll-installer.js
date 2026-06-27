@@ -33,7 +33,7 @@ const MESSAGES = {
 
 const LEGACY_DLLS = ['LumaCore.dll'];
 
-function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, getMainWindow }) {
+function createDllInstaller({ fs, path, dialog, requiredFiles, getSourcePath, getMainWindow }) {
     function notify(ok) {
         const mainWindow = getMainWindow();
         if (mainWindow?.webContents) {
@@ -51,27 +51,28 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
     }
 
     function copyRequiredDlls(steamPath) {
-        for (const dll of requiredDlls) {
-            const srcPath = getSourcePath(dll);
-            const destPath = path.join(steamPath, dll);
+        for (const file of requiredFiles) {
+            const srcPath = getSourcePath(file);
+            const destPath = path.join(steamPath, file.relativeDestination);
+            fs.mkdirSync(path.dirname(destPath), { recursive: true });
             try {
                 fs.copyFileSync(srcPath, destPath);
             } catch (error) {
                 if (error && (error.code === 'EBUSY' || error.code === 'EPERM')) {
                     throw new Error(
-                        `Steam appears to be using ${dll}. Close Steam completely and try Repair again.`
+                        `Steam appears to be using ${file.name}. Close Steam completely and try Repair again.`
                     );
                 }
                 throw error;
             }
-            console.log(`Installed: ${dll} -> ${destPath}`);
+            console.log(`Installed: ${file.name} -> ${destPath}`);
         }
     }
 
     async function checkAndInstall(steamPath, lang = 'en') {
         const message = MESSAGES[lang] || MESSAGES.en;
-        const missing = requiredDlls.filter(dll =>
-            !fs.existsSync(path.join(steamPath, dll))
+        const missing = requiredFiles.filter(file =>
+            !fs.existsSync(path.join(steamPath, file.relativeDestination))
         );
 
         if (missing.length === 0) {
@@ -90,8 +91,8 @@ function createDllInstaller({ fs, path, dialog, requiredDlls, getSourcePath, get
         });
 
         if (response === 0) {
-            for (const dll of requiredDlls) {
-                const srcPath = getSourcePath(dll);
+            for (const file of requiredFiles) {
+                const srcPath = getSourcePath(file);
                 if (!fs.existsSync(srcPath)) {
                     throw new Error(`Native DLL build output not found: ${srcPath}`);
                 }

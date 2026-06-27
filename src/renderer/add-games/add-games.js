@@ -9,7 +9,8 @@ window.merlinI18n.register({
         games_error_selection_required: 'Selecione um jogo da lista antes de continuar.',
         games_error_search_failed: 'Não foi possível pesquisar jogos agora.',
         auto_update_title: 'Atualizar automaticamente',
-        auto_update_description: 'Recomendado para a maioria dos jogos. Se estiver em dúvida, deixe ativado.'
+        auto_update_description: 'Recomendado para a maioria dos jogos. Se estiver em dúvida, deixe ativado.',
+        auto_update_locked_hint: 'Este jogo está fixado em uma versão específica para garantir o funcionamento da correção disponível.'
     },
     en: {
         add_games_description: 'Paste a Steam link, type a game name, or enter an AppID.',
@@ -21,7 +22,8 @@ window.merlinI18n.register({
         games_error_selection_required: 'Select a game from the list before continuing.',
         games_error_search_failed: 'Could not search games right now.',
         auto_update_title: 'Update automatically',
-        auto_update_description: 'Recommended for most games. If you are not sure, leave this enabled.'
+        auto_update_description: 'Recommended for most games. If you are not sure, leave this enabled.',
+        auto_update_locked_hint: 'This game is pinned to a specific version to help the available correction work properly.'
     },
     es: {
         add_games_description: 'Pegue un enlace de Steam, escriba el nombre del juego o introduzca el AppID.',
@@ -33,7 +35,8 @@ window.merlinI18n.register({
         games_error_selection_required: 'Seleccione un juego de la lista antes de continuar.',
         games_error_search_failed: 'No se pudieron buscar juegos ahora.',
         auto_update_title: 'Actualizar automáticamente',
-        auto_update_description: 'Recomendado para la mayoría de los juegos. Si no está seguro, déjelo activado.'
+        auto_update_description: 'Recomendado para la mayoría de los juegos. Si no está seguro, déjelo activado.',
+        auto_update_locked_hint: 'Este juego está fijado en una versión específica para garantizar el funcionamiento de la corrección disponible.'
     },
     fr: {
         add_games_description: 'Collez un lien Steam, saisissez le nom du jeu ou entrez l’AppID.',
@@ -45,7 +48,8 @@ window.merlinI18n.register({
         games_error_selection_required: 'Sélectionnez un jeu dans la liste avant de continuer.',
         games_error_search_failed: 'Impossible de rechercher des jeux pour le moment.',
         auto_update_title: 'Mettre à jour automatiquement',
-        auto_update_description: 'Recommandé pour la plupart des jeux. En cas de doute, laissez cette option activée.'
+        auto_update_description: 'Recommandé pour la plupart des jeux. En cas de doute, laissez cette option activée.',
+        auto_update_locked_hint: 'Ce jeu est bloqué sur une version spécifique afin de garantir le bon fonctionnement du correctif disponible.'
     },
     de: {
         add_games_description: 'Fügen Sie einen Steam-Link ein, geben Sie den Spielnamen oder die AppID ein.',
@@ -57,7 +61,8 @@ window.merlinI18n.register({
         games_error_selection_required: 'Wählen Sie ein Spiel aus der Liste aus, bevor Sie fortfahren.',
         games_error_search_failed: 'Spiele konnten gerade nicht gesucht werden.',
         auto_update_title: 'Automatisch aktualisieren',
-        auto_update_description: 'Für die meisten Spiele empfohlen. Wenn Sie unsicher sind, lassen Sie dies aktiviert.'
+        auto_update_description: 'Für die meisten Spiele empfohlen. Wenn Sie unsicher sind, lassen Sie dies aktiviert.',
+        auto_update_locked_hint: 'Dieses Spiel ist auf eine bestimmte Version festgelegt, damit die verfügbare Korrektur korrekt funktioniert.'
     }
 });
 
@@ -74,6 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const linkInput = document.getElementById('gameLinkInput');
     const suggestions = document.getElementById('gameSuggestions');
     const autoUpdateToggle = document.getElementById('autoUpdateToggle');
+    const autoUpdateOption = document.querySelector('.auto-update-option');
     const queueList = document.getElementById('gameQueueList');
     const queueCount = document.getElementById('queueCount');
     const installAllCount = document.getElementById('installAllCount');
@@ -93,28 +99,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     const localErrorTranslations = {
         ptbr: {
             games_error_catalog_not_found: 'Nenhum jogo foi encontrado para essa busca.',
-            games_error_resolve_failed: 'Nao foi possivel interpretar esse link da Steam.'
+            games_error_resolve_failed: 'Não foi possível interpretar esse link da Steam.'
         },
         en: {
             games_error_catalog_not_found: 'No game was found for this search.',
             games_error_resolve_failed: 'Could not understand this Steam link.'
         },
         es: {
-            games_error_catalog_not_found: 'No se encontro ningun juego para esta busqueda.',
+            games_error_catalog_not_found: 'No se encontró ningún juego para esta búsqueda.',
             games_error_resolve_failed: 'No se pudo interpretar este enlace de Steam.'
         },
         fr: {
-            games_error_catalog_not_found: 'Aucun jeu n a ete trouve pour cette recherche.',
-            games_error_resolve_failed: 'Impossible d interpreter ce lien Steam.'
+            games_error_catalog_not_found: 'Aucun jeu n’a été trouvé pour cette recherche.',
+            games_error_resolve_failed: 'Impossible d’interpréter ce lien Steam.'
         },
         de: {
-            games_error_catalog_not_found: 'Fuer diese Suche wurde kein Spiel gefunden.',
+            games_error_catalog_not_found: 'Für diese Suche wurde kein Spiel gefunden.',
             games_error_resolve_failed: 'Dieser Steam-Link konnte nicht verarbeitet werden.'
         }
     };
 
     function resetAutoUpdate() {
         autoUpdateToggle.checked = true;
+        autoUpdateToggle.disabled = false;
+        if (autoUpdateOption) autoUpdateOption.title = '';
     }
 
     function tr(key, values = {}) {
@@ -232,7 +240,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectedGame = game ? {
             appId: game.appId,
             name: game.name,
-            coverUrl: game.coverUrl || null
+            coverUrl: game.coverUrl || null,
+            requiresVersionPin: game.requiresVersionPin === true
         } : null;
         if (selectedGame) {
             linkInput.value = selectedGame.name;
@@ -259,6 +268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hasSelected = Boolean(selectedGame);
         const hasLink = isSteamLink(linkInput.value);
         const canSubmit = hasSelected || hasLink;
+        const requiresVersionPin = selectedGame?.requiresVersionPin === true;
         linkInput.disabled = locked;
         installNowBtn.disabled = locked || queueState.count > 0 || !canSubmit;
         addToQueueBtn.disabled = locked || !canSubmit;
@@ -267,7 +277,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         queueList.querySelectorAll('.remove-game-btn').forEach(button => {
             button.disabled = locked;
         });
-        autoUpdateToggle.disabled = locked;
+        if (requiresVersionPin) {
+            autoUpdateToggle.checked = false;
+        }
+        autoUpdateToggle.disabled = locked || requiresVersionPin;
+        if (autoUpdateOption) {
+            autoUpdateOption.title = requiresVersionPin ? tr('auto_update_locked_hint') : '';
+        }
     }
 
     function renderQueue(nextState) {
@@ -336,8 +352,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function runSearch(query) {
         const requestId = ++searchRequestId;
-        if (!query || isSteamLink(query)) {
+        if (!query) {
             clearSuggestions();
+            return;
+        }
+
+        if (isSteamLink(query)) {
+            const result = await api.resolveLink(query);
+            if (requestId !== searchRequestId) return;
+            if (!result.success) {
+                setSelectedGame(null);
+                showFeedback(errorMessage(result), 'error');
+                return;
+            }
+            setSelectedGame(result.item);
+            clearSuggestions();
+            showFeedback('');
             return;
         }
 
@@ -345,11 +375,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (requestId !== searchRequestId) return;
 
         if (!result.success) {
+            if (result.code === 'search_failed') {
+                window.merlinServiceStatus?.report?.('catalog-search');
+            }
             clearSuggestions();
             showFeedback(errorMessage(result), 'error');
             return;
         }
 
+        window.merlinServiceStatus?.clear?.('catalog-search');
         renderSuggestions(result.items);
         if (result.items.length === 0) {
             showFeedback(tr('games_suggestions_empty'));
@@ -369,6 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showFeedback('');
         searchTimer = setTimeout(() => {
             runSearch(query).catch(() => {
+                window.merlinServiceStatus?.report?.('catalog-search');
                 showFeedback(tr('games_error_search_failed'), 'error');
             });
         }, 300);

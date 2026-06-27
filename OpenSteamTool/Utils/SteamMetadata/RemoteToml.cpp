@@ -1,4 +1,5 @@
 #include "RemoteToml.h"
+#include "MerlinLocalFallback.h"
 #include "OSTPlatform/include/Http.h"
 #include "Utils/Config/Config.h"
 #include "Utils/Logging/Log.h"
@@ -171,6 +172,23 @@ Result Fetch(const Request& request)
     }
 
     // 6. Total failure — caller handles popup / degraded mode.
+    if (MerlinLocalFallback::TryGenerate(request) && fs::exists(cachePath)) {
+        LOG_INFO("RemoteToml({}/{}): Merlin local fallback generated {}",
+                 request.channel, request.component, cachePathText);
+
+        std::ifstream ifs(cachePath, std::ios::binary);
+        if (ifs) {
+            std::string buf((std::istreambuf_iterator<char>(ifs)),
+                             std::istreambuf_iterator<char>());
+            if (!buf.empty()) {
+                out.body = std::move(buf);
+                out.ok = true;
+                out.fromCache = true;
+                return out;
+            }
+        }
+    }
+
     LOG_WARN("RemoteToml({}/{}): no source available (last URL: {} HTTP {})",
              request.channel, request.component,
              lastUrl.empty() ? "<none>" : lastUrl, http.status);

@@ -147,6 +147,7 @@ function createGameInstaller({
             const zipPath = path.join(tempDir, `${appId}.zip`);
             let downloaded = false;
             let sourceUsed = null;
+            let forceDisableAutoUpdate = false;
 
             for (let i = 0; i < sources.length; i++) {
                 const source = sources[i];
@@ -170,6 +171,9 @@ function createGameInstaller({
                     if (fs.existsSync(zipPath) && fs.statSync(zipPath).size > 0) {
                         downloaded = true;
                         sourceUsed = source.name;
+                        forceDisableAutoUpdate = String(
+                            response.headers?.['x-merlin-manifest-source'] || ''
+                        ).toLowerCase() === 'r2-override';
                         console.log(`Downloaded from ${source.name} (attempt ${i + 1}): ${source.url}`);
                         break;
                     }
@@ -208,7 +212,16 @@ function createGameInstaller({
 
             console.log(`Extracted directory: ${extractedDir} (source: ${sourceUsed})`);
             onProgress({ message: 'Installing files...', percent: 75 });
-            const result = installArchiveFiles(extractedDir, depotcachePath, stplugInPath, { autoUpdate });
+            const effectiveAutoUpdate = forceDisableAutoUpdate ? false : autoUpdate;
+            if (forceDisableAutoUpdate) {
+                console.log(`Manifest override detected for ${appId}; forcing autoUpdate=false`);
+            }
+            const result = installArchiveFiles(
+                extractedDir,
+                depotcachePath,
+                stplugInPath,
+                { autoUpdate: effectiveAutoUpdate }
+            );
 
             onProgress({ message: 'Cleaning up...', percent: 95 });
             try {
@@ -240,7 +253,8 @@ function createGameInstaller({
             return {
                 success: true,
                 message: `Installation successful! ${result.filesCopied} file(s) installed `
-                    + `out of ${result.totalFiles} examined. (Source: ${sourceUsed})`
+                    + `out of ${result.totalFiles} examined. (Source: ${sourceUsed})`,
+                forcedAutoUpdateOff: forceDisableAutoUpdate
             };
         } catch (error) {
             console.error('Error download-game:', error);

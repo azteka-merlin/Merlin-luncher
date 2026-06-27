@@ -18,7 +18,12 @@ function firstEligibleCorrection(fixes) {
         return {
             href,
             filename,
-            size: size || undefined
+            size: size || undefined,
+            adminNote: typeof fix.adminNote === 'string' ? fix.adminNote.trim() || undefined : undefined,
+            upvotes: Number.isFinite(Number(fix.upvotes)) ? Math.max(0, Math.trunc(Number(fix.upvotes))) : 0,
+            downvotes: Number.isFinite(Number(fix.downvotes)) ? Math.max(0, Math.trunc(Number(fix.downvotes))) : 0,
+            score: Number.isFinite(Number(fix.score)) ? Math.trunc(Number(fix.score)) : 0,
+            viewerVote: fix.viewerVote === 'up' || fix.viewerVote === 'down' ? fix.viewerVote : null
         };
     }
 
@@ -41,9 +46,31 @@ function normalizeRemoteGame(entry) {
     };
 }
 
-function createCorrectionsCatalogClient({ axios, url = DEFAULT_CORRECTIONS_CATALOG_URL, timeout = 20000 }) {
-    async function download() {
-        const response = await axios.get(url, { timeout });
+function createCorrectionsCatalogClient({
+    axios,
+    url = DEFAULT_CORRECTIONS_CATALOG_URL,
+    voteUrl = DEFAULT_CORRECTIONS_CATALOG_URL.replace(/\/catalog$/, '/vote'),
+    timeout = 20000
+}) {
+    async function download({ accessToken = null } = {}) {
+        const requestConfig = {
+            timeout,
+            headers: accessToken
+                ? { Authorization: `Bearer ${accessToken}` }
+                : undefined
+        };
+
+        let response;
+        try {
+            response = await axios.get(url, requestConfig);
+        } catch (error) {
+            if (accessToken && error?.response?.status === 401) {
+                response = await axios.get(url, { timeout });
+            } else {
+                throw error;
+            }
+        }
+
         if (!Array.isArray(response.data)) {
             throw new Error('Invalid corrections catalog payload');
         }
@@ -56,7 +83,22 @@ function createCorrectionsCatalogClient({ axios, url = DEFAULT_CORRECTIONS_CATAL
         };
     }
 
-    return { download };
+    async function vote({ appId, vote, accessToken }) {
+        return (await axios.post(
+            voteUrl,
+            { appId, vote },
+            {
+                timeout,
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+        )).data;
+    }
+
+    return { download, vote };
 }
 
 module.exports = {

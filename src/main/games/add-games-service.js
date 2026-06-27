@@ -45,12 +45,14 @@ function normalizeSelectedItem(input) {
     const appId = String(input.appId || '').trim();
     const name = typeof input.name === 'string' ? input.name.trim() : '';
     const coverUrl = typeof input.coverUrl === 'string' ? input.coverUrl.trim() : '';
+    const requiresVersionPin = input.requiresVersionPin === true;
     if (!/^\d+$/.test(appId) || !name) return null;
     return {
         appId,
         name,
         coverUrl: coverUrl || null,
-        autoUpdate: input.autoUpdate !== false
+        requiresVersionPin,
+        autoUpdate: requiresVersionPin ? false : input.autoUpdate !== false
     };
 }
 
@@ -94,7 +96,8 @@ function createAddGamesService({
     configStore,
     steamService,
     libraryService,
-    catalogService
+    catalogService,
+    manifestOverrideService
 }) {
     let installing = false;
 
@@ -108,13 +111,14 @@ function createAddGamesService({
             const parsed = parseSteamGameLink(link);
             const catalogMatch = await catalogService?.resolveByAppId(parsed.appId, { allowRefresh: true });
             const name = catalogMatch?.name || await nameResolver.resolve(parsed.appId, parsed.fallbackName);
+            const item = await applyManifestPolicy({
+                appId: parsed.appId,
+                name,
+                coverUrl: catalogMatch?.coverUrl || null
+            });
             return {
                 success: true,
-                item: {
-                    appId: parsed.appId,
-                    name,
-                    coverUrl: catalogMatch?.coverUrl || null
-                }
+                item
             };
         } catch (error) {
             return {
@@ -144,17 +148,24 @@ function createAddGamesService({
             };
         }
 
-        return { success: true, item: match };
+        return { success: true, item: await applyManifestPolicy(match) };
+    }
+
+    async function applyManifestPolicy(item, options) {
+        if (!item) return item;
+        if (!manifestOverrideService?.decorateGame) return item;
+        return manifestOverrideService.decorateGame(item, options);
     }
 
     async function resolveInput(input) {
         const payload = normalizeInputPayload(input);
         if (payload.selected) {
+            const selected = await applyManifestPolicy(payload.selected);
             return {
                 success: true,
                 item: {
-                    ...payload.selected,
-                    autoUpdate: payload.autoUpdate
+                    ...selected,
+                    autoUpdate: selected.requiresVersionPin ? false : payload.autoUpdate
                 }
             };
         }
@@ -173,7 +184,7 @@ function createAddGamesService({
             ...resolved,
             item: {
                 ...resolved.item,
-                autoUpdate: payload.autoUpdate
+                autoUpdate: resolved.item.requiresVersionPin ? false : payload.autoUpdate
             }
         };
     }
@@ -182,7 +193,10 @@ function createAddGamesService({
         const term = String(query || '').trim();
         if (!term) return { success: true, items: [] };
         try {
-            const items = await catalogService.search(term, { limit: 4 });
+            const items = await Promise.all(
+                (await catalogService.search(term, { limit: 4 }))
+                    .map(item => applyManifestPolicy(item))
+            );
             return { success: true, items };
         } catch (error) {
             return {

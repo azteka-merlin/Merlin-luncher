@@ -7,7 +7,14 @@ function normalizeItem(value) {
         ? {
             href: typeof value.correction.href === 'string' ? value.correction.href.trim() : '',
             filename: typeof value.correction.filename === 'string' ? value.correction.filename.trim() : '',
-            size: typeof value.correction.size === 'string' ? value.correction.size.trim() : ''
+            size: typeof value.correction.size === 'string' ? value.correction.size.trim() : '',
+            adminNote: typeof value.correction.adminNote === 'string' ? value.correction.adminNote.trim() : '',
+            upvotes: Number.isFinite(Number(value.correction.upvotes)) ? Math.max(0, Math.trunc(Number(value.correction.upvotes))) : 0,
+            downvotes: Number.isFinite(Number(value.correction.downvotes)) ? Math.max(0, Math.trunc(Number(value.correction.downvotes))) : 0,
+            score: Number.isFinite(Number(value.correction.score)) ? Math.trunc(Number(value.correction.score)) : 0,
+            viewerVote: value.correction.viewerVote === 'up' || value.correction.viewerVote === 'down'
+                ? value.correction.viewerVote
+                : null
         }
         : null;
 
@@ -22,7 +29,12 @@ function normalizeItem(value) {
         correction: {
             href: correction.href,
             filename: correction.filename,
-            size: correction.size || undefined
+            size: correction.size || undefined,
+            adminNote: correction.adminNote || undefined,
+            upvotes: correction.upvotes,
+            downvotes: correction.downvotes,
+            score: correction.score,
+            viewerVote: correction.viewerVote
         }
     };
 }

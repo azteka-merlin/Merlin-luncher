@@ -3,6 +3,8 @@ function registerCorrectionsIpc({ ipcMain, correctionsService }) {
     ipcMain.handle('corrections:refresh', async () => correctionsService.refresh());
     ipcMain.handle('corrections:prepare-install', async (_event, appId) =>
         correctionsService.prepareInstall(appId));
+    ipcMain.handle('corrections:vote', async (_event, payload) =>
+        correctionsService.vote(payload?.appId, payload?.vote));
     ipcMain.handle('corrections:download', async (event, payload) =>
         correctionsService.download(
             payload?.appId,

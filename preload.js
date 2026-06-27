@@ -106,6 +106,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         list: () => ipcRenderer.invoke('corrections:list'),
         refresh: () => ipcRenderer.invoke('corrections:refresh'),
         prepareInstall: (appId) => ipcRenderer.invoke('corrections:prepare-install', appId),
+        vote: (payload) => ipcRenderer.invoke('corrections:vote', payload),
         download: (payload) => ipcRenderer.invoke('corrections:download', payload),
         install: (payload) => ipcRenderer.invoke('corrections:install', payload),
         cancel: (operationId) => ipcRenderer.invoke('corrections:cancel', operationId),

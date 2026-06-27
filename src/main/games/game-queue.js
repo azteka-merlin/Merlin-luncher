@@ -20,7 +20,8 @@ function createGameQueue() {
             appId: item.appId,
             name: item.name,
             coverUrl: item.coverUrl || null,
-            autoUpdate: item.autoUpdate !== false
+            autoUpdate: item.autoUpdate !== false,
+            requiresVersionPin: item.requiresVersionPin === true
         });
         return { success: true, item: { ...item } };
     }

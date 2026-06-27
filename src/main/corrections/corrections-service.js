@@ -8,6 +8,7 @@ function createCorrectionsService({
     shell,
     configStore,
     steamService,
+    authSession,
     catalogStore,
     catalogClient,
     libraryCatalogService,
@@ -31,6 +32,39 @@ function createCorrectionsService({
 
     function cloneItems(items) {
         return items.map(cloneItem);
+    }
+
+    function persistCachedItems() {
+        if (!Array.isArray(cachedItems)) return;
+        const snapshot = catalogStore.load();
+        catalogStore.replace(cachedItems, snapshot.lastSync || new Date().toISOString());
+    }
+
+    async function getCatalogAccessToken() {
+        if (!authSession?.getAccessToken) return null;
+        try {
+            return await authSession.getAccessToken();
+        } catch {
+            return null;
+        }
+    }
+
+    function applyVoteResult(appId, result) {
+        if (!Array.isArray(cachedItems)) return;
+        const item = cachedItems.find(entry => entry.appId === appId);
+        if (!item) return;
+
+        item.correction = {
+            ...item.correction,
+            upvotes: Math.max(0, Math.trunc(Number(result.upvotes) || 0)),
+            downvotes: Math.max(0, Math.trunc(Number(result.downvotes) || 0)),
+            score: Math.trunc(Number(result.score) || 0),
+            viewerVote: result.viewerVote === 'up' || result.viewerVote === 'down'
+                ? result.viewerVote
+                : item.correction.viewerVote || null
+        };
+
+        persistCachedItems();
     }
 
     function isPathInside(rootPath, candidatePath) {
@@ -124,7 +158,9 @@ function createCorrectionsService({
 
     async function refresh() {
         try {
-            const downloaded = await catalogClient.download();
+            const downloaded = await catalogClient.download({
+                accessToken: await getCatalogAccessToken()
+            });
             const hydrated = await hydrateImages(downloaded.items);
             catalogStore.replace(hydrated, downloaded.syncedAt);
             cachedItems = hydrated;
@@ -167,6 +203,52 @@ function createCorrectionsService({
         appId = String(appId || '').trim();
         const items = cachedItems || await ensureItemsLoaded();
         return items.find(item => item.appId === appId) || null;
+    }
+
+    async function vote(appId, voteValue) {
+        appId = String(appId || '').trim();
+        if (!/^\d+$/.test(appId)) {
+            return { success: false, code: 'not_found' };
+        }
+        if (voteValue !== 'up' && voteValue !== 'down') {
+            return { success: false, code: 'vote_failed' };
+        }
+
+        const item = await findItem(appId);
+        if (!item) return { success: false, code: 'not_found' };
+        if (!authSession?.getAccessToken) return { success: false, code: 'auth_required' };
+
+        try {
+            let accessToken = await authSession.getAccessToken();
+
+            try {
+                const result = await catalogClient.vote({
+                    appId,
+                    vote: voteValue,
+                    accessToken
+                });
+                applyVoteResult(appId, result);
+                return { success: true, ...result };
+            } catch (error) {
+                if (error?.response?.status !== 401) throw error;
+                await authSession.handleUnauthorized();
+                accessToken = await authSession.getAccessToken();
+                const result = await catalogClient.vote({
+                    appId,
+                    vote: voteValue,
+                    accessToken
+                });
+                applyVoteResult(appId, result);
+                return { success: true, ...result };
+            }
+        } catch (error) {
+            const code = error?.code === 'missing' ? 'auth_required' : (error?.code || 'vote_failed');
+            return {
+                success: false,
+                code,
+                message: error?.message || 'Vote failed'
+            };
+        }
     }
 
     function configuredSteamPath() {
@@ -592,7 +674,8 @@ function createCorrectionsService({
         list,
         openFolder,
         prepareInstall,
-        refresh
+        refresh,
+        vote
     };
 }
 

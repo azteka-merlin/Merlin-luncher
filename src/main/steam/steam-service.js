@@ -1,4 +1,12 @@
 const REQUIRED_DLLS = ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll'];
+const REQUIRED_STEAM_FILES = [
+    ...REQUIRED_DLLS.map(name => ({ name, sourceName: name, relativeDestination: name })),
+    {
+        name: 'merlin-helper.dll',
+        sourceName: 'merlin-helper.dll',
+        relativeDestination: 'merlin-helper.dll'
+    }
+];
 
 function createSteamService({ fs, path, exec, platform, userProfile }) {
     function parseQuotedVdf(raw) {
@@ -91,9 +99,9 @@ function createSteamService({ fs, path, exec, platform, userProfile }) {
             return { ok: false, reason: 'steam_path_invalid', missing: [] };
         }
 
-        const missing = REQUIRED_DLLS.filter(dll =>
-            !fs.existsSync(path.join(resolvedPath, dll))
-        );
+        const missing = REQUIRED_STEAM_FILES.filter(file =>
+            !fs.existsSync(path.join(resolvedPath, file.relativeDestination))
+        ).map(file => file.name);
         if (missing.length > 0) {
             return { ok: false, reason: 'required_files_missing', missing };
         }
@@ -154,12 +162,16 @@ function createSteamService({ fs, path, exec, platform, userProfile }) {
 
     function getFilesStatus(steamPath) {
         if (!steamPath || !fs.existsSync(steamPath)) {
-            return { ok: false, reason: 'steam_path_missing' };
+            return { ok: false, reason: 'steam_path_missing', missing: [] };
         }
-        const missing = REQUIRED_DLLS.filter(dll =>
-            !fs.existsSync(path.join(steamPath, dll))
-        );
-        return { ok: missing.length === 0 };
+        const missing = REQUIRED_STEAM_FILES.filter(file =>
+            !fs.existsSync(path.join(steamPath, file.relativeDestination))
+        ).map(file => file.name);
+        return {
+            ok: missing.length === 0,
+            reason: missing.length === 0 ? null : 'required_files_missing',
+            missing
+        };
     }
 
     function getLibraryFolders(steamPath) {
@@ -239,4 +251,4 @@ function createSteamService({ fs, path, exec, platform, userProfile }) {
     };
 }
 
-module.exports = { REQUIRED_DLLS, createSteamService };
+module.exports = { REQUIRED_DLLS, REQUIRED_STEAM_FILES, createSteamService };
