@@ -1,8 +1,0 @@
-# one-click installer message overrides for Merlin
-appRunning:
-  en: "${PRODUCT_NAME} is already open.\nClick OK to close Merlin and continue.\nIf it doesn't close, close Merlin manually."
-  pt_BR: "${PRODUCT_NAME} já está aberto.\nClique em OK para fechar o Merlin e continuar.\nSe ele não fechar, feche o Merlin manualmente."
-
-appCannotBeClosed:
-  en: "${PRODUCT_NAME} could not be closed.\nClose Merlin manually and click Retry to continue."
-  pt_BR: "Não foi possível fechar o ${PRODUCT_NAME}.\nFeche o Merlin manualmente e clique em Repetir para continuar."

@@ -1,3 +1,77 @@
+!include "getProcessInfo.nsh"
+Var pid
+
+!macro customCheckAppRunning
+  ${GetProcessInfo} 0 $pid $1 $2 $3 $4
+  ${if} $3 != "${APP_EXECUTABLE_FILENAME}"
+    ${if} ${isUpdated}
+      Sleep 300
+    ${endIf}
+
+    !insertmacro FIND_PROCESS "${APP_EXECUTABLE_FILENAME}" $R0
+    ${if} $R0 == 0
+      ${if} ${isUpdated}
+        Sleep 1000
+        Goto doStopProcess
+      ${endIf}
+
+      ${If} $LANGUAGE == 1046
+        MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "Merlin ja esta aberto.$\r$\nClique em OK para fechar o Merlin e continuar.$\r$\nSe ele nao fechar, feche o Merlin manualmente." /SD IDOK IDOK doStopProcess
+      ${Else}
+        MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "Merlin is already open.$\r$\nClick OK to close Merlin and continue.$\r$\nIf it doesn't close, close Merlin manually." /SD IDOK IDOK doStopProcess
+      ${EndIf}
+      Quit
+
+      doStopProcess:
+
+      DetailPrint `Closing running "${PRODUCT_NAME}"...`
+
+      !ifdef INSTALL_MODE_PER_ALL_USERS
+        nsExec::Exec `taskkill /im "${APP_EXECUTABLE_FILENAME}" /fi "PID ne $pid"`
+      !else
+        nsExec::Exec `%SYSTEMROOT%\System32\cmd.exe /c taskkill /im "${APP_EXECUTABLE_FILENAME}" /fi "PID ne $pid" /fi "USERNAME eq %USERNAME%"`
+      !endif
+      Sleep 300
+
+      StrCpy $R1 0
+
+      loop:
+        IntOp $R1 $R1 + 1
+
+        !insertmacro FIND_PROCESS "${APP_EXECUTABLE_FILENAME}" $R0
+        ${if} $R0 == 0
+          Sleep 1000
+          !ifdef INSTALL_MODE_PER_ALL_USERS
+            nsExec::Exec `taskkill /f /im "${APP_EXECUTABLE_FILENAME}" /fi "PID ne $pid"`
+          !else
+            nsExec::Exec `%SYSTEMROOT%\System32\cmd.exe /c taskkill /f /im "${APP_EXECUTABLE_FILENAME}" /fi "PID ne $pid" /fi "USERNAME eq %USERNAME%"`
+          !endif
+          !insertmacro FIND_PROCESS "${APP_EXECUTABLE_FILENAME}" $R0
+          ${If} $R0 == 0
+            DetailPrint `Waiting for "${PRODUCT_NAME}" to close.`
+            Sleep 2000
+          ${else}
+            Goto not_running
+          ${endIf}
+        ${else}
+          Goto not_running
+        ${endIf}
+
+        ${if} $R1 > 1
+          ${If} $LANGUAGE == 1046
+            MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Nao foi possivel fechar o Merlin.$\r$\nFeche o Merlin manualmente e clique em Repetir para continuar." /SD IDCANCEL IDRETRY loop
+          ${Else}
+            MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Merlin could not be closed.$\r$\nClose Merlin manually and click Retry to continue." /SD IDCANCEL IDRETRY loop
+          ${EndIf}
+          Quit
+        ${else}
+          Goto loop
+        ${endIf}
+      not_running:
+    ${endIf}
+  ${endIf}
+!macroend
+
 !macro customInit
   ; Per-machine installs must never continue without an elevated process.
   ; This also blocks any unexpected non-admin fallback after a denied UAC prompt.
