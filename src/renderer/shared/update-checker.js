@@ -186,11 +186,11 @@
         if (state === 'downloading') {
             title.textContent = text.downloadingTitle;
             message.textContent = text.downloadingMessage;
-            later.textContent = text.close;
-            later.disabled = true;
+            later.textContent = text.cancel;
+            later.disabled = false;
             download.textContent = text.download;
             download.disabled = true;
-            if (close) close.disabled = true;
+            if (close) close.disabled = false;
             return;
         }
 
@@ -262,6 +262,9 @@
 
     async function handleSecondaryAction() {
         if (state === 'downloading') {
+            if (activeOperationId) {
+                await window.electronAPI.cancelUpdateDownload(activeOperationId);
+            }
             return;
         }
         if (state === 'completed' && downloadedFolderPath) {
@@ -272,8 +275,13 @@
     }
 
     later.addEventListener('click', handleSecondaryAction);
-    close?.addEventListener('click', () => {
-        if (state === 'downloading') return;
+    close?.addEventListener('click', async () => {
+        if (state === 'downloading') {
+            if (activeOperationId) {
+                await window.electronAPI.cancelUpdateDownload(activeOperationId);
+            }
+            return;
+        }
         modal.hidden = true;
     });
 

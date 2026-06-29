@@ -1,0 +1,101 @@
+name: Release Merlin
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Read version from package.json
+        id: version
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          if (-not $version) {
+            throw "Could not read version from package.json"
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Check whether tag already exists
+        id: tag_check
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          git fetch --tags --force
+
+          if (git rev-parse $tag 2>$null) {
+            "exists=true" >> $env:GITHUB_OUTPUT
+          } else {
+            "exists=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Skip when version was already released
+        if: steps.tag_check.outputs.exists == 'true'
+        shell: pwsh
+        run: |
+          Write-Host "Tag ${{ steps.version.outputs.tag }} already exists. Skipping release."
+
+      - name: Build Merlin
+        if: steps.tag_check.outputs.exists != 'true'
+        run: npm run build
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Create git tag
+        if: steps.tag_check.outputs.exists != 'true'
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag $tag
+          git push origin $tag
+
+      - name: Collect release files
+        if: steps.tag_check.outputs.exists != 'true'
+        id: release_files
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem dist -File | Where-Object { $_.Extension -eq ".exe" -or $_.Name -eq "integrity.json" } | Sort-Object Name
+          if (-not $files) {
+            throw "No release files were found in dist."
+          }
+
+          $fileList = ($files.FullName -join "`n")
+          @"
+files<<EOF
+$fileList
+EOF
+"@ >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        if: steps.tag_check.outputs.exists != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          files: ${{ steps.release_files.outputs.files }}
+          generate_release_notes: true
