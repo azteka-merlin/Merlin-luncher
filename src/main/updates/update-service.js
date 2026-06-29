@@ -1,4 +1,5 @@
-const RELEASE_API_URL = 'https://api.github.com/repos/azteka-merlin/Merlin-luncher/releases/latest';
+const UPDATE_LATEST_API_URL = 'https://api-merlin.com/api/updates/latest';
+const UPDATE_DOWNLOAD_API_URL = 'https://api-merlin.com/api/updates/download';
 
 function normalizeVersion(value) {
     return String(value || '').trim().replace(/^v/i, '').split('-')[0];
@@ -16,11 +17,14 @@ function compareVersions(left, right) {
     return 0;
 }
 
-function isOfficialDownloadUrl(value) {
+function isAllowedDownloadUrl(value) {
     try {
         const url = new URL(value);
-        return url.protocol === 'https:'
-            && url.hostname === 'github.com'
+        if (url.protocol !== 'https:') return false;
+        if (url.hostname === 'api-merlin.com' && url.pathname === '/api/updates/download') {
+            return true;
+        }
+        return url.hostname === 'github.com'
             && url.pathname.startsWith('/azteka-merlin/Merlin-luncher/releases/download/');
     } catch {
         return false;
@@ -41,8 +45,8 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
         const currentVersion = app.getVersion();
         if (!app.isPackaged && process.env.MERLIN_SIMULATE_UPDATE === '1') {
             const downloadUrl = process.env.MERLIN_SIMULATE_UPDATE_URL || '';
-            if (!isOfficialDownloadUrl(downloadUrl)) {
-                console.warn('[updates] MERLIN_SIMULATE_UPDATE_URL must be an official Merlin release asset URL.');
+            if (!isAllowedDownloadUrl(downloadUrl)) {
+                console.warn('[updates] MERLIN_SIMULATE_UPDATE_URL must be an allowed Merlin update URL.');
                 return { success: false, currentVersion };
             }
 
@@ -56,21 +60,18 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
         }
 
         try {
-            const response = await axios.get(RELEASE_API_URL, {
+            const response = await axios.get(UPDATE_LATEST_API_URL, {
                 timeout: 10000,
                 headers: {
-                    Accept: 'application/vnd.github+json',
+                    Accept: 'application/json',
                     'User-Agent': `Merlin/${currentVersion}`
                 }
             });
             const release = response.data || {};
-            const latestVersion = normalizeVersion(release.tag_name);
-            const asset = Array.isArray(release.assets)
-                ? release.assets.find(item => /\.exe$/i.test(item.name || '')
-                    && isOfficialDownloadUrl(item.browser_download_url))
-                : null;
+            const latestVersion = normalizeVersion(release.version);
+            const downloadUrl = String(release.downloadUrl || UPDATE_DOWNLOAD_API_URL).trim();
 
-            if (!latestVersion || release.draft || release.prerelease || !asset) {
+            if (!release.success || !latestVersion || !isAllowedDownloadUrl(downloadUrl)) {
                 return { success: false, currentVersion };
             }
 
@@ -79,16 +80,16 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
                 updateAvailable: compareVersions(latestVersion, currentVersion) > 0,
                 currentVersion,
                 latestVersion,
-                downloadUrl: asset.browser_download_url
+                downloadUrl
             };
         } catch (error) {
-            console.warn('[updates] Could not check GitHub releases:', error.message);
+            console.warn('[updates] Could not check Merlin updates:', error.message);
             return { success: false, currentVersion };
         }
     }
 
     async function openDownload(downloadUrl) {
-        if (!isOfficialDownloadUrl(downloadUrl)) {
+        if (!isAllowedDownloadUrl(downloadUrl)) {
             return { success: false, error: 'INVALID_DOWNLOAD_URL' };
         }
         await shell.openExternal(downloadUrl);
@@ -96,7 +97,7 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
     }
 
     async function downloadUpdate({ operationId, downloadUrl, latestVersion, onProgress = () => {} }) {
-        if (!isOfficialDownloadUrl(downloadUrl)) {
+        if (!isAllowedDownloadUrl(downloadUrl)) {
             return { success: false, code: 'invalid_download_url' };
         }
 

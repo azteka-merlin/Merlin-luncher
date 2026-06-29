@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+    paths:
+      - package.json
+      - .github/workflows/release.yml
 
 permissions:
   contents: write
@@ -85,11 +88,9 @@ jobs:
           }
 
           $fileList = ($files.FullName -join "`n")
-          @"
-files<<EOF
-$fileList
-EOF
-"@ >> $env:GITHUB_OUTPUT
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "files<<EOF"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value $fileList
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "EOF"
 
       - name: Create GitHub release
         if: steps.tag_check.outputs.exists != 'true'
