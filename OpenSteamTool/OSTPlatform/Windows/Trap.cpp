@@ -57,13 +57,43 @@ PCONTEXT AsWindowsContext(void* nativeContext) {
     return static_cast<PCONTEXT>(nativeContext);
 }
 
-bool TryReadStackSlotRaw(uintptr_t address, uint64_t& out) {
-    __try {
-        out = *reinterpret_cast<const uint64_t*>(address);
+bool IsReadableProtection(DWORD protection) {
+    const DWORD access = protection & 0xff;
+    switch (access) {
+    case PAGE_READONLY:
+    case PAGE_READWRITE:
+    case PAGE_WRITECOPY:
+    case PAGE_EXECUTE_READ:
+    case PAGE_EXECUTE_READWRITE:
+    case PAGE_EXECUTE_WRITECOPY:
         return true;
-    } __except (EXCEPTION_EXECUTE_HANDLER) {
+    default:
         return false;
     }
+}
+
+bool TryReadStackSlotRaw(uintptr_t address, uint64_t& out) {
+    MEMORY_BASIC_INFORMATION mbi{};
+    if (VirtualQuery(reinterpret_cast<LPCVOID>(address), &mbi, sizeof(mbi)) != sizeof(mbi)) {
+        return false;
+    }
+
+    if (mbi.State != MEM_COMMIT || (mbi.Protect & PAGE_GUARD) != 0 || (mbi.Protect & PAGE_NOACCESS) != 0) {
+        return false;
+    }
+
+    if (!IsReadableProtection(mbi.Protect)) {
+        return false;
+    }
+
+    const auto regionStart = reinterpret_cast<uintptr_t>(mbi.BaseAddress);
+    const auto regionEnd = regionStart + mbi.RegionSize;
+    if (address > regionEnd || (regionEnd - address) < sizeof(out)) {
+        return false;
+    }
+
+    out = *reinterpret_cast<const uint64_t*>(address);
+    return true;
 }
 
 bool TryReadStackSlot(uintptr_t address, uint64_t& out) {
