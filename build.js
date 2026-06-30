@@ -196,7 +196,7 @@ if (dllsOnly) {
     const restoreMain = obfuscateMainForPackaging();
     console.log('Building obfuscated Electron package...');
     try {
-        execSync('electron-builder', { cwd: rootDir, stdio: 'inherit' });
+        execSync('electron-builder --publish never', { cwd: rootDir, stdio: 'inherit' });
     } finally {
         restoreMain();
     }
