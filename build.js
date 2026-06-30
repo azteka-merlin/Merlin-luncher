@@ -13,6 +13,7 @@ const appDllDir = path.join(rootDir, 'assets', 'dlls');
 const distDir = path.join(rootDir, 'dist');
 const requiredDlls = ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll'];
 const helperDll = 'merlin-helper.dll';
+const requestedGenerator = process.env.MERLIN_CMAKE_GENERATOR?.trim();
 
 const obfuscationOptions = {
     compact: true,
@@ -137,20 +138,37 @@ if (!fs.existsSync(path.join(nativeProjectDir, 'CMakeLists.txt'))) {
     );
 }
 
-const hasNinja = (() => {
+function hasCommand(command) {
     try {
-        execSync('where ninja', { stdio: 'ignore' });
+        execSync(`where ${command}`, { stdio: 'ignore' });
         return true;
     } catch {
         return false;
     }
-})();
-const generator = hasNinja ? 'Ninja Multi-Config' : 'Visual Studio 17 2022';
+}
 
-console.log(`Building OpenSteamTool DLLs from ${nativeProjectDir} (Release)...`);
+const hasNinja = hasCommand('ninja');
+const hasVisualStudio = fs.existsSync('C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe')
+    || fs.existsSync('C:\\Program Files\\Microsoft Visual Studio\\2022\\BuildTools')
+    || fs.existsSync('C:\\Program Files\\Microsoft Visual Studio\\2022\\Community')
+    || fs.existsSync('C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional')
+    || fs.existsSync('C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise');
+
+let generator = requestedGenerator;
+if (!generator) {
+    if (process.platform === 'win32' && hasVisualStudio) {
+        generator = 'Visual Studio 17 2022';
+    } else if (hasNinja) {
+        generator = 'Ninja Multi-Config';
+    } else {
+        generator = 'Visual Studio 17 2022';
+    }
+}
+
+console.log(`Building OpenSteamTool DLLs from ${nativeProjectDir} (Release) using ${generator}...`);
 cleanBuildDirectory(nativeBuildDir);
 const configureArgs = ['-S', nativeSourceDir, '-B', nativeBuildDir, '-G', generator];
-if (!hasNinja) {
+if (generator.startsWith('Visual Studio')) {
     configureArgs.push('-A', 'x64');
 }
 execFileSync('cmake', configureArgs, {
