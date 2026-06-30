@@ -196,3 +196,5 @@ add_library(xinput1_4 SHARED
     xinput1_4/xinput1_4.cpp
     xinput1_4/xinput1_4.def
 )
+
+set_target_properties(OpenSteamTool MerlinHelper dwmapi xinput1_4 PROPERTIES PREFIX "")
