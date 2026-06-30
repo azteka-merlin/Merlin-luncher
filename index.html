@@ -604,27 +604,29 @@
         </div>
     </div>
 
-    <div id="tutorialPromptModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialPromptTitle" hidden>
-        <div class="library-modal-card tutorial-prompt-card">
-            <div class="tutorial-icon" aria-hidden="true">✦</div>
-            <h2 id="tutorialPromptTitle" data-i18n="tutorial_prompt_title">Want to discover Merlin?</h2>
-            <p data-i18n="tutorial_prompt_message">We prepared a quick tutorial to show you how to use Merlin. Would you like to watch it now?</p>
-            <p class="tutorial-prompt-hint" data-i18n="tutorial_prompt_hint">You can watch it again at any time from Help → Tutorial.</p>
-            <div class="library-modal-actions">
-                <button id="tutorialNotNowBtn" class="btn btn-secondary" type="button" data-i18n="tutorial_not_now">Not now</button>
-                <button id="tutorialWatchBtn" class="btn btn-primary" type="button" data-i18n="tutorial_watch_now">Watch tutorial</button>
+    <div id="welcomeModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="welcomeModalTitle" hidden>
+        <div class="library-modal-card welcome-modal-card">
+            <div class="welcome-modal-header">
+                <div class="welcome-modal-sparkles" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="welcome-modal-progress">
+                    <p id="welcomeModalStepLabel" class="welcome-modal-step-label">STEP 1 OF 4</p>
+                    <div class="welcome-modal-progress-bars" aria-hidden="true">
+                        <span class="active"></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div id="tutorialVideoModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialVideoTitle" hidden>
-        <div class="library-modal-card tutorial-video-card">
-            <div class="tutorial-video-header">
-                <h2 id="tutorialVideoTitle" data-i18n="tutorial_title">Merlin tutorial</h2>
-                <button id="tutorialCloseBtn" class="tutorial-close-btn" type="button" data-i18n-aria-label="tutorial_close" aria-label="Close tutorial">×</button>
-            </div>
-            <div class="tutorial-video-frame">
-                <iframe id="tutorialVideo" title="Merlin tutorial" sandbox="allow-scripts allow-same-origin allow-presentation" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            <div id="welcomeModalBody" class="welcome-modal-body"></div>
+            <div class="library-modal-actions welcome-modal-actions">
+                <button id="welcomeModalBackBtn" class="btn btn-secondary" type="button" hidden>Back</button>
+                <button id="welcomeModalSkipBtn" class="btn btn-secondary" type="button">Skip</button>
+                <button id="welcomeModalNextBtn" class="btn btn-primary" type="button">Next</button>
             </div>
         </div>
     </div>
@@ -729,6 +731,7 @@
     <script src="renderer.js"></script>
     <script src="src/renderer/shared/restart-prompt.js"></script>
     <script src="src/renderer/shared/game-install-prompt.js"></script>
+    <script src="src/renderer/shared/welcome-compatibility.js"></script>
     <script src="src/renderer/shared/tutorial.js"></script>
     <script src="src/renderer/shared/faq.js"></script>
     <script src="src/renderer/shared/update-checker.js"></script>

@@ -2268,8 +2268,352 @@ webview {
     }
 }
 
-.tutorial-prompt-card {
-    text-align: center;
+.welcome-modal-card {
+    width: min(780px, calc(100vw - 40px));
+    height: min(540px, calc(100vh - 40px));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 0;
+    padding: 1.35rem 1.6rem 1.1rem;
+    overflow: hidden;
+    border-color: rgba(139, 92, 246, 0.42);
+    background:
+        radial-gradient(circle at 12% 0%, rgba(124, 58, 237, 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(17, 22, 39, 0.99), rgba(10, 15, 28, 0.99));
+    box-shadow:
+        0 28px 90px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.welcome-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.welcome-modal-sparkles {
+    position: relative;
+    width: 52px;
+    height: 40px;
+    flex: 0 0 auto;
+}
+
+.welcome-modal-sparkles span {
+    position: absolute;
+    display: block;
+    background: linear-gradient(180deg, #d8b4fe 0%, #a78bfa 100%);
+    opacity: 0.96;
+    box-shadow: 0 0 16px rgba(167, 139, 250, 0.32);
+    clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+}
+
+.welcome-modal-sparkles span:nth-child(1) {
+    top: 0;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+}
+
+.welcome-modal-sparkles span:nth-child(2) {
+    top: 18px;
+    left: 0;
+    width: 11px;
+    height: 11px;
+}
+
+.welcome-modal-sparkles span:nth-child(3) {
+    top: 20px;
+    left: 22px;
+    width: 14px;
+    height: 14px;
+}
+
+.welcome-modal-progress {
+    display: grid;
+    gap: 0.45rem;
+    justify-items: end;
+    margin-top: 0.1rem;
+}
+
+.welcome-modal-step-label {
+    margin: 0;
+    color: #c4b5fd !important;
+    font-size: 0.88rem !important;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.welcome-modal-progress-bars {
+    display: inline-grid;
+    grid-auto-flow: column;
+    gap: 0.55rem;
+}
+
+.welcome-modal-progress-bars span {
+    width: 22px;
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(126, 134, 164, 0.4);
+}
+
+.welcome-modal-progress-bars span.active {
+    background: linear-gradient(90deg, #8b5cf6 0%, #c084fc 100%);
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.42);
+}
+
+.welcome-modal-body {
+    min-height: 0;
+    margin-top: 0.9rem;
+    overflow: hidden;
+}
+
+.welcome-modal-screen {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: start;
+    gap: 0.9rem;
+}
+
+.welcome-modal-screen-intro {
+    padding-top: 0.2rem;
+}
+
+.welcome-modal-intro-image-wrap {
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    border-radius: 14px;
+    background: rgba(20, 24, 39, 0.9);
+}
+
+.welcome-modal-intro-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.welcome-modal-intro-hint {
+    margin: 0.2rem 0 0;
+    color: var(--text-muted) !important;
+    font-size: 0.84rem !important;
+    line-height: 1.3;
+}
+
+.welcome-modal-screen-rules {
+    gap: 0.75rem;
+}
+
+.welcome-modal-screen-compare {
+    gap: 1rem;
+}
+
+.welcome-modal-compare-stack {
+    display: grid;
+    align-content: start;
+    gap: 0.95rem;
+}
+
+.welcome-modal-screen-summary {
+    gap: 0.75rem;
+}
+
+.welcome-modal-copy h2 {
+    margin: 0;
+    font-size: clamp(1.85rem, 3vw, 2.2rem);
+    line-height: 1.1;
+}
+
+.welcome-modal-screen-compare .welcome-modal-copy h2 {
+    font-size: clamp(1.9rem, 3vw, 2.2rem);
+}
+
+.welcome-modal-screen-compare .welcome-modal-copy p {
+    margin-top: 0.65rem;
+    font-size: 1rem !important;
+    line-height: 1.42;
+}
+
+.welcome-modal-copy p {
+    margin: 0.48rem 0 0;
+    color: #e7e5f4 !important;
+    font-size: 0.92rem !important;
+    line-height: 1.38;
+}
+
+.welcome-modal-highlight,
+.welcome-modal-note,
+.welcome-modal-summary-table {
+    border: 1px solid rgba(139, 92, 246, 0.24);
+    border-radius: 12px;
+    background: rgba(28, 33, 53, 0.82);
+}
+
+.welcome-modal-highlight {
+    display: grid;
+    align-content: center;
+    min-height: 118px;
+    padding: 1rem 1.05rem;
+    background: linear-gradient(180deg, rgba(38, 35, 71, 0.84), rgba(29, 31, 56, 0.84));
+}
+
+.welcome-modal-highlight p {
+    margin: 0;
+    color: #ece8fb !important;
+    font-size: 0.92rem !important;
+    line-height: 1.42;
+}
+
+.welcome-modal-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.welcome-modal-list-item {
+    padding-left: 0.9rem;
+    border-left: 2px solid rgba(139, 92, 246, 0.34);
+}
+
+.welcome-modal-list-item strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+}
+
+.welcome-modal-list-item p {
+    margin: 0.18rem 0 0;
+    color: #e7e5f4 !important;
+    font-size: 0.85rem !important;
+    line-height: 1.32;
+}
+
+.welcome-modal-closing p {
+    margin: 0;
+    color: #e7e5f4 !important;
+    font-size: 0.86rem !important;
+    line-height: 1.32;
+}
+
+.welcome-modal-note {
+    margin-top: auto;
+    padding: 0.72rem 0.85rem;
+}
+
+.welcome-modal-note p {
+    margin: 0;
+    color: #ece8fb !important;
+    font-size: 0.84rem !important;
+    line-height: 1.3;
+}
+
+.welcome-modal-tag-grid {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.welcome-modal-tag-grid-compare {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+    margin-top: 0.1rem;
+}
+
+.welcome-modal-tag {
+    padding: 0.55rem 0.65rem;
+    border: 1px solid rgba(210, 171, 88, 0.22);
+    border-radius: 6px;
+    background: linear-gradient(180deg, rgba(133, 105, 45, 0.9), rgba(107, 84, 37, 0.9));
+    color: #f5deb2;
+    font-size: 0.76rem;
+    line-height: 1.18;
+}
+
+.welcome-modal-tag-grid-compare .welcome-modal-tag {
+    padding: 0.62rem 0.8rem;
+    font-size: 0.83rem;
+    line-height: 1.2;
+}
+
+.welcome-modal-followup {
+    display: grid;
+    gap: 0.48rem;
+}
+
+.welcome-modal-followup p {
+    margin: 0;
+    font-size: 0.89rem !important;
+    line-height: 1.34;
+}
+
+.welcome-modal-eula-note {
+    display: grid;
+    gap: 0.6rem;
+    padding-top: 0.35rem;
+}
+
+.welcome-modal-eula-lead,
+.welcome-modal-eula-body {
+    margin: 0;
+    color: #e7e5f4 !important;
+}
+
+.welcome-modal-eula-lead {
+    font-size: 1rem !important;
+    line-height: 1.42;
+}
+
+.welcome-modal-eula-body {
+    font-size: 0.96rem !important;
+    line-height: 1.38;
+}
+
+.welcome-modal-tag-eula {
+    width: fit-content;
+    max-width: min(100%, 360px);
+    padding: 0.6rem 0.72rem;
+    font-size: 0.8rem;
+    line-height: 1.18;
+}
+
+.welcome-modal-summary-table {
+    display: grid;
+    overflow: hidden;
+}
+
+.welcome-modal-summary-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.8rem 0.95rem;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.welcome-modal-summary-row:last-child {
+    border-bottom: 0;
+}
+
+.welcome-modal-summary-row strong {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.welcome-modal-summary-row span {
+    display: block;
+    color: #efecfb;
+    font-size: 0.88rem;
+    line-height: 1.32;
+}
+
+.welcome-modal-actions {
+    margin-top: 0.75rem;
+    justify-content: flex-end;
+}
+
+.welcome-modal-actions .btn[hidden] {
+    display: none;
 }
 
 .corrections-disclaimer-card {
@@ -2303,10 +2647,6 @@ webview {
 .corrections-disclaimer-hint {
     max-width: 420px;
     margin-inline: auto;
-}
-
-.tutorial-prompt-card .library-modal-actions {
-    justify-content: center;
 }
 
 .corrections-disclaimer-card .library-modal-actions {
@@ -2705,23 +3045,6 @@ webview {
     transition: width 0.18s ease;
 }
 
-.tutorial-video-card {
-    width: min(100%, 960px);
-    padding: 1.25rem;
-}
-
-.tutorial-video-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.tutorial-video-header h2 {
-    margin: 0;
-}
-
 .tutorial-close-btn {
     width: 2.25rem;
     height: 2.25rem;
@@ -2736,20 +3059,6 @@ webview {
 .tutorial-close-btn:hover {
     color: white;
     border-color: var(--accent);
-}
-
-.tutorial-video-frame {
-    overflow: hidden;
-    aspect-ratio: 16 / 9;
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
-    background: #05070d;
-}
-
-.tutorial-video-frame iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
 }
 
 @keyframes library-spin {
@@ -2890,8 +3199,68 @@ webview {
     .corrections-grid {
         grid-template-columns: 1fr;
     }
+
+    .welcome-modal-card {
+        width: min(100vw - 24px, 780px);
+        height: min(540px, calc(100vh - 24px));
+        padding: 1.25rem 1.25rem 1rem;
+    }
+
+    .welcome-modal-copy h2 {
+        font-size: 1.9rem;
+    }
+
+    .welcome-modal-tag-grid-compare {
+        grid-template-columns: 1fr;
+    }
 }
 
+@media (max-width: 680px) {
+    .welcome-modal-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .welcome-modal-progress {
+        width: 100%;
+        justify-items: start;
+    }
+
+    .welcome-modal-card {
+        width: min(100vw - 16px, 780px);
+        height: min(540px, calc(100vh - 16px));
+        padding: 1rem 1rem 0.9rem;
+    }
+
+    .welcome-modal-copy h2 {
+        font-size: 1.55rem;
+    }
+
+    .welcome-modal-copy p {
+        font-size: 0.88rem !important;
+    }
+
+    .welcome-modal-highlight {
+        min-height: 104px;
+        padding: 0.9rem;
+    }
+
+    .welcome-modal-summary-row {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-modal-actions {
+        flex-wrap: wrap;
+    }
+
+    .welcome-modal-actions .btn {
+        flex: 1 1 calc(50% - 0.5rem);
+    }
+
+    .welcome-modal-actions .btn:last-child {
+        flex-basis: 100%;
+    }
+}
 
 .service-status-badge {
     display: inline-flex;

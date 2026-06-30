@@ -144,7 +144,12 @@ const configStore = createConfigStore({
     fs,
     path,
     getFilePath: getConfigFilePath,
-    defaults: { steamPath: '', language: 'ptbr', tutorialPromptSeen: true, correctionsDisclaimerSeen: false }
+    defaults: {
+        steamPath: '',
+        language: 'ptbr',
+        tutorialPromptSeen: false,
+        correctionsDisclaimerSeen: false
+    }
 });
 
 const steamService = createSteamService({
