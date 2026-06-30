@@ -48,9 +48,9 @@ jobs:
           $tag = "${{ steps.version.outputs.tag }}"
           git fetch --tags --force
 
-          git show-ref --tags --verify --quiet "refs/tags/$tag"
+          $existingTag = git tag --list $tag
 
-          if ($LASTEXITCODE -eq 0) {
+          if ($existingTag -contains $tag) {
             "exists=true" >> $env:GITHUB_OUTPUT
           } else {
             "exists=false" >> $env:GITHUB_OUTPUT
