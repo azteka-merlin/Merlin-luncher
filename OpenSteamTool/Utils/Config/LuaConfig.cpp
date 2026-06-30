@@ -8,6 +8,7 @@
 #include <lua.hpp>
 
 #include <cctype>
+#include <cstring>
 #include <cstdint>
 #include <fstream>
 #include <string>
