@@ -55,8 +55,7 @@
         "filter": [
           "OpenSteamTool.dll",
           "dwmapi.dll",
-          "xinput1_4.dll",
-          "merlin-helper.dll"
+          "xinput1_4.dll"
         ]
       }
     ],

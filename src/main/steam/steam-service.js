@@ -1,12 +1,5 @@
 const REQUIRED_DLLS = ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll'];
-const REQUIRED_STEAM_FILES = [
-    ...REQUIRED_DLLS.map(name => ({ name, sourceName: name, relativeDestination: name })),
-    {
-        name: 'merlin-helper.dll',
-        sourceName: 'merlin-helper.dll',
-        relativeDestination: 'merlin-helper.dll'
-    }
-];
+const REQUIRED_STEAM_FILES = REQUIRED_DLLS.map(name => ({ name, sourceName: name, relativeDestination: name }));
 
 function createSteamService({ fs, path, exec, platform, userProfile }) {
     function parseQuotedVdf(raw) {

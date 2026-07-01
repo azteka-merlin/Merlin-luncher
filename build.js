@@ -12,7 +12,6 @@ const nativeSourceDir = nativeProjectDir;
 const appDllDir = path.join(rootDir, 'assets', 'dlls');
 const distDir = path.join(rootDir, 'dist');
 const requiredDlls = ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll'];
-const helperDll = 'merlin-helper.dll';
 const requestedGenerator = process.env.MERLIN_CMAKE_GENERATOR?.trim();
 
 const obfuscationOptions = {
@@ -197,12 +196,6 @@ for (const dll of requiredDlls) {
     );
 }
 console.log(`OpenSteamTool DLLs copied to ${appDllDir}`);
-
-const helperOutput = path.join(nativeReleaseDir, helperDll);
-if (fs.existsSync(helperOutput)) {
-    fs.copyFileSync(helperOutput, path.join(appDllDir, helperDll));
-    console.log(`Merlin helper DLL copied to ${appDllDir}`);
-}
 
 const dllsOnly = process.argv.includes('--opensteamtool-only') || process.argv.includes('--lumacore-only');
 

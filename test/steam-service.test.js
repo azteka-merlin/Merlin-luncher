@@ -26,8 +26,7 @@ test('reports a valid Steam installation only when exe and DLLs exist', () => {
         path.join(root, 'steam.exe'),
         path.join(root, 'OpenSteamTool.dll'),
         path.join(root, 'dwmapi.dll'),
-        path.join(root, 'xinput1_4.dll'),
-        path.join(root, 'merlin-helper.dll')
+        path.join(root, 'xinput1_4.dll')
     ]));
 
     assert.deepEqual(service.getActivationReadiness(root), {
@@ -47,12 +46,11 @@ test('reports missing OpenSteamTool files without changing the path', () => {
     assert.deepEqual(result.missing, [
         'OpenSteamTool.dll',
         'dwmapi.dll',
-        'xinput1_4.dll',
-        'merlin-helper.dll'
+        'xinput1_4.dll'
     ]);
 });
 
-test('reports merlin-helper.dll as missing in file status checks', () => {
+test('reports all required DLLs as present in file status checks', () => {
     const root = path.normalize('C:\\Steam');
     const service = createService(new Set([
         root,
@@ -63,9 +61,9 @@ test('reports merlin-helper.dll as missing in file status checks', () => {
     ]));
 
     assert.deepEqual(service.getFilesStatus(root), {
-        ok: false,
-        reason: 'required_files_missing',
-        missing: ['merlin-helper.dll']
+        ok: true,
+        reason: null,
+        missing: []
     });
 });
 
@@ -82,7 +80,6 @@ test('finds an installed game by validating libraryfolders and the appmanifest',
         path.join(root, 'OpenSteamTool.dll'),
         path.join(root, 'dwmapi.dll'),
         path.join(root, 'xinput1_4.dll'),
-        path.join(root, 'merlin-helper.dll'),
         libraryFoldersPath,
         manifestPath,
         gamePath

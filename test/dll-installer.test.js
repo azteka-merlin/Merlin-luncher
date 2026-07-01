@@ -13,6 +13,7 @@ function createFixture({ existing = [], dialogResponse = 0 } = {}) {
         existsSync(filePath) {
             return existingPaths.has(path.normalize(filePath));
         },
+        mkdirSync() {},
         copyFileSync(srcPath, destPath) {
             copied.push({
                 srcPath: path.normalize(srcPath),
@@ -46,8 +47,7 @@ function createFixture({ existing = [], dialogResponse = 0 } = {}) {
         requiredFiles: [
             { name: 'OpenSteamTool.dll', sourceName: 'OpenSteamTool.dll', relativeDestination: 'OpenSteamTool.dll' },
             { name: 'dwmapi.dll', sourceName: 'dwmapi.dll', relativeDestination: 'dwmapi.dll' },
-            { name: 'xinput1_4.dll', sourceName: 'xinput1_4.dll', relativeDestination: 'xinput1_4.dll' },
-            { name: 'merlin-helper.dll', sourceName: 'merlin-helper.dll', relativeDestination: 'merlin-helper.dll' }
+            { name: 'xinput1_4.dll', sourceName: 'xinput1_4.dll', relativeDestination: 'xinput1_4.dll' }
         ],
         getSourcePath: file => path.join('C:\\bundle', file.sourceName),
         getMainWindow: () => mainWindow
@@ -63,7 +63,6 @@ test('removes legacy LumaCore.dll when the new DLLs are already present', async 
             path.join(steamRoot, 'OpenSteamTool.dll'),
             path.join(steamRoot, 'dwmapi.dll'),
             path.join(steamRoot, 'xinput1_4.dll'),
-            path.join(steamRoot, 'merlin-helper.dll'),
             path.join(steamRoot, 'LumaCore.dll')
         ]
     });
@@ -83,7 +82,6 @@ test('installs the new DLLs and removes legacy LumaCore.dll during migration', a
             path.join('C:\\bundle', 'OpenSteamTool.dll'),
             path.join('C:\\bundle', 'dwmapi.dll'),
             path.join('C:\\bundle', 'xinput1_4.dll'),
-            path.join('C:\\bundle', 'merlin-helper.dll'),
             path.join(steamRoot, 'LumaCore.dll')
         ]
     });
@@ -93,7 +91,7 @@ test('installs the new DLLs and removes legacy LumaCore.dll during migration', a
     assert.deepEqual(result, { installed: true, alreadyInstalled: false, cancelled: false });
     assert.deepEqual(
         fixture.copied.map(entry => path.basename(entry.destPath)),
-        ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll', 'merlin-helper.dll']
+        ['OpenSteamTool.dll', 'dwmapi.dll', 'xinput1_4.dll']
     );
     assert.deepEqual(fixture.removed, [path.join(steamRoot, 'LumaCore.dll')]);
     assert.equal(fixture.existingPaths.has(path.join(steamRoot, 'LumaCore.dll')), false);
@@ -106,8 +104,7 @@ test('reports a friendly error when Steam is locking a DLL during repair', async
         existing: [
             path.join('C:\\bundle', 'OpenSteamTool.dll'),
             path.join('C:\\bundle', 'dwmapi.dll'),
-            path.join('C:\\bundle', 'xinput1_4.dll'),
-            path.join('C:\\bundle', 'merlin-helper.dll')
+            path.join('C:\\bundle', 'xinput1_4.dll')
         ]
     });
 
@@ -115,6 +112,7 @@ test('reports a friendly error when Steam is locking a DLL during repair', async
         fs: {
             ...{
                 existsSync: filePath => fixture.existingPaths.has(path.normalize(filePath)),
+                mkdirSync: () => {},
                 rmSync: () => {},
                 copyFileSync(srcPath, destPath) {
                     const normalizedDest = path.normalize(destPath);
@@ -132,8 +130,7 @@ test('reports a friendly error when Steam is locking a DLL during repair', async
         requiredFiles: [
             { name: 'OpenSteamTool.dll', sourceName: 'OpenSteamTool.dll', relativeDestination: 'OpenSteamTool.dll' },
             { name: 'dwmapi.dll', sourceName: 'dwmapi.dll', relativeDestination: 'dwmapi.dll' },
-            { name: 'xinput1_4.dll', sourceName: 'xinput1_4.dll', relativeDestination: 'xinput1_4.dll' },
-            { name: 'merlin-helper.dll', sourceName: 'merlin-helper.dll', relativeDestination: 'merlin-helper.dll' }
+            { name: 'xinput1_4.dll', sourceName: 'xinput1_4.dll', relativeDestination: 'xinput1_4.dll' }
         ],
         getSourcePath: file => path.join('C:\\bundle', file.sourceName),
         getMainWindow: () => ({
