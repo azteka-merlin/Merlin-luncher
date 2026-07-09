@@ -17,6 +17,7 @@ const { installLuaFile } = require('./src/main/files/lua-transformer');
 const { createAddGamesService } = require('./src/main/games/add-games-service');
 const { createGameNameResolver } = require('./src/main/games/game-name-resolver');
 const { createGameQueue } = require('./src/main/games/game-queue');
+const { createGameSearchClient } = require('./src/main/games/game-search-client');
 const { createGameInstaller } = require('./src/main/games/game-installer');
 const { createManifestOverrideService } = require('./src/main/games/manifest-override-service');
 const { parseSteamGameLink } = require('./src/main/games/steam-link-parser');
@@ -162,6 +163,7 @@ const steamService = createSteamService({
 
 const apiBaseUrl = process.env.MERLIN_API_BASE_URL
     || 'https://api-merlin.com/api';
+const gameSearchApiUrl = `${apiBaseUrl}/games/search`;
 const manifestApiUrl = process.env.MERLIN_API_URL || `${apiBaseUrl}/manifests`;
 const manifestStatusUrl = `${manifestApiUrl}/status`;
 const apiAgent = createApiAgent();
@@ -193,7 +195,13 @@ const libraryCatalogStore = createLibraryCatalogStore({
 });
 const libraryCatalogService = createLibraryCatalogService({
     catalogStore: libraryCatalogStore,
-    catalogClient: createLibraryCatalogClient({ axios })
+    catalogClient: createLibraryCatalogClient({ axios }),
+    searchClient: createGameSearchClient({
+        axios,
+        authSession,
+        httpsAgent: apiAgent,
+        url: gameSearchApiUrl
+    })
 });
 
 const libraryService = createLibraryService({

@@ -10,7 +10,9 @@ function createGameInstaller({
     installLuaFile,
     onInstalled = () => {}
 }) {
+    const { createZipArchiveTools } = require('../files/zip-archive-tools');
     const activeDownloads = new Set();
+    const zipArchiveTools = createZipArchiveTools({ fs, path, AdmZip });
 
     function createSources(appId) {
         return [
@@ -163,11 +165,8 @@ function createGameInstaller({
                     if (!isZipArchive(archiveData)) {
                         throw new Error(`Invalid ZIP response from ${source.name}`);
                     }
-                    if (new AdmZip(archiveData).getEntries().length === 0) {
-                        throw new Error(`Empty ZIP response from ${source.name}`);
-                    }
-
                     fs.writeFileSync(zipPath, archiveData);
+                    zipArchiveTools.validate(zipPath);
                     if (fs.existsSync(zipPath) && fs.statSync(zipPath).size > 0) {
                         downloaded = true;
                         sourceUsed = source.name;
@@ -193,16 +192,15 @@ function createGameInstaller({
             }
 
             onProgress({ message: 'Extracting files...', percent: 60 });
-            const zip = new AdmZip(zipPath);
             let extractedDir = null;
 
             if (sourceUsed === 'merlin-api') {
                 extractedDir = path.join(tempDir, `${sourceUsed}-${appId}`);
                 fs.rmSync(extractedDir, { recursive: true, force: true });
                 if (!fs.existsSync(extractedDir)) fs.mkdirSync(extractedDir, { recursive: true });
-                zip.extractAllTo(extractedDir, true);
+                zipArchiveTools.extract(zipPath, extractedDir);
             } else {
-                zip.extractAllTo(tempDir, true);
+                zipArchiveTools.extract(zipPath, tempDir);
                 extractedDir = findExtractedDirectory(tempDir, appId);
             }
 

@@ -1,13 +1,10 @@
-const { fallbackCoverForAppId } = require('./library-catalog-client');
-
 function normalizeCatalogEntry(appId, value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
     const name = typeof value.name === 'string' ? value.name.trim() : '';
     const coverUrl = typeof value.coverUrl === 'string' ? value.coverUrl.trim() : '';
     const coverSource = typeof value.coverSource === 'string' ? value.coverSource.trim() : '';
-    const fallbackCoverUrl = fallbackCoverForAppId(appId);
-    const finalCoverUrl = coverUrl || fallbackCoverUrl || '';
-    const finalCoverSource = coverSource || (coverUrl ? null : fallbackCoverUrl ? 'ryuu_image' : null);
+    const finalCoverUrl = coverSource === 'ryuu_image' ? '' : coverUrl;
+    const finalCoverSource = coverSource === 'ryuu_image' ? '' : coverSource;
     if (!name && !finalCoverUrl) return null;
     return {
         name,
@@ -75,12 +72,66 @@ function createLibraryCatalogStore({ fs, path, getFilePath }) {
         return games;
     }
 
+    function upsert(appId, value, { syncTimestamp = false } = {}) {
+        appId = String(appId || '').trim();
+        if (!/^\d+$/.test(appId)) return false;
+        load();
+
+        const normalized = normalizeCatalogEntry(appId, value);
+        if (!normalized) return false;
+
+        const current = games[appId] || null;
+        if (current
+            && current.name === normalized.name
+            && current.coverUrl === normalized.coverUrl
+            && current.coverSource === normalized.coverSource) {
+            return false;
+        }
+
+        games[appId] = normalized;
+        if (syncTimestamp || !lastSync) {
+            lastSync = new Date().toISOString();
+        }
+        hadLoadError = false;
+        save();
+        return true;
+    }
+
+    function upsertMany(entries, { syncTimestamp = false } = {}) {
+        load();
+        let changed = false;
+
+        for (const [appId, value] of Object.entries(entries || {})) {
+            const normalized = normalizeCatalogEntry(appId, value);
+            if (!normalized) continue;
+
+            const current = games[appId] || null;
+            if (current
+                && current.name === normalized.name
+                && current.coverUrl === normalized.coverUrl
+                && current.coverSource === normalized.coverSource) {
+                continue;
+            }
+
+            games[appId] = normalized;
+            changed = true;
+        }
+
+        if (!changed) return false;
+        if (syncTimestamp || !lastSync) {
+            lastSync = new Date().toISOString();
+        }
+        hadLoadError = false;
+        save();
+        return true;
+    }
+
     function needsBootstrap() {
         const state = load();
         return state.hadLoadError || Object.keys(state.games).length === 0;
     }
 
-    return { get, load, needsBootstrap, replace };
+    return { get, load, needsBootstrap, replace, upsert, upsertMany };
 }
 
 module.exports = { createLibraryCatalogStore };

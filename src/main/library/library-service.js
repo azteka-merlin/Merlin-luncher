@@ -85,14 +85,15 @@ function createLibraryService({
             unresolved.add(appId);
         }
 
-        if ((forceCatalogRefresh || unresolved.size > 0) && (appIds.length > 0)) {
-            await catalogService.refresh();
-            for (const appId of appIds) {
-                const entry = cacheStore.get(appId);
-                if (!shouldResolveFromRemote(entry, forceCatalogRefresh)) continue;
-                const refreshedCatalogEntry = catalogStore.get(appId);
-                if (refreshedCatalogEntry) {
-                    applyCatalogData(appId, refreshedCatalogEntry);
+        if (unresolved.size > 0 && appIds.length > 0) {
+            const enrichedEntries = await catalogService.enrichAppIds([...unresolved], {
+                allowCatalogRefresh: forceCatalogRefresh || catalogStore.needsBootstrap()
+            });
+
+            for (const appId of unresolved) {
+                const resolvedEntry = enrichedEntries.get(appId) || catalogStore.get(appId);
+                if (resolvedEntry) {
+                    applyCatalogData(appId, resolvedEntry);
                 } else {
                     cacheStore.merge(appId, { notFoundInCatalog: true });
                 }
@@ -140,11 +141,26 @@ function createLibraryService({
         }
     }
 
-    function recordName(appId, gameName) {
+    function recordName(appId, gameNameOrMetadata) {
+        const metadata = typeof gameNameOrMetadata === 'string'
+            ? { name: gameNameOrMetadata }
+            : gameNameOrMetadata;
+
         cacheStore.merge(String(appId), {
-            name: gameName,
+            name: typeof metadata?.name === 'string' ? metadata.name : '',
+            coverUrl: metadata?.coverUrl || null,
+            coverSource: metadata?.coverSource || null,
             notFoundInCatalog: false
         });
+
+        if (catalogService?.rememberEntries) {
+            catalogService.rememberEntries([{
+                appId: String(appId),
+                name: typeof metadata?.name === 'string' ? metadata.name : '',
+                coverUrl: metadata?.coverUrl || null,
+                coverSource: metadata?.coverSource || null
+            }]);
+        }
         invalidate();
     }
 

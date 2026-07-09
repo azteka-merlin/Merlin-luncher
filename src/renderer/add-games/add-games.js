@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let selectedGame = null;
     let searchTimer = null;
     let searchRequestId = 0;
+    let searchLoading = false;
 
     const localErrorTranslations = {
         ptbr: {
@@ -167,16 +168,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         return /^https?:\/\/store\.steampowered\.com\/app\//i.test(String(value || '').trim());
     }
 
-    function fallbackCoverUrl(appId) {
-        return /^\d+$/.test(String(appId || ''))
-            ? `https://generator.ryuu.lol/files/images/${appId}.jpg`
-            : null;
-    }
-
     function clearSuggestions() {
+        searchLoading = false;
         suggestionItems = [];
         suggestions.replaceChildren();
         suggestions.hidden = true;
+    }
+
+    function renderSearchLoading() {
+        searchLoading = true;
+        suggestionItems = [];
+        suggestions.replaceChildren();
+
+        const content = document.createElement('div');
+        content.className = 'game-suggestions-loading';
+
+        const spinner = document.createElement('span');
+        spinner.className = 'game-suggestions-spinner';
+        spinner.setAttribute('aria-hidden', 'true');
+
+        const label = document.createElement('span');
+        label.textContent = tr('games_searching');
+
+        content.append(spinner, label);
+        suggestions.append(content);
+        suggestions.hidden = false;
     }
 
     function queueCoverElement(game) {
@@ -188,11 +204,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             image.loading = 'lazy';
             image.decoding = 'async';
             image.addEventListener('error', () => {
-                const fallbackUrl = fallbackCoverUrl(game.appId);
-                if (fallbackUrl && image.src !== fallbackUrl) {
-                    image.src = fallbackUrl;
-                    return;
-                }
                 const placeholder = document.createElement('div');
                 placeholder.className = 'game-queue-cover game-queue-cover-placeholder';
                 image.replaceWith(placeholder);
@@ -205,6 +216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderSuggestions(items) {
+        searchLoading = false;
         suggestionItems = items || [];
         suggestions.replaceChildren();
 
@@ -371,6 +383,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        renderSearchLoading();
+        showFeedback('');
         const result = await api.search(query);
         if (requestId !== searchRequestId) return;
 
@@ -402,6 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         showFeedback('');
         searchTimer = setTimeout(() => {
+            renderSearchLoading();
             runSearch(query).catch(() => {
                 window.merlinServiceStatus?.report?.('catalog-search');
                 showFeedback(tr('games_error_search_failed'), 'error');
@@ -524,7 +539,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('merlin-view-changed', updateVisibleView);
     window.addEventListener('merlin-language-changed', () => {
         renderQueue(queueState);
-        renderSuggestions(suggestionItems);
+        if (searchLoading) {
+            renderSearchLoading();
+        } else {
+            renderSuggestions(suggestionItems);
+        }
     });
     addToQueueBtn.addEventListener('click', addToQueue);
     installNowBtn.addEventListener('click', installNow);

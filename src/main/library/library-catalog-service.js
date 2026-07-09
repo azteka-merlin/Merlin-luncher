@@ -1,5 +1,3 @@
-const { fallbackCoverForAppId } = require('./library-catalog-client');
-
 function scoreMatch(game, normalizedQuery) {
     const name = String(game.name || '').toLocaleLowerCase();
     const appId = String(game.appId || '');
@@ -11,16 +9,15 @@ function scoreMatch(game, normalizedQuery) {
     return -1;
 }
 
-function createLibraryCatalogService({ catalogStore, catalogClient }) {
+function createLibraryCatalogService({ catalogStore, catalogClient, searchClient = null }) {
     let refreshPromise = null;
 
     function normalizeEntry(appId, entry) {
         if (!entry) return null;
-        const fallbackCoverUrl = fallbackCoverForAppId(appId);
         return {
             name: entry.name,
-            coverUrl: entry.coverUrl || fallbackCoverUrl || null,
-            coverSource: entry.coverSource || (entry.coverUrl ? null : fallbackCoverUrl ? 'ryuu_image' : null)
+            coverUrl: entry.coverSource === 'ryuu_image' ? null : entry.coverUrl || null,
+            coverSource: entry.coverSource === 'ryuu_image' ? null : entry.coverSource || null
         };
     }
 
@@ -76,28 +73,156 @@ function createLibraryCatalogService({ catalogStore, catalogClient }) {
             .map(({ score, ...game }) => game);
     }
 
+    function normalizeRemoteGame(item) {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+
+        const appId = String(item.appId || '').trim();
+        const name = typeof item.name === 'string' ? item.name.trim() : '';
+        const coverUrl = typeof item.coverUrl === 'string' ? item.coverUrl.trim() : '';
+        const coverSource = typeof item.coverSource === 'string' ? item.coverSource.trim() : '';
+
+        if (!/^\d+$/.test(appId) || !name) return null;
+
+        return {
+            appId,
+            name,
+            coverUrl: coverSource === 'ryuu_image' ? null : coverUrl || null,
+            coverSource: coverSource === 'ryuu_image' ? null : coverSource || null
+        };
+    }
+
+    function rememberEntries(items) {
+        const entries = Object.fromEntries(
+            (items || [])
+                .filter(item => item && /^\d+$/.test(String(item.appId || '').trim()))
+                .map(item => [String(item.appId).trim(), {
+                    name: item.name,
+                    coverUrl: item.coverUrl || null,
+                    coverSource: item.coverSource || null
+                }])
+        );
+
+        if (Object.keys(entries).length === 0) return false;
+        return catalogStore.upsertMany(entries);
+    }
+
+    async function searchRemote(query, { limit = 4 } = {}) {
+        if (!searchClient?.search) return [];
+
+        try {
+            const items = (await searchClient.search(query, { limit }))
+                .map(normalizeRemoteGame)
+                .filter(Boolean);
+            rememberEntries(items);
+            return items;
+        } catch (error) {
+            console.warn('Unable to search games using Merlin API:', error.message);
+            return [];
+        }
+    }
+
+    async function enrichAppIds(appIds, { allowCatalogRefresh = true } = {}) {
+        const normalizedAppIds = [...new Set(
+            (appIds || [])
+                .map(appId => String(appId || '').trim())
+                .filter(appId => /^\d+$/.test(appId))
+        )];
+
+        const resolved = new Map();
+        const unresolved = [];
+        const localFallbacks = new Map();
+
+        for (const appId of normalizedAppIds) {
+            const localMatch = findByAppId(appId);
+            if (localMatch?.coverUrl) {
+                resolved.set(appId, localMatch);
+            } else if (localMatch) {
+                localFallbacks.set(appId, localMatch);
+                unresolved.push(appId);
+            } else {
+                unresolved.push(appId);
+            }
+        }
+
+        if (unresolved.length > 0) {
+            const remoteMatches = await Promise.all(
+                unresolved.map(async appId => {
+                    const remoteMatch = (await searchRemote(appId, { limit: 4 }))
+                        .find(item => item.appId === appId) || null;
+                    return [appId, remoteMatch];
+                })
+            );
+
+            for (const [appId, match] of remoteMatches) {
+                if (match) {
+                    resolved.set(appId, match);
+                }
+            }
+        }
+
+        if (allowCatalogRefresh) {
+            const stillMissing = normalizedAppIds.filter(appId => !resolved.has(appId));
+            if (stillMissing.length > 0) {
+                await refresh();
+                for (const appId of stillMissing) {
+                    const refreshedMatch = findByAppId(appId);
+                    if (refreshedMatch) resolved.set(appId, refreshedMatch);
+                }
+            }
+        }
+
+        for (const appId of normalizedAppIds) {
+            if (!resolved.has(appId) && localFallbacks.has(appId)) {
+                resolved.set(appId, localFallbacks.get(appId));
+            }
+        }
+
+        return resolved;
+    }
+
     async function resolveByAppId(appId, { allowRefresh = true } = {}) {
         appId = String(appId || '').trim();
         if (!/^\d+$/.test(appId)) return null;
-        let match = findByAppId(appId);
-        if (match || !allowRefresh) return match;
-        await refresh();
-        return findByAppId(appId);
+        const matches = await enrichAppIds([appId], { allowCatalogRefresh: allowRefresh });
+        return matches.get(appId) || null;
     }
 
     async function search(query, { limit = 4 } = {}) {
-        const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
+        const rawQuery = String(query || '').trim();
+        const normalizedQuery = rawQuery.toLocaleLowerCase();
         if (!normalizedQuery) return [];
+
+        const remoteMatches = await searchRemote(rawQuery, { limit });
+        if (remoteMatches.length > 0) {
+            const incompleteRemoteMatches = remoteMatches.filter(item => !item.coverUrl);
+            if (incompleteRemoteMatches.length === 0) {
+                return remoteMatches;
+            }
+
+            const hydrated = await enrichAppIds(
+                incompleteRemoteMatches.map(item => item.appId),
+                { allowCatalogRefresh: true }
+            );
+
+            return remoteMatches.map(item => hydrated.get(item.appId) || item);
+        }
+
         const games = await ensureLoaded();
         let matches = findMatches(games, normalizedQuery, limit);
-        if (matches.length > 0) return matches;
+        if (matches.length > 0) {
+            const hydrated = await enrichAppIds(
+                matches.map(item => item.appId),
+                { allowCatalogRefresh: true }
+            );
+            return matches.map(item => hydrated.get(item.appId) || item);
+        }
 
         await refresh();
         matches = findMatches(catalogStore.load().games, normalizedQuery, limit);
         return matches;
     }
 
-    return { ensureLoaded, findByAppId, refresh, resolveByAppId, search };
+    return { ensureLoaded, enrichAppIds, findByAppId, refresh, rememberEntries, resolveByAppId, search };
 }
 
 module.exports = { createLibraryCatalogService };

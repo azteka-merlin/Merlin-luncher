@@ -14,8 +14,10 @@ function createCorrectionsService({
     libraryCatalogService,
     downloadManager
 }) {
+    const { createZipArchiveTools } = require('../files/zip-archive-tools');
     let cachedItems = null;
     const operations = new Map();
+    const zipArchiveTools = createZipArchiveTools({ fs, path, AdmZip });
 
     function fallbackCoverUrl(appId) {
         return /^\d+$/.test(String(appId || '').trim())
@@ -136,19 +138,30 @@ function createCorrectionsService({
     }
 
     async function hydrateImages(items) {
-        let catalogReady = false;
-
         try {
             await libraryCatalogService.ensureLoaded();
-            catalogReady = true;
         } catch (error) {
             console.warn('Unable to preload game catalog for corrections:', error.message);
         }
 
+        const missingMetadataAppIds = items
+            .filter(item => !item.imageUrl)
+            .map(item => item.appId);
+
+        let enrichedEntries = new Map();
+        if (missingMetadataAppIds.length > 0) {
+            try {
+                enrichedEntries = await libraryCatalogService.enrichAppIds(missingMetadataAppIds, {
+                    allowCatalogRefresh: true
+                });
+            } catch (error) {
+                console.warn('Unable to enrich correction images from game catalog:', error.message);
+            }
+        }
+
         return items.map(item => {
-            const catalogEntry = catalogReady
-                ? libraryCatalogService.findByAppId(item.appId)
-                : null;
+            const catalogEntry = enrichedEntries.get(item.appId)
+                || libraryCatalogService.findByAppId(item.appId);
             return {
                 ...item,
                 imageUrl: catalogEntry?.coverUrl || item.imageUrl || fallbackCoverUrl(item.appId) || null
@@ -284,16 +297,6 @@ function createCorrectionsService({
         };
     }
 
-    function validateZipEntries(zip) {
-        const entries = zip.getEntries().filter(entry => !entry.isDirectory);
-        if (entries.length === 0) {
-            const error = new Error('Empty ZIP archive');
-            error.code = 'invalid_zip';
-            throw error;
-        }
-        return entries;
-    }
-
     function safeExtractEntry(pathApi, rootPath, entryName) {
         const normalizedName = String(entryName || '').replace(/\\/g, '/');
         const entryPath = normalizedName.startsWith('/')
@@ -308,17 +311,6 @@ function createCorrectionsService({
         }
 
         return destinationPath;
-    }
-
-    function extractZipEntries(zip, destinationRoot, operation) {
-        const entries = validateZipEntries(zip);
-
-        for (const entry of entries) {
-            throwIfCancelled(operation);
-            const destinationPath = safeExtractEntry(path, destinationRoot, entry.entryName);
-            fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
-            fs.writeFileSync(destinationPath, entry.getData());
-        }
     }
 
     function extractNestedZipFiles(rootPath, operation) {
@@ -352,8 +344,7 @@ function createCorrectionsService({
                 }
 
                 const targetDirectory = path.dirname(entryPath);
-                const nestedZip = new AdmZip(entryPath);
-                extractZipEntries(nestedZip, targetDirectory, operation);
+                zipArchiveTools.extract(entryPath, targetDirectory);
                 fs.unlinkSync(entryPath);
                 pending.push(targetDirectory);
             }
@@ -417,8 +408,7 @@ function createCorrectionsService({
             throw error;
         }
 
-        const zip = new AdmZip(archiveFilePath);
-        extractZipEntries(zip, destinationRoot, operation);
+        zipArchiveTools.extract(archiveFilePath, destinationRoot);
         extractNestedZipFiles(destinationRoot, operation);
     }
 
@@ -427,8 +417,7 @@ function createCorrectionsService({
         if (extension === '.rar') return;
 
         try {
-            const zip = new AdmZip(archiveFilePath);
-            validateZipEntries(zip);
+            zipArchiveTools.validate(archiveFilePath);
         } catch (error) {
             const wrapped = new Error(error.message || 'Invalid archive');
             wrapped.code = error.code || 'invalid_zip';

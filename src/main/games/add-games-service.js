@@ -282,7 +282,7 @@ function createAddGamesService({
                 })
             }));
             if (result.success) {
-                libraryService?.recordName(resolved.item.appId, resolved.item.name);
+                libraryService?.recordName(resolved.item.appId, resolved.item);
             }
             return { ...result, item: resolved.item };
         } finally {
@@ -327,7 +327,7 @@ function createAddGamesService({
                 }));
 
                 if (result.success) {
-                    libraryService?.recordName(item.appId, item.name);
+                    libraryService?.recordName(item.appId, item);
                     installed.push(item);
                     queue.remove(item.appId, true);
                     events.queueUpdated?.(queueState());
