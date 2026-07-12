@@ -82,7 +82,43 @@ window.merlinI18n.register({
         premium_launch_notice_manual: 'Alguns jogos precisam ser iniciados pelo executável na pasta do jogo. Para este jogo, use:',
         premium_duration_day: '{count}d',
         premium_duration_hour: '{count}h',
-        premium_duration_minute: '{count}min'
+        premium_duration_minute: '{count}min',
+        premium_intro_eyebrow: 'MERLIN PREMIUM',
+        premium_intro_title_overview: 'Conheça a aba Premium',
+        premium_intro_title: 'Antes de ativar',
+        premium_intro_overview_message: 'A aba Premium é um catálogo especial mantido pelo Merlin para jogos que precisam de um fluxo mais cuidadoso.',
+        premium_intro_overview_catalog_title: 'Catálogo exclusivo',
+        premium_intro_overview_catalog_text: 'Os jogos daqui dependem de compra, preparação e disponibilidade mantidas pelo Merlin.',
+        premium_intro_overview_access_title: 'Acesso mais difícil',
+        premium_intro_overview_access_text: 'Ela não depende de correções públicas ou alternativas fáceis já existentes: quando for viável, o Merlin prepara o acesso pelo Premium.',
+        premium_intro_overview_launch_title: 'Lançamentos podem aparecer',
+        premium_intro_overview_launch_text: 'Como o fluxo depende da compra e preparo do jogo, o Merlin pode trazer títulos recentes quando houver disponibilidade.',
+        premium_intro_overview_footer: 'Hoje essa área faz parte do Merlin, mas futuramente pode se tornar um serviço mensal de valor simbólico, já que o custo operacional do Merlin é mínimo.',
+        premium_intro_title_community: 'Novos jogos no Premium',
+        premium_intro_community_message: 'A escolha de novos jogos também pode nascer da própria comunidade Merlin.',
+        premium_intro_community_poll_title: 'Enquetes dentro do Merlin',
+        premium_intro_community_poll_text: 'Quando muitos usuários demonstrarem interesse em um jogo, o Merlin poderá abrir enquetes para medir prioridade e demanda.',
+        premium_intro_community_fund_title: 'Ação coletiva',
+        premium_intro_community_fund_text: 'Em alguns casos, a comunidade poderá se organizar para juntar o valor necessário e disponibilizar o jogo para todos no futuro.',
+        premium_intro_community_optional_title: 'Participação opcional',
+        premium_intro_community_optional_text: 'Participar de arrecadações nunca será obrigatório. A ideia é apenas criar um caminho coletivo para jogos muito pedidos.',
+        premium_intro_community_footer: 'A arrecadação também pode servir para comprar mais cópias de um jogo já disponível. Cada cópia adiciona 5 vagas ao jogo.',
+        premium_intro_message: 'Leia estes pontos para evitar perder uma ativação sem necessidade.',
+        premium_intro_slots_title: 'Vagas e cooldown',
+        premium_intro_slots_text: 'Cada cópia disponível do jogo adiciona 5 vagas. Ao concluir, sua vaga fica ocupada por 24 horas.',
+        premium_intro_stability_title: 'Evite mudanças desnecessárias',
+        premium_intro_stability_text: 'Atualizar o jogo, Windows, BIOS, drivers ou trocar hardware pode fazer o jogo parar de abrir.',
+        premium_intro_security_title: 'Antivírus e arquivos',
+        premium_intro_security_text: 'Se o antivírus remover algum arquivo aplicado, restaure ou adicione exceção antes de tentar ativar novamente.',
+        premium_intro_saves_title: 'Cuide dos saves',
+        premium_intro_saves_text: 'Uma nova ativação pode criar outro ID de save em alguns jogos. Faça backup antes de atualizar ou reativar.',
+        premium_intro_launch_title: 'Como iniciar',
+        premium_intro_launch_text: 'Alguns jogos abrem pela Steam; outros precisam ser abertos pelo executável indicado após a ativação.',
+        premium_intro_footer: 'Se o jogo já está funcionando bem, evite atualizar sem necessidade.',
+        premium_intro_back: 'Voltar',
+        premium_intro_next: 'Próximo',
+        premium_intro_continue: 'Entendi',
+        premium_intro_help_label: 'Ler informações do Premium novamente'
     },
     en: {
         premium_button: 'Premium',
@@ -167,7 +203,43 @@ window.merlinI18n.register({
         premium_launch_notice_manual: 'Some games must be started from the executable inside the game folder. For this game, use:',
         premium_duration_day: '{count}d',
         premium_duration_hour: '{count}h',
-        premium_duration_minute: '{count}m'
+        premium_duration_minute: '{count}m',
+        premium_intro_eyebrow: 'MERLIN PREMIUM',
+        premium_intro_title_overview: 'Meet the Premium tab',
+        premium_intro_title: 'Before activating',
+        premium_intro_overview_message: 'The Premium tab is a special Merlin-maintained catalog for games that need a more careful flow.',
+        premium_intro_overview_catalog_title: 'Exclusive catalog',
+        premium_intro_overview_catalog_text: 'Games here depend on purchase, preparation, and availability maintained by Merlin.',
+        premium_intro_overview_access_title: 'Harder access',
+        premium_intro_overview_access_text: 'It does not depend on public corrections or easy existing alternatives: when viable, Merlin prepares access through Premium.',
+        premium_intro_overview_launch_title: 'New releases may appear',
+        premium_intro_overview_launch_text: 'Because the flow depends on purchasing and preparing the game, Merlin may bring recent titles when available.',
+        premium_intro_overview_footer: 'Today this area is part of Merlin, but it may become a symbolic monthly service in the future, since Merlin’s operational cost is minimal.',
+        premium_intro_title_community: 'New Premium games',
+        premium_intro_community_message: 'New game choices may also come from the Merlin community itself.',
+        premium_intro_community_poll_title: 'Polls inside Merlin',
+        premium_intro_community_poll_text: 'When many users are interested in a game, Merlin may open polls to measure priority and demand.',
+        premium_intro_community_fund_title: 'Collective action',
+        premium_intro_community_fund_text: 'In some cases, the community may organize to gather the needed amount and make the game available to everyone in the future.',
+        premium_intro_community_optional_title: 'Optional participation',
+        premium_intro_community_optional_text: 'Participating in fundraisers will never be mandatory. The idea is only to create a collective path for highly requested games.',
+        premium_intro_community_footer: 'Fundraising may also be used to buy more copies of a game that is already available. Each copy adds 5 slots to that game.',
+        premium_intro_message: 'Read these points to avoid wasting an activation unnecessarily.',
+        premium_intro_slots_title: 'Slots and cooldown',
+        premium_intro_slots_text: 'Each available copy of the game adds 5 slots. Once completed, your slot stays occupied for 24 hours.',
+        premium_intro_stability_title: 'Avoid unnecessary changes',
+        premium_intro_stability_text: 'Updating the game, Windows, BIOS, drivers, or changing hardware may stop the game from opening.',
+        premium_intro_security_title: 'Antivirus and files',
+        premium_intro_security_text: 'If antivirus removes an applied file, restore it or add an exception before trying to activate again.',
+        premium_intro_saves_title: 'Protect your saves',
+        premium_intro_saves_text: 'A new activation may create another save ID in some games. Back up saves before updating or reactivating.',
+        premium_intro_launch_title: 'How to launch',
+        premium_intro_launch_text: 'Some games open through Steam; others must be opened from the executable shown after activation.',
+        premium_intro_footer: 'If the game is already working well, avoid updating it unnecessarily.',
+        premium_intro_back: 'Back',
+        premium_intro_next: 'Next',
+        premium_intro_continue: 'Got it',
+        premium_intro_help_label: 'Read Premium information again'
     },
     es: {
         premium_button: 'Premium',
@@ -252,7 +324,43 @@ window.merlinI18n.register({
         premium_launch_notice_manual: 'Algunos juegos deben iniciarse desde el ejecutable dentro de la carpeta del juego. Para este juego, usa:',
         premium_duration_day: '{count}d',
         premium_duration_hour: '{count}h',
-        premium_duration_minute: '{count}min'
+        premium_duration_minute: '{count}min',
+        premium_intro_eyebrow: 'MERLIN PREMIUM',
+        premium_intro_title_overview: 'Conoce la pestaña Premium',
+        premium_intro_title: 'Antes de activar',
+        premium_intro_overview_message: 'La pestaña Premium es un catálogo especial mantenido por Merlin para juegos que necesitan un flujo más cuidadoso.',
+        premium_intro_overview_catalog_title: 'Catálogo exclusivo',
+        premium_intro_overview_catalog_text: 'Los juegos de aquí dependen de compra, preparación y disponibilidad mantenidas por Merlin.',
+        premium_intro_overview_access_title: 'Acceso más difícil',
+        premium_intro_overview_access_text: 'No depende de correcciones públicas ni de alternativas fáciles ya existentes: cuando sea viable, Merlin prepara el acceso por Premium.',
+        premium_intro_overview_launch_title: 'Pueden aparecer lanzamientos',
+        premium_intro_overview_launch_text: 'Como el flujo depende de comprar y preparar el juego, Merlin puede traer títulos recientes cuando haya disponibilidad.',
+        premium_intro_overview_footer: 'Hoy esta área forma parte de Merlin, pero en el futuro puede convertirse en un servicio mensual de valor simbólico, ya que el costo operativo de Merlin es mínimo.',
+        premium_intro_title_community: 'Nuevos juegos Premium',
+        premium_intro_community_message: 'La elección de nuevos juegos también puede nacer de la propia comunidad Merlin.',
+        premium_intro_community_poll_title: 'Encuestas dentro de Merlin',
+        premium_intro_community_poll_text: 'Cuando muchos usuarios demuestren interés en un juego, Merlin podrá abrir encuestas para medir prioridad y demanda.',
+        premium_intro_community_fund_title: 'Acción colectiva',
+        premium_intro_community_fund_text: 'En algunos casos, la comunidad podrá organizarse para reunir el valor necesario y disponibilizar el juego para todos en el futuro.',
+        premium_intro_community_optional_title: 'Participación opcional',
+        premium_intro_community_optional_text: 'Participar en recaudaciones nunca será obligatorio. La idea es crear un camino colectivo para juegos muy pedidos.',
+        premium_intro_community_footer: 'La recaudación también puede servir para comprar más copias de un juego ya disponible. Cada copia añade 5 plazas a ese juego.',
+        premium_intro_message: 'Lee estos puntos para evitar gastar una activación sin necesidad.',
+        premium_intro_slots_title: 'Plazas y cooldown',
+        premium_intro_slots_text: 'Cada copia disponible del juego añade 5 plazas. Al completarse, tu plaza queda ocupada durante 24 horas.',
+        premium_intro_stability_title: 'Evita cambios innecesarios',
+        premium_intro_stability_text: 'Actualizar el juego, Windows, BIOS, drivers o cambiar hardware puede hacer que el juego deje de abrir.',
+        premium_intro_security_title: 'Antivirus y archivos',
+        premium_intro_security_text: 'Si el antivirus elimina un archivo aplicado, restáuralo o añade una excepción antes de intentar activar de nuevo.',
+        premium_intro_saves_title: 'Cuida tus saves',
+        premium_intro_saves_text: 'Una nueva activación puede crear otro ID de save en algunos juegos. Haz backup antes de actualizar o reactivar.',
+        premium_intro_launch_title: 'Cómo iniciar',
+        premium_intro_launch_text: 'Algunos juegos abren por Steam; otros deben abrirse desde el ejecutable indicado después de la activación.',
+        premium_intro_footer: 'Si el juego ya funciona bien, evita actualizarlo sin necesidad.',
+        premium_intro_back: 'Volver',
+        premium_intro_next: 'Siguiente',
+        premium_intro_continue: 'Entendido',
+        premium_intro_help_label: 'Leer la información de Premium de nuevo'
     },
     fr: {
         premium_button: 'Premium',
@@ -337,7 +445,43 @@ window.merlinI18n.register({
         premium_launch_notice_manual: 'Certains jeux doivent être lancés depuis l’exécutable dans le dossier du jeu. Pour ce jeu, utilisez :',
         premium_duration_day: '{count}j',
         premium_duration_hour: '{count}h',
-        premium_duration_minute: '{count}min'
+        premium_duration_minute: '{count}min',
+        premium_intro_eyebrow: 'MERLIN PREMIUM',
+        premium_intro_title_overview: 'Découvrez l’onglet Premium',
+        premium_intro_title: 'Avant d’activer',
+        premium_intro_overview_message: 'L’onglet Premium est un catalogue spécial maintenu par Merlin pour les jeux qui demandent un flux plus soigné.',
+        premium_intro_overview_catalog_title: 'Catalogue exclusif',
+        premium_intro_overview_catalog_text: 'Les jeux affichés ici dépendent d’un achat, d’une préparation et d’une disponibilité maintenus par Merlin.',
+        premium_intro_overview_access_title: 'Accès plus difficile',
+        premium_intro_overview_access_text: 'Il ne dépend pas de correctifs publics ni d’alternatives simples déjà existantes : lorsque c’est viable, Merlin prépare l’accès via Premium.',
+        premium_intro_overview_launch_title: 'Des nouveautés peuvent arriver',
+        premium_intro_overview_launch_text: 'Comme le flux dépend de l’achat et de la préparation du jeu, Merlin peut proposer des titres récents lorsqu’ils sont disponibles.',
+        premium_intro_overview_footer: 'Aujourd’hui cette zone fait partie de Merlin, mais elle pourra devenir un service mensuel à valeur symbolique, car le coût opérationnel de Merlin est minimal.',
+        premium_intro_title_community: 'Nouveaux jeux Premium',
+        premium_intro_community_message: 'Le choix de nouveaux jeux peut aussi venir de la communauté Merlin elle-même.',
+        premium_intro_community_poll_title: 'Sondages dans Merlin',
+        premium_intro_community_poll_text: 'Lorsque beaucoup d’utilisateurs s’intéressent à un jeu, Merlin peut ouvrir des sondages pour mesurer la priorité et la demande.',
+        premium_intro_community_fund_title: 'Action collective',
+        premium_intro_community_fund_text: 'Dans certains cas, la communauté pourra s’organiser pour réunir le montant nécessaire et rendre le jeu disponible pour tous à l’avenir.',
+        premium_intro_community_optional_title: 'Participation optionnelle',
+        premium_intro_community_optional_text: 'Participer à une collecte ne sera jamais obligatoire. L’idée est seulement de créer une voie collective pour les jeux très demandés.',
+        premium_intro_community_footer: 'La collecte peut aussi servir à acheter plus de copies d’un jeu déjà disponible. Chaque copie ajoute 5 créneaux à ce jeu.',
+        premium_intro_message: 'Lisez ces points pour éviter de perdre une activation inutilement.',
+        premium_intro_slots_title: 'Créneaux et cooldown',
+        premium_intro_slots_text: 'Chaque copie disponible du jeu ajoute 5 créneaux. Une fois terminée, votre place reste occupée pendant 24 heures.',
+        premium_intro_stability_title: 'Évitez les changements inutiles',
+        premium_intro_stability_text: 'Mettre à jour le jeu, Windows, le BIOS, les pilotes ou changer du matériel peut empêcher le jeu de s’ouvrir.',
+        premium_intro_security_title: 'Antivirus et fichiers',
+        premium_intro_security_text: 'Si l’antivirus supprime un fichier appliqué, restaurez-le ou ajoutez une exception avant de réessayer.',
+        premium_intro_saves_title: 'Protégez vos saves',
+        premium_intro_saves_text: 'Une nouvelle activation peut créer un autre ID de sauvegarde dans certains jeux. Sauvegardez avant de mettre à jour ou de réactiver.',
+        premium_intro_launch_title: 'Comment lancer',
+        premium_intro_launch_text: 'Certains jeux s’ouvrent via Steam ; d’autres doivent être lancés depuis l’exécutable indiqué après activation.',
+        premium_intro_footer: 'Si le jeu fonctionne déjà bien, évitez de le mettre à jour sans nécessité.',
+        premium_intro_back: 'Retour',
+        premium_intro_next: 'Suivant',
+        premium_intro_continue: 'Compris',
+        premium_intro_help_label: 'Relire les informations Premium'
     },
     de: {
         premium_button: 'Premium',
@@ -422,7 +566,43 @@ window.merlinI18n.register({
         premium_launch_notice_manual: 'Einige Spiele müssen über die ausführbare Datei im Spielordner gestartet werden. Verwenden Sie für dieses Spiel:',
         premium_duration_day: '{count}t',
         premium_duration_hour: '{count}h',
-        premium_duration_minute: '{count}min'
+        premium_duration_minute: '{count}min',
+        premium_intro_eyebrow: 'MERLIN PREMIUM',
+        premium_intro_title_overview: 'Premium-Tab kennenlernen',
+        premium_intro_title: 'Vor der Aktivierung',
+        premium_intro_overview_message: 'Der Premium-Tab ist ein besonderer von Merlin gepflegter Katalog für Spiele, die einen sorgfältigeren Ablauf benötigen.',
+        premium_intro_overview_catalog_title: 'Exklusiver Katalog',
+        premium_intro_overview_catalog_text: 'Die Spiele hier hängen von Kauf, Vorbereitung und Verfügbarkeit ab, die von Merlin gepflegt werden.',
+        premium_intro_overview_access_title: 'Schwierigerer Zugang',
+        premium_intro_overview_access_text: 'Er hängt nicht von öffentlichen Korrekturen oder bereits vorhandenen einfachen Alternativen ab: Wenn es möglich ist, bereitet Merlin den Zugang über Premium vor.',
+        premium_intro_overview_launch_title: 'Neue Titel können erscheinen',
+        premium_intro_overview_launch_text: 'Da der Ablauf vom Kauf und der Vorbereitung des Spiels abhängt, kann Merlin aktuelle Titel anbieten, wenn sie verfügbar sind.',
+        premium_intro_overview_footer: 'Derzeit ist dieser Bereich Teil von Merlin, kann aber später zu einem monatlichen Dienst mit symbolischem Betrag werden, da Merlins Betriebskosten minimal sind.',
+        premium_intro_title_community: 'Neue Premium-Spiele',
+        premium_intro_community_message: 'Die Auswahl neuer Spiele kann auch aus der Merlin-Community selbst entstehen.',
+        premium_intro_community_poll_title: 'Umfragen in Merlin',
+        premium_intro_community_poll_text: 'Wenn viele Benutzer Interesse an einem Spiel zeigen, kann Merlin Umfragen öffnen, um Priorität und Nachfrage zu messen.',
+        premium_intro_community_fund_title: 'Gemeinsame Aktion',
+        premium_intro_community_fund_text: 'In manchen Fällen kann sich die Community organisieren, um den benötigten Betrag zu sammeln und das Spiel künftig allen verfügbar zu machen.',
+        premium_intro_community_optional_title: 'Optionale Teilnahme',
+        premium_intro_community_optional_text: 'Die Teilnahme an Sammlungen wird nie verpflichtend sein. Ziel ist nur ein gemeinsamer Weg für stark gewünschte Spiele.',
+        premium_intro_community_footer: 'Sammlungen können auch genutzt werden, um weitere Kopien eines bereits verfügbaren Spiels zu kaufen. Jede Kopie fügt diesem Spiel 5 Plätze hinzu.',
+        premium_intro_message: 'Lesen Sie diese Punkte, um keine Aktivierung unnötig zu verlieren.',
+        premium_intro_slots_title: 'Plätze und Cooldown',
+        premium_intro_slots_text: 'Jede verfügbare Kopie des Spiels fügt 5 Plätze hinzu. Nach Abschluss bleibt Ihr Platz 24 Stunden belegt.',
+        premium_intro_stability_title: 'Unnötige Änderungen vermeiden',
+        premium_intro_stability_text: 'Updates von Spiel, Windows, BIOS, Treibern oder Hardwarewechsel können verhindern, dass das Spiel startet.',
+        premium_intro_security_title: 'Antivirus und Dateien',
+        premium_intro_security_text: 'Wenn das Antivirus eine angewendete Datei entfernt, stellen Sie sie wieder her oder fügen Sie eine Ausnahme hinzu, bevor Sie erneut aktivieren.',
+        premium_intro_saves_title: 'Spielstände sichern',
+        premium_intro_saves_text: 'Eine neue Aktivierung kann bei manchen Spielen eine andere Save-ID erzeugen. Sichern Sie Spielstände vor Updates oder erneuter Aktivierung.',
+        premium_intro_launch_title: 'Starten des Spiels',
+        premium_intro_launch_text: 'Einige Spiele starten über Steam; andere müssen über die nach der Aktivierung angezeigte ausführbare Datei gestartet werden.',
+        premium_intro_footer: 'Wenn das Spiel bereits gut funktioniert, vermeiden Sie unnötige Updates.',
+        premium_intro_back: 'Zurück',
+        premium_intro_next: 'Weiter',
+        premium_intro_continue: 'Verstanden',
+        premium_intro_help_label: 'Premium-Informationen erneut lesen'
     }
 });
 
@@ -439,6 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const elements = {
         button: document.getElementById('premiumBtn'),
         view: document.getElementById('premiumView'),
+        introHelp: document.getElementById('premiumIntroHelpBtn'),
         refresh: document.getElementById('premiumRefreshBtn'),
         refreshLabel: document.querySelector('#premiumRefreshBtn span'),
         search: document.getElementById('premiumSearchInput'),
@@ -451,6 +632,17 @@ document.addEventListener('DOMContentLoaded', () => {
         resultCount: document.getElementById('premiumResultCount'),
         pagination: document.getElementById('premiumPagination'),
         tooltip: document.getElementById('premiumTooltip'),
+        introModal: document.getElementById('premiumIntroModal'),
+        introTitle: document.getElementById('premiumIntroTitle'),
+        introOverviewStep: document.getElementById('premiumIntroOverviewStep'),
+        introCommunityStep: document.getElementById('premiumIntroCommunityStep'),
+        introDetailsStep: document.getElementById('premiumIntroDetailsStep'),
+        introStepOneDot: document.getElementById('premiumIntroStepOneDot'),
+        introStepTwoDot: document.getElementById('premiumIntroStepTwoDot'),
+        introStepThreeDot: document.getElementById('premiumIntroStepThreeDot'),
+        introBack: document.getElementById('premiumIntroBackBtn'),
+        introNext: document.getElementById('premiumIntroNextBtn'),
+        introAcknowledge: document.getElementById('premiumIntroAcknowledgeBtn'),
         progressModal: document.getElementById('premiumProgressModal'),
         progressCard: document.getElementById('premiumProgressCard'),
         progressTitle: document.getElementById('premiumProgressTitle'),
@@ -480,6 +672,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let tooltipHideTimer = null;
     let progressCloseResolver = null;
     let refreshQueuedFromCountdown = false;
+    let premiumIntroSeen = null;
+    let premiumIntroLoading = null;
+    let premiumIntroOpened = false;
+    let premiumIntroStep = 0;
 
     function tr(key, values = {}) {
         const template = window.merlinI18n.t(key);
@@ -492,6 +688,110 @@ document.addEventListener('DOMContentLoaded', () => {
     function notify(message, type = 'info') {
         if (typeof window.showNotification === 'function') {
             window.showNotification(message, type);
+        }
+    }
+
+    function currentView() {
+        return window.merlinView?.get?.() || '';
+    }
+
+    async function getPremiumIntroSeen() {
+        if (typeof premiumIntroSeen === 'boolean') return premiumIntroSeen;
+        if (!premiumIntroLoading) {
+            premiumIntroLoading = window.electronAPI.getConfig()
+                .then(config => {
+                    premiumIntroSeen = Boolean(config?.premiumIntroSeen);
+                    return premiumIntroSeen;
+                })
+                .catch(() => {
+                    premiumIntroSeen = true;
+                    return true;
+                })
+                .finally(() => {
+                    premiumIntroLoading = null;
+                });
+        }
+
+        return premiumIntroLoading;
+    }
+
+    async function showPremiumIntroIfNeeded() {
+        if (!elements.introModal || premiumIntroOpened || activeOperation || currentView() !== 'premium') return;
+        const seen = await getPremiumIntroSeen();
+        if (seen || premiumIntroOpened || activeOperation || currentView() !== 'premium') return;
+        premiumIntroOpened = true;
+        renderPremiumIntroStep(0);
+        elements.introModal.hidden = false;
+        elements.introNext?.focus();
+    }
+
+    function openPremiumIntroManually() {
+        if (!elements.introModal || activeOperation) return;
+        premiumIntroOpened = true;
+        renderPremiumIntroStep(0);
+        elements.introModal.hidden = false;
+        elements.introNext?.focus();
+    }
+
+    function updateIntroHelpLabel() {
+        if (!elements.introHelp) return;
+        const label = tr('premium_intro_help_label');
+        elements.introHelp.setAttribute('aria-label', label);
+        elements.introHelp.title = label;
+    }
+
+    function renderPremiumIntroStep(step) {
+        premiumIntroStep = Math.max(0, Math.min(step, 2));
+        const isOverview = premiumIntroStep === 0;
+        const isCommunity = premiumIntroStep === 1;
+        const isDetails = premiumIntroStep === 2;
+        if (elements.introTitle) {
+            const titleKey = isOverview
+                ? 'premium_intro_title_overview'
+                : isCommunity
+                    ? 'premium_intro_title_community'
+                    : 'premium_intro_title';
+            elements.introTitle.textContent = tr(titleKey);
+        }
+        if (elements.introOverviewStep) elements.introOverviewStep.hidden = !isOverview;
+        if (elements.introCommunityStep) elements.introCommunityStep.hidden = !isCommunity;
+        if (elements.introDetailsStep) elements.introDetailsStep.hidden = !isDetails;
+        elements.introStepOneDot?.classList.toggle('active', isOverview);
+        elements.introStepTwoDot?.classList.toggle('active', isCommunity);
+        elements.introStepThreeDot?.classList.toggle('active', isDetails);
+        if (elements.introBack) elements.introBack.hidden = isOverview;
+        if (elements.introNext) elements.introNext.hidden = isDetails;
+        if (elements.introAcknowledge) elements.introAcknowledge.hidden = !isDetails;
+    }
+
+    function goToNextPremiumIntroStep() {
+        renderPremiumIntroStep(premiumIntroStep + 1);
+        if (premiumIntroStep === 2) {
+            elements.introAcknowledge?.focus();
+        } else {
+            elements.introNext?.focus();
+        }
+    }
+
+    function goToPreviousPremiumIntroStep() {
+        renderPremiumIntroStep(premiumIntroStep - 1);
+        if (premiumIntroStep === 0) {
+            elements.introNext?.focus();
+        } else {
+            elements.introBack?.focus();
+        }
+    }
+
+    async function acknowledgePremiumIntro() {
+        premiumIntroSeen = true;
+        if (elements.introModal) {
+            elements.introModal.hidden = true;
+        }
+
+        try {
+            await window.electronAPI.saveConfig({ premiumIntroSeen: true });
+        } catch (_) {
+            // Do not block Premium if the preference cannot be persisted.
         }
     }
 
@@ -836,6 +1136,17 @@ document.addEventListener('DOMContentLoaded', () => {
         positionTooltip(tooltipState.anchor);
     }
 
+    function scrollPremiumViewFromTooltip(event) {
+        if (!elements.view || elements.view.hidden) return;
+        event.preventDefault();
+        elements.view.scrollBy({
+            top: event.deltaY,
+            left: event.deltaX,
+            behavior: 'auto'
+        });
+        if (tooltipState?.anchor) positionTooltip(tooltipState.anchor);
+    }
+
     function render() {
         const filtered = filteredItems();
         const page = window.libraryModel.paginate(filtered, currentPage, pageSize);
@@ -1147,12 +1458,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function syncVisibility() {
-        const isActive = (window.merlinView?.get?.() || '') === 'premium';
+        const isActive = currentView() === 'premium';
         elements.view.hidden = !isActive;
         elements.button.classList.toggle('active', isActive);
         elements.button.setAttribute('aria-pressed', String(isActive));
         if (isActive && !loaded) {
             loadPremium(true);
+        }
+        if (isActive) {
+            void showPremiumIntroIfNeeded();
         }
         if (!isActive) {
             closeTooltip();
@@ -1184,6 +1498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     elements.button.addEventListener('click', () => window.merlinView?.set?.('premium'));
+    elements.introHelp?.addEventListener('click', openPremiumIntroManually);
     elements.refresh.addEventListener('click', () => loadPremium(true));
     elements.search.addEventListener('input', () => {
         currentPage = 1;
@@ -1193,6 +1508,15 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(tooltipHideTimer);
     });
     elements.tooltip.addEventListener('mouseleave', scheduleTooltipClose);
+    elements.tooltip.addEventListener('wheel', scrollPremiumViewFromTooltip, { passive: false });
+    elements.introBack?.addEventListener('click', goToPreviousPremiumIntroStep);
+    elements.introNext?.addEventListener('click', goToNextPremiumIntroStep);
+    elements.introAcknowledge?.addEventListener('click', acknowledgePremiumIntro);
+    elements.introModal?.addEventListener('click', event => {
+        if (event.target === elements.introModal) {
+            acknowledgePremiumIntro();
+        }
+    });
     elements.progressCancel.addEventListener('click', async () => {
         if (!activeOperation) return;
         elements.progressCancel.disabled = true;
@@ -1205,8 +1529,14 @@ document.addEventListener('DOMContentLoaded', () => {
             resetProgressModal();
         }
     });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && elements.introModal && !elements.introModal.hidden) {
+            acknowledgePremiumIntro();
+        }
+    });
     window.addEventListener('merlin-view-changed', syncVisibility);
     window.addEventListener('merlin-language-changed', () => {
+        updateIntroHelpLabel();
         render();
         if (activeOperation) {
             const completed = Boolean(activeOperation.result?.success);
@@ -1226,10 +1556,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderLaunchNotice(activeOperation.result, activeOperation.item);
             }
         }
+        if (elements.introModal && !elements.introModal.hidden) {
+            renderPremiumIntroStep(premiumIntroStep);
+        }
         updateTooltip();
     });
     api.onProgress(updateProgress);
 
     setInterval(updateCountdowns, 1000);
+    updateIntroHelpLabel();
     syncVisibility();
 });

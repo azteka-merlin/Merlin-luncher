@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function unlock() {
         gate.classList.add('is-authenticated');
         setApplicationLocked(false);
+        window.dispatchEvent(new CustomEvent('merlin-authenticated'));
         setTimeout(() => {
             gate.hidden = true;
         }, 260);

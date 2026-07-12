@@ -2,5 +2,6 @@
   "steamPath": "C:\\Program Files (x86)\\Steam",
   "language": "ptbr",
   "tutorialPromptSeen": false,
-  "correctionsDisclaimerSeen": false
+  "correctionsDisclaimerSeen": false,
+  "premiumIntroSeen": false
 }

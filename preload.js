@@ -131,5 +131,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
         removeListeners: () => {
             ipcRenderer.removeAllListeners('premium:progress');
         }
+    },
+
+    polls: {
+        active: () => ipcRenderer.invoke('polls:active'),
+        vote: (payload) => ipcRenderer.invoke('polls:vote', payload)
     }
 });

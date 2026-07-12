@@ -27,6 +27,7 @@ const { registerAuthIpc } = require('./src/main/ipc/register-auth-ipc');
 const { registerGamesIpc } = require('./src/main/ipc/register-games-ipc');
 const { registerLibraryIpc } = require('./src/main/ipc/register-library-ipc');
 const { registerPremiumIpc } = require('./src/main/ipc/register-premium-ipc');
+const { registerPollsIpc } = require('./src/main/ipc/register-polls-ipc');
 const { createLibraryCacheStore } = require('./src/main/library/library-cache-store');
 const { createLibraryCatalogClient } = require('./src/main/library/library-catalog-client');
 const { createLibraryCatalogService } = require('./src/main/library/library-catalog-service');
@@ -39,6 +40,8 @@ const { createDownloadManager } = require('./src/main/network/download-manager')
 const { createPremiumCatalogClient } = require('./src/main/premium/premium-catalog-client');
 const { createPremiumCatalogStore } = require('./src/main/premium/premium-catalog-store');
 const { createPremiumService } = require('./src/main/premium/premium-service');
+const { createPollsClient } = require('./src/main/polls/polls-client');
+const { createPollsService } = require('./src/main/polls/polls-service');
 const { createMachineIdentity } = require('./src/main/security/machine-identity');
 const { REQUIRED_STEAM_FILES, createSteamService } = require('./src/main/steam/steam-service');
 const { createUpdateService } = require('./src/main/updates/update-service');
@@ -266,6 +269,10 @@ const premiumService = createPremiumService({
     catalogClient: createPremiumCatalogClient({ axios }),
     downloadManager
 });
+const pollsService = createPollsService({
+    authSession,
+    pollsClient: createPollsClient({ axios })
+});
 
 const gameInstaller = createGameInstaller({
     app,
@@ -338,6 +345,7 @@ registerGamesIpc({ ipcMain, addGamesService });
 registerLibraryIpc({ ipcMain, libraryService });
 registerCorrectionsIpc({ ipcMain, correctionsService });
 registerPremiumIpc({ ipcMain, premiumService });
+registerPollsIpc({ ipcMain, pollsService });
 registerAuthIpc({ ipcMain, authSession });
 ipcMain.handle('app:set-menu-language', (_event, language) => {
     setApplicationMenu(language);

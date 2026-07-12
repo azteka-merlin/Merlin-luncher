@@ -25,6 +25,10 @@
                     </button>
                 </div>
                 <div class="header-controls">
+                    <button id="pollNoticeBadge" class="poll-notice-badge" type="button" hidden>
+                        <span class="poll-notice-dot" aria-hidden="true"></span>
+                        <span id="pollNoticeBadgeText" data-i18n="poll_badge_new">Nova enquete</span>
+                    </button>
                     <nav class="header-navigation" aria-label="Main navigation" data-i18n-aria-label="main_navigation_label">
                         <button id="addGamesNavBtn" class="header-nav-btn active" type="button" aria-pressed="true">
                             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -402,7 +406,10 @@
                     <section id="premiumView" class="library-view corrections-view" aria-labelledby="premiumTitle" hidden>
                         <div class="library-card corrections-card premium-card-shell">
                             <header class="library-header">
-                                <h2 id="premiumTitle" data-i18n="premium_title">Premium</h2>
+                                <div class="library-title-row">
+                                    <h2 id="premiumTitle" data-i18n="premium_title">Premium</h2>
+                                    <button id="premiumIntroHelpBtn" class="library-info-btn" type="button" aria-label="Ler informações do Premium novamente" title="Ler informações do Premium novamente">i</button>
+                                </div>
                                 <p data-i18n="premium_subtitle">Activate games available to Merlin subscribers.</p>
                             </header>
 
@@ -686,6 +693,109 @@
 
     <div id="premiumTooltip" class="premium-tooltip" role="tooltip" hidden></div>
 
+    <div id="pollModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="pollModalTitle" hidden>
+        <div class="library-modal-card poll-modal-card">
+            <div class="poll-modal-header">
+                <div>
+                    <p id="pollModalEyebrow" class="corrections-progress-eyebrow" data-i18n="poll_modal_eyebrow">MERLIN COMMUNITY</p>
+                    <h2 id="pollModalTitle"></h2>
+                </div>
+                <button id="pollModalCloseTopBtn" class="poll-modal-close" type="button" data-i18n-aria-label="poll_close_label">x</button>
+            </div>
+            <p id="pollModalDescription" class="poll-modal-description"></p>
+            <div id="pollModalOptions" class="poll-modal-options"></div>
+            <div class="library-modal-actions poll-modal-actions">
+                <button id="pollModalBackBtn" class="btn btn-secondary" type="button" data-i18n="poll_back" hidden>Voltar</button>
+                <button id="pollModalCloseBtn" class="btn btn-secondary" type="button" data-i18n="poll_close">Fechar</button>
+                <button id="pollModalSkipBtn" class="btn btn-secondary" type="button" data-i18n="poll_skip" hidden>Pular</button>
+                <button id="pollModalNextBtn" class="btn btn-primary" type="button" data-i18n="poll_next" hidden>Próximo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="premiumIntroModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="premiumIntroTitle" hidden>
+        <div class="library-modal-card premium-intro-card">
+            <div class="corrections-progress-heading">
+                <span class="premium-intro-icon" aria-hidden="true"></span>
+                <div>
+                    <p class="corrections-progress-eyebrow" data-i18n="premium_intro_eyebrow">MERLIN PREMIUM</p>
+                    <h2 id="premiumIntroTitle" data-i18n="premium_intro_title">Antes de ativar</h2>
+                </div>
+            </div>
+            <div class="premium-intro-progress" aria-hidden="true">
+                <span id="premiumIntroStepOneDot" class="active"></span>
+                <span id="premiumIntroStepTwoDot"></span>
+                <span id="premiumIntroStepThreeDot"></span>
+            </div>
+            <section id="premiumIntroOverviewStep" class="premium-intro-step">
+                <p class="premium-intro-lead" data-i18n="premium_intro_overview_message">A aba Premium é um catálogo especial mantido pelo Merlin para jogos que precisam de um fluxo mais cuidadoso.</p>
+                <div class="premium-intro-overview">
+                    <article class="premium-intro-feature premium-intro-feature-primary">
+                        <strong data-i18n="premium_intro_overview_catalog_title">Catálogo exclusivo</strong>
+                        <p data-i18n="premium_intro_overview_catalog_text">Os jogos daqui dependem de compra, preparação e disponibilidade mantidas pelo Merlin.</p>
+                    </article>
+                    <article class="premium-intro-feature">
+                        <strong data-i18n="premium_intro_overview_access_title">Acesso mais difícil</strong>
+                        <p data-i18n="premium_intro_overview_access_text">A ideia é atender jogos que não possuem uma alternativa simples de acesso e organização.</p>
+                    </article>
+                    <article class="premium-intro-feature">
+                        <strong data-i18n="premium_intro_overview_launch_title">Lançamentos podem aparecer</strong>
+                        <p data-i18n="premium_intro_overview_launch_text">Como o fluxo depende da compra e preparo do jogo, o Merlin pode trazer títulos recentes quando houver disponibilidade.</p>
+                    </article>
+                </div>
+                <p class="premium-intro-footnote" data-i18n="premium_intro_overview_footer">Hoje essa área faz parte do Merlin, mas futuramente pode se tornar um serviço mensal de valor simbólico, já que o custo operacional do Merlin é mínimo.</p>
+            </section>
+            <section id="premiumIntroCommunityStep" class="premium-intro-step" hidden>
+                <p class="premium-intro-lead" data-i18n="premium_intro_community_message">A escolha de novos jogos também pode nascer da própria comunidade Merlin.</p>
+                <div class="premium-intro-community">
+                    <article class="premium-intro-community-card premium-intro-community-card-wide">
+                        <strong data-i18n="premium_intro_community_poll_title">Enquetes dentro do Merlin</strong>
+                        <p data-i18n="premium_intro_community_poll_text">Quando muitos usuários demonstrarem interesse em um jogo, o Merlin poderá abrir enquetes para medir prioridade e demanda.</p>
+                    </article>
+                    <article class="premium-intro-community-card">
+                        <strong data-i18n="premium_intro_community_fund_title">Ação coletiva</strong>
+                        <p data-i18n="premium_intro_community_fund_text">Em alguns casos, a comunidade poderá se organizar para juntar o valor necessário e disponibilizar o jogo para todos no futuro.</p>
+                    </article>
+                    <article class="premium-intro-community-card">
+                        <strong data-i18n="premium_intro_community_optional_title">Participação opcional</strong>
+                        <p data-i18n="premium_intro_community_optional_text">Participar de arrecadações nunca será obrigatório. A ideia é apenas criar um caminho coletivo para jogos muito pedidos.</p>
+                    </article>
+                </div>
+                <p class="premium-intro-footnote" data-i18n="premium_intro_community_footer">A arrecadação também pode servir para comprar mais cópias de um jogo já disponível. Cada cópia adiciona 5 vagas ao jogo.</p>
+            </section>
+            <section id="premiumIntroDetailsStep" class="premium-intro-step" hidden>
+                <p class="premium-intro-lead" data-i18n="premium_intro_message">Leia estes pontos para evitar perder uma ativação sem necessidade.</p>
+                <div class="premium-intro-grid">
+                    <article class="premium-intro-item premium-intro-highlight">
+                        <strong data-i18n="premium_intro_slots_title">Vagas e cooldown</strong>
+                        <p data-i18n="premium_intro_slots_text">Cada cópia disponível do jogo adiciona 5 vagas. Ao concluir, sua vaga fica ocupada por 24 horas.</p>
+                    </article>
+                    <article class="premium-intro-item">
+                        <strong data-i18n="premium_intro_stability_title">Evite mudanças desnecessárias</strong>
+                        <p data-i18n="premium_intro_stability_text">Atualizar o jogo, Windows, BIOS, drivers ou trocar hardware pode fazer o jogo parar de abrir.</p>
+                    </article>
+                    <article class="premium-intro-item">
+                        <strong data-i18n="premium_intro_security_title">Antivírus e arquivos</strong>
+                        <p data-i18n="premium_intro_security_text">Se o antivírus remover algum arquivo aplicado, restaure ou adicione exceção antes de tentar ativar novamente.</p>
+                    </article>
+                    <article class="premium-intro-item">
+                        <strong data-i18n="premium_intro_saves_title">Cuide dos saves</strong>
+                        <p data-i18n="premium_intro_saves_text">Uma nova ativação pode criar outro ID de save em alguns jogos. Faça backup antes de atualizar ou reativar.</p>
+                    </article>
+                    <article class="premium-intro-item">
+                        <strong data-i18n="premium_intro_launch_title">Como iniciar</strong>
+                        <p data-i18n="premium_intro_launch_text">Alguns jogos abrem pela Steam; outros precisam ser abertos pelo executável indicado após a ativação.</p>
+                    </article>
+                </div>
+            </section>
+            <div class="library-modal-actions">
+                <button id="premiumIntroBackBtn" class="btn btn-secondary" type="button" data-i18n="premium_intro_back" hidden>Voltar</button>
+                <button id="premiumIntroNextBtn" class="btn btn-primary" type="button" data-i18n="premium_intro_next">Próximo</button>
+                <button id="premiumIntroAcknowledgeBtn" class="btn btn-primary" type="button" data-i18n="premium_intro_continue" hidden>Entendi</button>
+            </div>
+        </div>
+    </div>
+
     <div id="steamRestartModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="steamRestartModalTitle" hidden>
         <div class="library-modal-card">
             <h2 id="steamRestartModalTitle" data-i18n="restart_prompt_title">Restart Steam?</h2>
@@ -774,6 +884,10 @@
                         <span class="faq-section-icon" aria-hidden="true">↻</span>
                         <span data-i18n="faq_section_steam">Steam e Atualizações</span>
                     </button>
+                    <button id="faqSectionPremium" class="faq-section-btn" type="button" data-section="premium">
+                        <span class="faq-section-icon" aria-hidden="true">★</span>
+                        <span data-i18n="faq_section_premium">Premium</span>
+                    </button>
                     <button id="faqSectionTroubleshooting" class="faq-section-btn" type="button" data-section="troubleshooting">
                         <span class="faq-section-icon" aria-hidden="true">?</span>
                         <span data-i18n="faq_section_troubleshooting">Solução de Problemas</span>
@@ -840,6 +954,7 @@
     <script src="src/renderer/shared/faq.js"></script>
     <script src="src/renderer/shared/update-checker.js"></script>
     <script src="src/renderer/shared/service-status.js"></script>
+    <script src="src/renderer/shared/polls.js"></script>
     <script src="src/renderer/add-games/add-games.js"></script>
     <script src="src/renderer/library/library-model.js"></script>
     <script src="src/renderer/library/library.js"></script>

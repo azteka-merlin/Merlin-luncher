@@ -9,6 +9,7 @@ window.merlinI18n.register({
         faq_section_compatibility: 'Compatibilidade',
         faq_section_corrections: 'Correções',
         faq_section_steam: 'Steam e Atualizações',
+        faq_section_premium: 'Premium',
         faq_section_troubleshooting: 'Solução de Problemas',
         faq_empty_title: 'Nenhuma pergunta encontrada',
         faq_empty_description: 'Tente buscar por outro termo.',
@@ -47,7 +48,17 @@ window.merlinI18n.register({
         faq_q16_title: 'Existem jogos que não mostram aviso de correção mesmo tendo fix?',
         faq_q16_answer: '<p>Sim. Em alguns casos específicos, o Merlin pode não mostrar a sugestão automática de correção, mesmo existindo um fix listado. Isso pode acontecer quando esse aviso não faz sentido para o fluxo daquele jogo.</p>',
         faq_q17_title: 'O Merlin garante compatibilidade com todos os jogos?',
-        faq_q17_answer: '<p>Não. O Merlin melhora bastante a experiência em muitos casos, mas não é possível garantir compatibilidade total com todos os títulos, launchers, correções da comunidade ou modos online.</p>'
+        faq_q17_answer: '<p>Não. O Merlin melhora bastante a experiência em muitos casos, mas não é possível garantir compatibilidade total com todos os títulos, launchers, correções da comunidade ou modos online.</p>',
+        faq_q18_title: 'Como funcionam as ativações Premium?',
+        faq_q18_answer: '<p>A aba Premium reúne jogos que possuem ativação assistida pelo Merlin. Cada cópia disponível de um jogo adiciona 5 vagas simultâneas.</p><p>Quando uma ativação é concluída, ela ocupa uma vaga por 24 horas. Depois desse período, a vaga volta a ficar disponível automaticamente.</p><p>Arrecadações coletivas também podem ser usadas para comprar mais cópias de um jogo já disponível, aumentando a quantidade de vagas para todos.</p>',
+        faq_q19_title: 'O que pode quebrar uma ativação Premium?',
+        faq_q19_answer: '<p>Algumas mudanças podem fazer o jogo deixar de abrir ou exigir uma nova ativação:</p><ul><li>atualizar o jogo sem necessidade;</li><li>antivírus remover ou isolar algum arquivo;</li><li>atualizar BIOS, Windows ou trocar peças do computador;</li><li>restaurar ponto de restauração do Windows;</li><li>em casos raros, atualizar driver de vídeo.</li></ul><p>Para evitar dor de cabeça, não atualize o jogo se ele já estiver funcionando bem, a menos que a atualização traga algo realmente importante.</p>',
+        faq_q20_title: 'A ativação pode afetar meu save?',
+        faq_q20_answer: '<p>Em alguns jogos, uma nova ativação pode gerar um novo identificador de usuário para os saves. Isso não significa que o save antigo foi apagado; ele pode apenas estar em outra pasta.</p><p>Se isso acontecer, normalmente é preciso localizar a pasta antiga do save e copiar os arquivos para a nova pasta criada pelo jogo. Alguns títulos podem exigir ferramentas específicas para converter o save.</p><p>Recomendamos fazer backup dos saves antes de atualizar, reinstalar ou reativar um jogo Premium.</p>',
+        faq_q21_title: 'Como devo iniciar um jogo Premium depois da ativação?',
+        faq_q21_answer: '<p>Depende do jogo. Alguns podem ser iniciados diretamente pela Steam. Outros precisam ser abertos pelo executável indicado pelo Merlin dentro da pasta do jogo.</p><p>Quando a ativação terminar, o Merlin mostra a orientação correta para aquele jogo.</p>',
+        faq_q22_title: 'O que fazer antes de atualizar um jogo Premium?',
+        faq_q22_answer: '<p>Se o jogo já está funcionando, evite atualizar sem necessidade. Para reduzir riscos, desative atualizações automáticas na Steam e abra o jogo pelo executável indicado quando isso for recomendado.</p><p>Também é uma boa ideia manter backup dos saves e dos arquivos importantes do jogo.</p>'
     },
     en: {
         faq_title: 'Help center',
@@ -59,6 +70,7 @@ window.merlinI18n.register({
         faq_section_compatibility: 'Compatibility',
         faq_section_corrections: 'Corrections',
         faq_section_steam: 'Steam & Updates',
+        faq_section_premium: 'Premium',
         faq_section_troubleshooting: 'Troubleshooting',
         faq_empty_title: 'No questions found',
         faq_empty_description: 'Try searching for another term.',
@@ -96,7 +108,17 @@ window.merlinI18n.register({
         faq_q16_title: 'Are there games that do not show a correction warning even though a correction exists?',
         faq_q16_answer: '<p>Yes.</p><p>In some specific cases, Merlin may not show an automatic suggestion even when a listed correction exists.</p><p>This can happen when the automatic recommendation does not make sense for that game’s flow or when there is not enough data to suggest the correction safely.</p>',
         faq_q17_title: 'Does Merlin guarantee compatibility with every game?',
-        faq_q17_answer: '<p>No.</p><p>Merlin can improve the management flow in many cases, but it is not possible to guarantee full compatibility with every game, launcher, update, online service, or community-provided correction.</p>'
+        faq_q17_answer: '<p>No.</p><p>Merlin can improve the management flow in many cases, but it is not possible to guarantee full compatibility with every game, launcher, update, online service, or community-provided correction.</p>',
+        faq_q18_title: 'How do Premium activations work?',
+        faq_q18_answer: '<p>The Premium tab lists games with Merlin-assisted activation. Each available copy of a game adds 5 simultaneous slots.</p><p>When an activation is completed, it occupies one slot for 24 hours. After that, the slot becomes available again automatically.</p><p>Collective fundraisers may also be used to buy more copies of a game that is already available, increasing the number of slots for everyone.</p>',
+        faq_q19_title: 'What can break a Premium activation?',
+        faq_q19_answer: '<p>Some changes may cause the game to stop opening or require a new activation:</p><ul><li>updating the game unnecessarily;</li><li>antivirus removing or quarantining a file;</li><li>updating BIOS, Windows, or changing PC hardware;</li><li>restoring a Windows restore point;</li><li>in rare cases, updating the video driver.</li></ul><p>If the game is already working, avoid updating it unless the update is really important.</p>',
+        faq_q20_title: 'Can activation affect my save?',
+        faq_q20_answer: '<p>In some games, a new activation may create a new user identifier for saves. This does not mean the old save was deleted; it may simply be in another folder.</p><p>If that happens, you usually need to find the old save folder and copy the files into the new folder created by the game. Some titles may require specific save conversion tools.</p><p>We recommend backing up saves before updating, reinstalling, or reactivating a Premium game.</p>',
+        faq_q21_title: 'How should I start a Premium game after activation?',
+        faq_q21_answer: '<p>It depends on the game. Some can be started directly from Steam. Others must be started from the executable shown by Merlin inside the game folder.</p><p>When activation finishes, Merlin shows the correct guidance for that game.</p>',
+        faq_q22_title: 'What should I do before updating a Premium game?',
+        faq_q22_answer: '<p>If the game is already working, avoid updating it unnecessarily. To reduce risks, disable automatic updates in Steam and launch the game from the indicated executable when recommended.</p><p>It is also a good idea to keep backups of saves and important game files.</p>'
     },
     es: {
         faq_title: 'Centro de ayuda',
@@ -108,6 +130,7 @@ window.merlinI18n.register({
         faq_section_compatibility: 'Compatibilidad',
         faq_section_corrections: 'Correcciones',
         faq_section_steam: 'Steam y actualizaciones',
+        faq_section_premium: 'Premium',
         faq_section_troubleshooting: 'Solución de problemas',
         faq_empty_title: 'No se encontró ninguna pregunta',
         faq_empty_description: 'Intente buscar otro término.',
@@ -145,7 +168,17 @@ window.merlinI18n.register({
         faq_q16_title: '¿Hay juegos que no muestran aviso de corrección aunque tengan corrección?',
         faq_q16_answer: '<p>Sí.</p><p>En algunos casos específicos, Merlin puede no mostrar una sugerencia automática incluso cuando existe una corrección listada.</p><p>Esto puede ocurrir cuando la recomendación automática no tiene sentido para el flujo de ese juego o cuando no existen datos suficientes para sugerir la corrección con seguridad.</p>',
         faq_q17_title: '¿Merlin garantiza compatibilidad con todos los juegos?',
-        faq_q17_answer: '<p>No.</p><p>Merlin puede mejorar el flujo de gestión en muchos casos, pero no es posible garantizar compatibilidad total con todos los juegos, launchers, actualizaciones, servicios online o correcciones proporcionadas por la comunidad.</p>'
+        faq_q17_answer: '<p>No.</p><p>Merlin puede mejorar el flujo de gestión en muchos casos, pero no es posible garantizar compatibilidad total con todos los juegos, launchers, actualizaciones, servicios online o correcciones proporcionadas por la comunidad.</p>',
+        faq_q18_title: '¿Cómo funcionan las activaciones Premium?',
+        faq_q18_answer: '<p>La pestaña Premium reúne juegos con activación asistida por Merlin. Cada copia disponible de un juego añade 5 plazas simultáneas.</p><p>Cuando una activación se completa, ocupa una plaza durante 24 horas. Después, la plaza vuelve a estar disponible automáticamente.</p><p>Las recaudaciones colectivas también pueden usarse para comprar más copias de un juego ya disponible, aumentando la cantidad de plazas para todos.</p>',
+        faq_q19_title: '¿Qué puede romper una activación Premium?',
+        faq_q19_answer: '<p>Algunos cambios pueden hacer que el juego deje de abrir o requiera una nueva activación:</p><ul><li>actualizar el juego sin necesidad;</li><li>que el antivirus elimine o ponga en cuarentena un archivo;</li><li>actualizar BIOS, Windows o cambiar hardware del PC;</li><li>restaurar un punto de restauración de Windows;</li><li>en casos raros, actualizar el driver de video.</li></ul><p>Si el juego ya funciona, evita actualizarlo salvo que la actualización sea realmente importante.</p>',
+        faq_q20_title: '¿La activación puede afectar mi partida guardada?',
+        faq_q20_answer: '<p>En algunos juegos, una nueva activación puede crear un nuevo identificador de usuario para las partidas guardadas. Esto no significa que el save antiguo se haya borrado; puede estar en otra carpeta.</p><p>Si ocurre, normalmente debes localizar la carpeta antigua del save y copiar los archivos a la nueva carpeta creada por el juego. Algunos títulos pueden requerir herramientas específicas de conversión.</p><p>Recomendamos hacer backup de los saves antes de actualizar, reinstalar o reactivar un juego Premium.</p>',
+        faq_q21_title: '¿Cómo debo iniciar un juego Premium después de activarlo?',
+        faq_q21_answer: '<p>Depende del juego. Algunos se pueden iniciar directamente desde Steam. Otros deben abrirse desde el ejecutable indicado por Merlin dentro de la carpeta del juego.</p><p>Cuando termine la activación, Merlin mostrará la orientación correcta para ese juego.</p>',
+        faq_q22_title: '¿Qué debo hacer antes de actualizar un juego Premium?',
+        faq_q22_answer: '<p>Si el juego ya funciona, evita actualizarlo sin necesidad. Para reducir riesgos, desactiva las actualizaciones automáticas en Steam y abre el juego desde el ejecutable indicado cuando se recomiende.</p><p>También es recomendable mantener backups de saves y archivos importantes.</p>'
     },
     fr: {
         faq_title: 'Centre d’aide',
@@ -157,6 +190,7 @@ window.merlinI18n.register({
         faq_section_compatibility: 'Compatibilité',
         faq_section_corrections: 'Correctifs',
         faq_section_steam: 'Steam et mises à jour',
+        faq_section_premium: 'Premium',
         faq_section_troubleshooting: 'Dépannage',
         faq_empty_title: 'Aucune question trouvée',
         faq_empty_description: 'Essayez un autre terme.',
@@ -194,7 +228,17 @@ window.merlinI18n.register({
         faq_q16_title: 'Existe-t-il des jeux qui n’affichent pas d’avertissement de correctif alors qu’un correctif existe ?',
         faq_q16_answer: '<p>Oui.</p><p>Dans certains cas spécifiques, Merlin peut ne pas afficher de suggestion automatique même lorsqu’un correctif listé existe.</p><p>Cela peut arriver lorsque la recommandation automatique n’a pas de sens pour le flux de ce jeu ou lorsqu’il n’existe pas assez de données pour suggérer le correctif en toute sécurité.</p>',
         faq_q17_title: 'Merlin garantit-il la compatibilité avec tous les jeux ?',
-        faq_q17_answer: '<p>Non.</p><p>Merlin peut améliorer le flux de gestion dans de nombreux cas, mais il n’est pas possible de garantir une compatibilité totale avec tous les jeux, launchers, mises à jour, services en ligne ou correctifs fournis par la communauté.</p>'
+        faq_q17_answer: '<p>Non.</p><p>Merlin peut améliorer le flux de gestion dans de nombreux cas, mais il n’est pas possible de garantir une compatibilité totale avec tous les jeux, launchers, mises à jour, services en ligne ou correctifs fournis par la communauté.</p>',
+        faq_q18_title: 'Comment fonctionnent les activations Premium ?',
+        faq_q18_answer: '<p>L’onglet Premium regroupe les jeux avec activation assistée par Merlin. Chaque copie disponible d’un jeu ajoute 5 créneaux simultanés.</p><p>Une fois l’activation terminée, elle occupe un créneau pendant 24 heures. Ensuite, le créneau redevient disponible automatiquement.</p><p>Les collectes collectives peuvent aussi servir à acheter plus de copies d’un jeu déjà disponible, augmentant le nombre de créneaux pour tout le monde.</p>',
+        faq_q19_title: 'Qu’est-ce qui peut casser une activation Premium ?',
+        faq_q19_answer: '<p>Certains changements peuvent empêcher le jeu de se lancer ou demander une nouvelle activation :</p><ul><li>mettre le jeu à jour sans nécessité ;</li><li>un antivirus qui supprime ou met un fichier en quarantaine ;</li><li>mettre à jour le BIOS, Windows ou changer du matériel ;</li><li>restaurer un point de restauration Windows ;</li><li>dans de rares cas, mettre à jour le pilote vidéo.</li></ul><p>Si le jeu fonctionne déjà, évitez de le mettre à jour sauf si la mise à jour est vraiment importante.</p>',
+        faq_q20_title: 'L’activation peut-elle affecter ma sauvegarde ?',
+        faq_q20_answer: '<p>Dans certains jeux, une nouvelle activation peut créer un nouvel identifiant utilisateur pour les sauvegardes. Cela ne signifie pas que l’ancienne sauvegarde a été supprimée ; elle peut simplement se trouver dans un autre dossier.</p><p>Dans ce cas, il faut généralement retrouver l’ancien dossier de sauvegarde et copier les fichiers dans le nouveau dossier créé par le jeu. Certains titres peuvent nécessiter des outils spécifiques de conversion.</p><p>Nous recommandons de sauvegarder vos saves avant de mettre à jour, réinstaller ou réactiver un jeu Premium.</p>',
+        faq_q21_title: 'Comment lancer un jeu Premium après activation ?',
+        faq_q21_answer: '<p>Cela dépend du jeu. Certains peuvent être lancés directement depuis Steam. D’autres doivent être lancés depuis l’exécutable indiqué par Merlin dans le dossier du jeu.</p><p>Une fois l’activation terminée, Merlin affiche les instructions adaptées à ce jeu.</p>',
+        faq_q22_title: 'Que faire avant de mettre à jour un jeu Premium ?',
+        faq_q22_answer: '<p>Si le jeu fonctionne déjà, évitez de le mettre à jour sans nécessité. Pour réduire les risques, désactivez les mises à jour automatiques dans Steam et lancez le jeu depuis l’exécutable indiqué lorsque c’est recommandé.</p><p>Il est aussi conseillé de conserver des sauvegardes de vos saves et des fichiers importants.</p>'
     },
     de: {
         faq_title: 'Hilfecenter',
@@ -206,6 +250,7 @@ window.merlinI18n.register({
         faq_section_compatibility: 'Kompatibilität',
         faq_section_corrections: 'Korrekturen',
         faq_section_steam: 'Steam und Updates',
+        faq_section_premium: 'Premium',
         faq_section_troubleshooting: 'Fehlerbehebung',
         faq_empty_title: 'Keine Frage gefunden',
         faq_empty_description: 'Versuchen Sie es mit einem anderen Begriff.',
@@ -243,7 +288,17 @@ window.merlinI18n.register({
         faq_q16_title: 'Gibt es Spiele, die keinen Korrekturhinweis anzeigen, obwohl eine Korrektur existiert?',
         faq_q16_answer: '<p>Ja.</p><p>In einigen speziellen Fällen zeigt Merlin möglicherweise keinen automatischen Hinweis an, obwohl eine gelistete Korrektur existiert.</p><p>Das kann passieren, wenn die automatische Empfehlung für den Ablauf dieses Spiels keinen Sinn ergibt oder wenn nicht genügend Daten vorhanden sind, um die Korrektur sicher vorzuschlagen.</p>',
         faq_q17_title: 'Garantiert Merlin Kompatibilität mit allen Spielen?',
-        faq_q17_answer: '<p>Nein.</p><p>Merlin kann den Verwaltungsablauf in vielen Fällen verbessern, aber eine vollständige Kompatibilität mit allen Spielen, Launchern, Updates, Onlinediensten oder von der Community bereitgestellten Korrekturen kann nicht garantiert werden.</p>'
+        faq_q17_answer: '<p>Nein.</p><p>Merlin kann den Verwaltungsablauf in vielen Fällen verbessern, aber eine vollständige Kompatibilität mit allen Spielen, Launchern, Updates, Onlinediensten oder von der Community bereitgestellten Korrekturen kann nicht garantiert werden.</p>',
+        faq_q18_title: 'Wie funktionieren Premium-Aktivierungen?',
+        faq_q18_answer: '<p>Der Premium-Tab zeigt Spiele mit Merlin-unterstützter Aktivierung. Jede verfügbare Kopie eines Spiels fügt 5 gleichzeitige Plätze hinzu.</p><p>Nach erfolgreicher Aktivierung belegt sie 24 Stunden lang einen Platz. Danach wird der Platz automatisch wieder frei.</p><p>Gemeinsame Sammlungen können auch genutzt werden, um weitere Kopien eines bereits verfügbaren Spiels zu kaufen und so die Anzahl der Plätze für alle zu erhöhen.</p>',
+        faq_q19_title: 'Was kann eine Premium-Aktivierung beschädigen?',
+        faq_q19_answer: '<p>Einige Änderungen können dazu führen, dass das Spiel nicht mehr startet oder eine neue Aktivierung benötigt:</p><ul><li>unnötige Spiel-Updates;</li><li>Antivirus entfernt oder isoliert eine Datei;</li><li>BIOS-, Windows-Updates oder Hardwarewechsel;</li><li>Wiederherstellen eines Windows-Wiederherstellungspunkts;</li><li>in seltenen Fällen ein Grafiktreiber-Update.</li></ul><p>Wenn das Spiel bereits funktioniert, aktualisieren Sie es nur, wenn das Update wirklich wichtig ist.</p>',
+        faq_q20_title: 'Kann die Aktivierung meinen Spielstand beeinflussen?',
+        faq_q20_answer: '<p>Bei manchen Spielen kann eine neue Aktivierung eine neue Benutzerkennung für Spielstände erzeugen. Das bedeutet nicht, dass der alte Spielstand gelöscht wurde; er kann sich nur in einem anderen Ordner befinden.</p><p>In diesem Fall müssen Sie normalerweise den alten Save-Ordner finden und die Dateien in den neuen vom Spiel erstellten Ordner kopieren. Einige Titel benötigen spezielle Konvertierungstools.</p><p>Wir empfehlen, Saves zu sichern, bevor Sie ein Premium-Spiel aktualisieren, neu installieren oder erneut aktivieren.</p>',
+        faq_q21_title: 'Wie starte ich ein Premium-Spiel nach der Aktivierung?',
+        faq_q21_answer: '<p>Das hängt vom Spiel ab. Einige können direkt über Steam gestartet werden. Andere müssen über die von Merlin angegebene ausführbare Datei im Spielordner gestartet werden.</p><p>Nach Abschluss der Aktivierung zeigt Merlin die passenden Hinweise für dieses Spiel an.</p>',
+        faq_q22_title: 'Was sollte ich vor dem Aktualisieren eines Premium-Spiels tun?',
+        faq_q22_answer: '<p>Wenn das Spiel bereits funktioniert, vermeiden Sie unnötige Updates. Um Risiken zu reduzieren, deaktivieren Sie automatische Updates in Steam und starten Sie das Spiel über die angegebene ausführbare Datei, wenn dies empfohlen wird.</p><p>Es ist außerdem sinnvoll, Spielstände und wichtige Dateien zu sichern.</p>'
     }
 });
 
@@ -253,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'compatibility', items: ['q3', 'q4', 'q5'] },
         { id: 'corrections', items: ['q6', 'q7', 'q8', 'q9', 'q10', 'q11'] },
         { id: 'steam', items: ['q12', 'q13', 'q14'] },
+        { id: 'premium', items: ['q18', 'q19', 'q20', 'q21', 'q22'] },
         { id: 'troubleshooting', items: ['q15', 'q16', 'q17'] }
     ];
 
