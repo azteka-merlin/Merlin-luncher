@@ -345,7 +345,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         addGamesView.hidden = !showAddGames;
         webview.hidden = !showSteamStore;
         if (!showSteamStore) webview.blur();
-        browserToolbar.hidden = currentView === 'library' || currentView === 'corrections';
+        browserToolbar.hidden = currentView === 'library'
+            || currentView === 'corrections'
+            || currentView === 'premium';
         browserToolbar.classList.toggle('native-content-active', showAddGames);
         steamActionsCard.hidden = !showSteamStore;
         addGamesNavBtn.classList.toggle('active', showAddGames || showSteamStore);

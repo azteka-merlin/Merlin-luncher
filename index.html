@@ -44,6 +44,12 @@
                             </svg>
                             <span data-i18n="corrections_button">Corrections</span>
                         </button>
+                        <button id="premiumBtn" class="header-nav-btn" type="button" aria-pressed="false">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m12 3 2.8 5.67 6.2.9-4.5 4.39 1.06 6.18L12 17.2l-5.56 2.94 1.06-6.18L3 9.57l6.2-.9Z"></path>
+                            </svg>
+                            <span data-i18n="premium_button">Premium</span>
+                        </button>
                     </nav>
                     <select id="languageSelect" class="language-selector">
                         <option value="en">English</option>
@@ -392,6 +398,64 @@
                             </footer>
                         </div>
                     </section>
+
+                    <section id="premiumView" class="library-view corrections-view" aria-labelledby="premiumTitle" hidden>
+                        <div class="library-card corrections-card premium-card-shell">
+                            <header class="library-header">
+                                <h2 id="premiumTitle" data-i18n="premium_title">Premium</h2>
+                                <p data-i18n="premium_subtitle">Activate games available to Merlin subscribers.</p>
+                            </header>
+
+                            <div class="library-notice">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 11v5M12 8h.01"></path>
+                                </svg>
+                                <p data-i18n="premium_notice">Each activation occupies one slot for 24 hours.</p>
+                            </div>
+
+                            <div class="library-controls">
+                                <button id="premiumRefreshBtn" class="library-refresh-btn" type="button">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"></path>
+                                    </svg>
+                                    <span data-i18n="premium_refresh">Refresh list</span>
+                                </button>
+                                <div class="library-search-wrap">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <circle cx="11" cy="11" r="7"></circle>
+                                        <path d="m20 20-4-4"></path>
+                                    </svg>
+                                    <label class="sr-only" for="premiumSearchInput" data-i18n="premium_search_label">Search premium games</label>
+                                    <input id="premiumSearchInput" type="search" data-i18n="premium_search_placeholder" placeholder="Search by name or App ID..." autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div id="premiumLoadingState" class="library-state">
+                                <span class="library-spinner" aria-hidden="true"></span>
+                                <p data-i18n="premium_loading">Loading premium games...</p>
+                            </div>
+
+                            <div id="premiumEmptyState" class="library-state" hidden>
+                                <strong data-i18n="premium_empty_title">No premium games available right now.</strong>
+                                <p data-i18n="premium_empty_description">New premium games will appear here when they are enabled.</p>
+                            </div>
+
+                            <div id="premiumNoResultsState" class="library-state" hidden>
+                                <strong data-i18n="premium_no_results_title">No game found.</strong>
+                                <p data-i18n="premium_no_results_description">Try another name or App ID.</p>
+                            </div>
+
+                            <div id="premiumGridWrap" class="corrections-grid-wrap" hidden>
+                                <div id="premiumGrid" class="corrections-grid premium-grid"></div>
+                            </div>
+
+                            <footer id="premiumFooter" class="library-footer" hidden>
+                                <p id="premiumResultCount"></p>
+                                <nav id="premiumPagination" class="library-pagination" aria-label=""></nav>
+                            </footer>
+                        </div>
+                    </section>
                 </div>
                 <div class="progress-container" id="progressContainer" style="display: none;">
                     <div class="progress-info">
@@ -582,6 +646,46 @@
         </div>
     </div>
 
+    <div id="premiumProgressModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="premiumProgressTitle" hidden>
+        <div id="premiumProgressCard" class="library-modal-card corrections-progress-card premium-progress-card" data-state="progress">
+            <div class="corrections-progress-heading">
+                <span id="premiumProgressIcon" class="corrections-progress-icon premium-progress-icon" aria-hidden="true"></span>
+                <div>
+                    <p class="corrections-progress-eyebrow" data-i18n="premium_progress_eyebrow">MERLIN PREMIUM</p>
+                    <h2 id="premiumProgressTitle" data-i18n="premium_progress_title">Activating premium game</h2>
+                </div>
+            </div>
+            <div class="corrections-progress-file-info">
+                <p id="premiumProgressGame" class="corrections-progress-game"></p>
+                <p id="premiumProgressStatus" class="corrections-progress-file"></p>
+            </div>
+            <div class="corrections-progress-row">
+                <span id="premiumProgressStage" data-i18n="premium_stage_preparing">Preparing activation...</span>
+                <span class="corrections-progress-percentage-wrap">
+                    <span class="corrections-progress-check" aria-hidden="true"></span>
+                    <span id="premiumProgressPercent" class="progress-percent">0%</span>
+                </span>
+            </div>
+            <div class="progress-bar corrections-progress-bar">
+                <div id="premiumProgressBar" class="progress-fill"></div>
+            </div>
+            <div class="corrections-progress-meta premium-progress-meta">
+                <p><span class="corrections-meta-icon corrections-meta-download" aria-hidden="true"></span><span data-i18n="premium_progress_size">Size</span><strong id="premiumProgressTransferred">—</strong></p>
+                <p><span class="corrections-meta-icon corrections-meta-speed" aria-hidden="true"></span><span id="premiumProgressSpeedLabel" data-i18n="premium_progress_speed">Speed</span><strong id="premiumProgressSpeed">—</strong></p>
+                <p><span class="corrections-meta-icon corrections-meta-time" aria-hidden="true"></span><span id="premiumProgressRemainingLabel" data-i18n="premium_progress_remaining">Time remaining</span><strong id="premiumProgressRemaining">—</strong></p>
+            </div>
+            <p id="premiumProgressSuccessMessage" class="corrections-progress-success" hidden></p>
+            <div id="premiumProgressLaunchNotice" class="premium-launch-notice" hidden></div>
+            <div class="library-modal-actions">
+                <button id="premiumProgressCancelBtn" class="btn btn-secondary" type="button" data-i18n="premium_progress_cancel">Cancel</button>
+                <button id="premiumProgressOpenFolderBtn" class="btn btn-secondary corrections-folder-button" type="button" hidden><span class="corrections-button-folder" aria-hidden="true"></span><span data-i18n="premium_progress_open_folder">Open folder</span></button>
+                <button id="premiumProgressCloseBtn" class="btn btn-primary" type="button" data-i18n="premium_progress_done" hidden>Done</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="premiumTooltip" class="premium-tooltip" role="tooltip" hidden></div>
+
     <div id="steamRestartModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="steamRestartModalTitle" hidden>
         <div class="library-modal-card">
             <h2 id="steamRestartModalTitle" data-i18n="restart_prompt_title">Restart Steam?</h2>
@@ -740,6 +844,7 @@
     <script src="src/renderer/library/library-model.js"></script>
     <script src="src/renderer/library/library.js"></script>
     <script src="src/renderer/corrections/corrections.js"></script>
+    <script src="src/renderer/premium/premium.js"></script>
     <script src="gamepad.js"></script>
 </body>
 </html>

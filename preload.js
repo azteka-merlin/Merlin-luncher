@@ -117,5 +117,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
         removeListeners: () => {
             ipcRenderer.removeAllListeners('corrections:progress');
         }
+    },
+
+    premium: {
+        list: (payload) => ipcRenderer.invoke('premium:list', payload),
+        refresh: () => ipcRenderer.invoke('premium:refresh'),
+        activate: (payload) => ipcRenderer.invoke('premium:activate', payload),
+        cancel: (operationId) => ipcRenderer.invoke('premium:cancel', operationId),
+        openGameFolder: (appId) => ipcRenderer.invoke('premium:open-game-folder', appId),
+        onProgress: (callback) => {
+            ipcRenderer.on('premium:progress', (_event, state) => callback(state));
+        },
+        removeListeners: () => {
+            ipcRenderer.removeAllListeners('premium:progress');
+        }
     }
 });

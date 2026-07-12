@@ -26,6 +26,7 @@ const { registerExistingIpc } = require('./src/main/ipc/register-existing-ipc');
 const { registerAuthIpc } = require('./src/main/ipc/register-auth-ipc');
 const { registerGamesIpc } = require('./src/main/ipc/register-games-ipc');
 const { registerLibraryIpc } = require('./src/main/ipc/register-library-ipc');
+const { registerPremiumIpc } = require('./src/main/ipc/register-premium-ipc');
 const { createLibraryCacheStore } = require('./src/main/library/library-cache-store');
 const { createLibraryCatalogClient } = require('./src/main/library/library-catalog-client');
 const { createLibraryCatalogService } = require('./src/main/library/library-catalog-service');
@@ -35,6 +36,9 @@ const { createDllInstaller } = require('./src/main/lumacore/dll-installer');
 const { createArchiveClient } = require('./src/main/network/archive-client');
 const { createApiAgent } = require('./src/main/network/api-agent');
 const { createDownloadManager } = require('./src/main/network/download-manager');
+const { createPremiumCatalogClient } = require('./src/main/premium/premium-catalog-client');
+const { createPremiumCatalogStore } = require('./src/main/premium/premium-catalog-store');
+const { createPremiumService } = require('./src/main/premium/premium-service');
 const { createMachineIdentity } = require('./src/main/security/machine-identity');
 const { REQUIRED_STEAM_FILES, createSteamService } = require('./src/main/steam/steam-service');
 const { createUpdateService } = require('./src/main/updates/update-service');
@@ -131,6 +135,10 @@ function getLibraryCatalogFilePath() {
 
 function getCorrectionsCatalogFilePath() {
     return path.join(app.getPath('userData'), 'corrections-catalog.json');
+}
+
+function getPremiumCatalogFilePath() {
+    return path.join(app.getPath('userData'), 'premium-catalog.json');
 }
 
 function getBundledSteamRuntimePath(file) {
@@ -240,6 +248,24 @@ const correctionsService = createCorrectionsService({
     libraryCatalogService,
     downloadManager
 });
+const premiumCatalogStore = createPremiumCatalogStore({
+    fs,
+    path,
+    getFilePath: getPremiumCatalogFilePath
+});
+const premiumService = createPremiumService({
+    app,
+    fs,
+    path,
+    AdmZip,
+    shell,
+    configStore,
+    steamService,
+    authSession,
+    catalogStore: premiumCatalogStore,
+    catalogClient: createPremiumCatalogClient({ axios }),
+    downloadManager
+});
 
 const gameInstaller = createGameInstaller({
     app,
@@ -311,6 +337,7 @@ registerExistingIpc({
 registerGamesIpc({ ipcMain, addGamesService });
 registerLibraryIpc({ ipcMain, libraryService });
 registerCorrectionsIpc({ ipcMain, correctionsService });
+registerPremiumIpc({ ipcMain, premiumService });
 registerAuthIpc({ ipcMain, authSession });
 ipcMain.handle('app:set-menu-language', (_event, language) => {
     setApplicationMenu(language);
