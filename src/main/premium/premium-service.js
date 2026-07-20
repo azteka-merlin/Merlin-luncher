@@ -214,11 +214,11 @@ function createPremiumService({
         }
     }
 
-    async function activateThirdPartyRemotely(appId, tokenReq, accessToken) {
+    async function activateThirdPartyRemotely(appId, reservationId, tokenReq, accessToken) {
         try {
             return {
                 accessToken,
-                payload: await catalogClient.activateThirdParty({ appId, tokenReq, accessToken })
+                payload: await catalogClient.activateThirdParty({ appId, reservationId, tokenReq, accessToken })
             };
         } catch (error) {
             if (error?.response?.status !== 401) throw error;
@@ -226,8 +226,56 @@ function createPremiumService({
             accessToken = await getCatalogAccessToken();
             return {
                 accessToken,
-                payload: await catalogClient.activateThirdParty({ appId, tokenReq, accessToken })
+                payload: await catalogClient.activateThirdParty({ appId, reservationId, tokenReq, accessToken })
             };
+        }
+    }
+
+    async function logActivationEventRemotely({
+        appId,
+        reservationId,
+        activationType,
+        stage,
+        reason,
+        message,
+        cooldownApplied,
+        accessToken
+    }) {
+        if (!catalogClient?.logActivationEvent) return;
+
+        try {
+            await catalogClient.logActivationEvent({
+                appId,
+                reservationId,
+                activationType,
+                stage,
+                reason,
+                message,
+                cooldownApplied,
+                accessToken
+            });
+        } catch (error) {
+            if (error?.response?.status !== 401) {
+                console.warn('Unable to log premium activation event:', error.message);
+                return;
+            }
+
+            try {
+                await authSession.handleUnauthorized();
+                const refreshedToken = await getCatalogAccessToken();
+                await catalogClient.logActivationEvent({
+                    appId,
+                    reservationId,
+                    activationType,
+                    stage,
+                    reason,
+                    message,
+                    cooldownApplied,
+                    accessToken: refreshedToken
+                });
+            } catch (retryError) {
+                console.warn('Unable to log premium activation event after refresh:', retryError.message);
+            }
         }
     }
 
@@ -492,6 +540,20 @@ function createPremiumService({
         const start = beginOperation(operationId);
         if (!start.success) return start;
         const { operation } = start;
+        let activityContext = null;
+        let activityStage = 'preparing';
+
+        async function logLocalFailure({ stage = activityStage, reason = 'premium_local_failure', message = '', cooldownApplied = false } = {}) {
+            if (!activityContext?.accessToken) return;
+            await logActivationEventRemotely({
+                ...activityContext,
+                stage,
+                reason,
+                message,
+                cooldownApplied,
+                accessToken: activityContext.accessToken
+            });
+        }
 
         try {
             const item = await findItem(appId);
@@ -540,13 +602,51 @@ function createPremiumService({
             const activation = activationResult?.payload?.activation;
             const activationType = activationResult?.payload?.activationType || item.activationType || 'steam_ticket';
             const isThirdParty = activationType === 'third_party';
+            const reservationId = Number(
+                activationResult?.payload?.reservationId
+                    || activation?.reservationId
+                    || 0
+            ) || null;
+            activityContext = {
+                appId: item.appId,
+                reservationId,
+                activationType,
+                accessToken: activationResult.accessToken
+            };
             if (!activation?.archiveDownloadUrl) {
+                await logLocalFailure({
+                    stage: 'activation_payload',
+                    reason: 'premium_activation_payload_invalid',
+                    message: 'Missing archive download URL',
+                    cooldownApplied: !isThirdParty
+                });
                 return { success: false, code: 'activate_failed', message: 'Invalid premium activation payload' };
             }
             if (!isThirdParty && !activation.configIni) {
+                await logLocalFailure({
+                    stage: 'activation_payload',
+                    reason: 'premium_activation_payload_invalid',
+                    message: 'Missing premium config',
+                    cooldownApplied: true
+                });
                 return { success: false, code: 'activate_failed', message: 'Invalid premium activation payload' };
             }
             if (isThirdParty && !(activation.launchExecutablePath || item.launchExecutablePath)) {
+                await logLocalFailure({
+                    stage: 'activation_payload',
+                    reason: 'premium_activation_payload_invalid',
+                    message: 'Missing launch executable path',
+                    cooldownApplied: false
+                });
+                return { success: false, code: 'activate_failed', message: 'Invalid premium activation payload' };
+            }
+            if (isThirdParty && !reservationId) {
+                await logLocalFailure({
+                    stage: 'activation_payload',
+                    reason: 'premium_activation_payload_invalid',
+                    message: 'Missing reservation ID',
+                    cooldownApplied: false
+                });
                 return { success: false, code: 'activate_failed', message: 'Invalid premium activation payload' };
             }
 
@@ -556,6 +656,7 @@ function createPremiumService({
             trackTempPath(operation, tempRoot);
             fs.mkdirSync(extractedPath, { recursive: true });
 
+            activityStage = 'downloading';
             const downloadResult = await downloadManager.download({
                 operationId: operation.id,
                 url: activation.archiveDownloadUrl,
@@ -574,10 +675,17 @@ function createPremiumService({
             });
 
             if (!downloadResult.success) {
+                await logLocalFailure({
+                    stage: 'download',
+                    reason: 'premium_download_failed',
+                    message: downloadResult.message || downloadResult.code || 'Download failed',
+                    cooldownApplied: !isThirdParty
+                });
                 return downloadResult;
             }
 
             throwIfCancelled(operation);
+            activityStage = 'validating';
             emitProgress(onProgress, item, {
                 operationId: operation.id,
                 stage: 'validating',
@@ -586,6 +694,7 @@ function createPremiumService({
             zipArchiveTools.validate(archivePath);
 
             throwIfCancelled(operation);
+            activityStage = 'extracting';
             emitProgress(onProgress, item, {
                 operationId: operation.id,
                 stage: 'extracting',
@@ -595,6 +704,7 @@ function createPremiumService({
 
             if (!isThirdParty) {
                 throwIfCancelled(operation);
+                activityStage = 'writing_config';
                 emitProgress(onProgress, item, {
                     operationId: operation.id,
                     stage: 'writing_config',
@@ -604,6 +714,7 @@ function createPremiumService({
             }
 
             throwIfCancelled(operation);
+            activityStage = 'applying';
             emitProgress(onProgress, item, {
                 operationId: operation.id,
                 stage: 'applying',
@@ -628,6 +739,7 @@ function createPremiumService({
                     stage: 'starting_validation',
                     percent: 90
                 });
+                activityStage = 'token_request';
                 const tokenReq = await waitForThirdPartyRequest(executablePath, operation);
 
                 throwIfCancelled(operation);
@@ -639,6 +751,7 @@ function createPremiumService({
                 try {
                     thirdPartyResult = await activateThirdPartyRemotely(
                         item.appId,
+                        reservationId,
                         tokenReq,
                         activationResult.accessToken
                     );
@@ -652,7 +765,9 @@ function createPremiumService({
                 }
 
                 const activationPayload = thirdPartyResult?.payload?.activation?.activationPayload;
+                activityStage = 'writing_token';
                 writeThirdPartyTokenIni(executablePath, activationPayload);
+                activityContext.accessToken = thirdPartyResult.accessToken || activityContext.accessToken;
             }
 
             emitProgress(onProgress, item, {
@@ -682,6 +797,12 @@ function createPremiumService({
             if (error.code === 'cancelled') {
                 return { success: false, code: 'cancelled' };
             }
+            await logLocalFailure({
+                stage: activityStage,
+                reason: `premium_${activityStage}_failed`,
+                message: error.message,
+                cooldownApplied: activityContext?.activationType === 'steam_ticket' || activityStage === 'writing_token'
+            });
             return {
                 success: false,
                 code: error.code || 'apply_failed',

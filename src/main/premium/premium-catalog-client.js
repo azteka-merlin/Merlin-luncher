@@ -82,6 +82,7 @@ function createPremiumCatalogClient({
     catalogUrl = DEFAULT_PREMIUM_CATALOG_URL,
     activateUrl = DEFAULT_PREMIUM_CATALOG_URL.replace(/\/catalog$/, '/activate'),
     activateThirdPartyUrl = activateUrl.replace(/\/activate$/, '/activate-third-party'),
+    activationEventUrl = activateUrl.replace(/\/activate$/, '/activation-events'),
     timeout = 20000
 }) {
     async function requestCatalog(accessToken) {
@@ -120,12 +121,27 @@ function createPremiumCatalogClient({
         )).data;
     }
 
-    async function activateThirdParty({ appId, tokenReq, accessToken }) {
+    async function activateThirdParty({ appId, reservationId, tokenReq, accessToken }) {
         return (await axios.post(
             activateThirdPartyUrl,
-            { appId, tokenReq },
+            { appId, reservationId, tokenReq },
             {
                 timeout: Math.max(timeout, 120000),
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+        )).data;
+    }
+
+    async function logActivationEvent({ appId, reservationId, activationType, stage, reason, message, cooldownApplied, accessToken }) {
+        return (await axios.post(
+            activationEventUrl,
+            { appId, reservationId, activationType, stage, reason, message, cooldownApplied },
+            {
+                timeout,
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     Accept: 'application/json',
@@ -138,6 +154,7 @@ function createPremiumCatalogClient({
     return {
         activate,
         activateThirdParty,
+        logActivationEvent,
         requestCatalog
     };
 }
