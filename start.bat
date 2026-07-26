@@ -14,7 +14,8 @@ where node >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Node.js is not installed!
     echo.
-    echo Please install Node.js from https://nodejs.org/
+    echo Install Node.js 18 or newer from https://nodejs.org/
+    echo After installing, close this window and open start.bat again.
     echo.
     pause
     exit /b 1
@@ -42,6 +43,16 @@ if %ERRORLEVEL% NEQ 0 (
 echo [OK] Dependencies are ready
 echo.
 
+echo [INFO] Running Merlin environment check...
+call npm run doctor
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo [ERROR] Merlin is not ready to start yet.
+    pause
+    exit /b 1
+)
+echo.
+
 if not exist "assets\dlls\OpenSteamTool.dll" (
     echo [ERROR] assets\dlls\OpenSteamTool.dll was not found.
     echo Run npm run build:opensteamtool after installing CMake and VS Build Tools.
@@ -56,6 +67,12 @@ if not exist "assets\dlls\dwmapi.dll" (
 )
 if not exist "assets\dlls\xinput1_4.dll" (
     echo [ERROR] assets\dlls\xinput1_4.dll was not found.
+    echo Run npm run build:opensteamtool after installing CMake and VS Build Tools.
+    pause
+    exit /b 1
+)
+if not exist "assets\dlls\merlin-helper.dll" (
+    echo [ERROR] assets\dlls\merlin-helper.dll was not found.
     echo Run npm run build:opensteamtool after installing CMake and VS Build Tools.
     pause
     exit /b 1

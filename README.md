@@ -68,6 +68,19 @@ custom locations can still be configured and repaired from inside Merlin.
    npm start
 ```
 
+Development API targets:
+
+```bash
+npm start
+npm run start:prod
+npm run start:stage
+```
+
+- `npm start` keeps the default production API: `https://api-merlin.com/api`.
+- `npm run start:prod` is the explicit production dev command.
+- `npm run start:stage` points the launcher to `https://staging.api-merlin.com/api`.
+- Installed builds and development builds use separate Electron data folders. `npm start` and `npm run start:stage` are both development commands, so refresh cached catalogs after switching between them.
+
 ### Option 3: Quick Start (Windows)
 
 Simply double-click `start.bat` - it will automatically:

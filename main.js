@@ -177,6 +177,16 @@ const apiBaseUrl = process.env.MERLIN_API_BASE_URL
 const gameSearchApiUrl = `${apiBaseUrl}/games/search`;
 const manifestApiUrl = process.env.MERLIN_API_URL || `${apiBaseUrl}/manifests`;
 const manifestStatusUrl = `${manifestApiUrl}/status`;
+const correctionsCatalogUrl = `${apiBaseUrl}/fixes/catalog`;
+const correctionsVoteUrl = `${apiBaseUrl}/fixes/vote`;
+const premiumCatalogUrl = `${apiBaseUrl}/premium/catalog`;
+const premiumActivateUrl = `${apiBaseUrl}/premium/activate`;
+const premiumActivateThirdPartyUrl = `${apiBaseUrl}/premium/activate-third-party`;
+const premiumActivationEventUrl = `${apiBaseUrl}/premium/activation-events`;
+const pollsActiveUrl = `${apiBaseUrl}/polls/active`;
+const pollsVoteUrl = `${apiBaseUrl}/polls`;
+const updateLatestApiUrl = `${apiBaseUrl}/updates/latest`;
+const updateDownloadApiUrl = `${apiBaseUrl}/updates/download`;
 const apiAgent = createApiAgent();
 const downloadManager = createDownloadManager({ fs, path, axios, httpsAgent: apiAgent });
 const machineIdentity = createMachineIdentity({ crypto, execFile, os });
@@ -198,7 +208,15 @@ const manifestOverrideService = createManifestOverrideService({
     authSession,
     statusUrl: manifestStatusUrl
 });
-const updateService = createUpdateService({ app, axios, shell, path, downloadManager });
+const updateService = createUpdateService({
+    app,
+    axios,
+    shell,
+    path,
+    downloadManager,
+    latestApiUrl: updateLatestApiUrl,
+    downloadApiUrl: updateDownloadApiUrl
+});
 const libraryCatalogStore = createLibraryCatalogStore({
     fs,
     path,
@@ -247,7 +265,11 @@ const correctionsService = createCorrectionsService({
     steamService,
     authSession,
     catalogStore: correctionsCatalogStore,
-    catalogClient: createCorrectionsCatalogClient({ axios }),
+    catalogClient: createCorrectionsCatalogClient({
+        axios,
+        url: correctionsCatalogUrl,
+        voteUrl: correctionsVoteUrl
+    }),
     libraryCatalogService,
     downloadManager
 });
@@ -266,12 +288,22 @@ const premiumService = createPremiumService({
     steamService,
     authSession,
     catalogStore: premiumCatalogStore,
-    catalogClient: createPremiumCatalogClient({ axios }),
+    catalogClient: createPremiumCatalogClient({
+        axios,
+        catalogUrl: premiumCatalogUrl,
+        activateUrl: premiumActivateUrl,
+        activateThirdPartyUrl: premiumActivateThirdPartyUrl,
+        activationEventUrl: premiumActivationEventUrl
+    }),
     downloadManager
 });
 const pollsService = createPollsService({
     authSession,
-    pollsClient: createPollsClient({ axios })
+    pollsClient: createPollsClient({
+        axios,
+        activeUrl: pollsActiveUrl,
+        voteUrl: pollsVoteUrl
+    })
 });
 
 const gameInstaller = createGameInstaller({

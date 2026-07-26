@@ -17,11 +17,12 @@ function compareVersions(left, right) {
     return 0;
 }
 
-function isAllowedDownloadUrl(value) {
+function isAllowedDownloadUrl(value, allowedApiDownloadUrl = UPDATE_DOWNLOAD_API_URL) {
     try {
         const url = new URL(value);
         if (url.protocol !== 'https:') return false;
-        if (url.hostname === 'api-merlin.com' && url.pathname === '/api/updates/download') {
+        const apiDownloadUrl = new URL(allowedApiDownloadUrl);
+        if (url.hostname === apiDownloadUrl.hostname && url.pathname === apiDownloadUrl.pathname) {
             return true;
         }
         return url.hostname === 'github.com'
@@ -40,12 +41,20 @@ function getDownloadFileName(downloadUrl, fallbackVersion) {
     return `Merlin-Setup-${normalizeVersion(fallbackVersion) || 'latest'}.exe`;
 }
 
-function createUpdateService({ app, axios, shell, path, downloadManager }) {
+function createUpdateService({
+    app,
+    axios,
+    shell,
+    path,
+    downloadManager,
+    latestApiUrl = UPDATE_LATEST_API_URL,
+    downloadApiUrl = UPDATE_DOWNLOAD_API_URL
+}) {
     async function check() {
         const currentVersion = app.getVersion();
         if (!app.isPackaged && process.env.MERLIN_SIMULATE_UPDATE === '1') {
             const downloadUrl = process.env.MERLIN_SIMULATE_UPDATE_URL || '';
-            if (!isAllowedDownloadUrl(downloadUrl)) {
+            if (!isAllowedDownloadUrl(downloadUrl, downloadApiUrl)) {
                 console.warn('[updates] MERLIN_SIMULATE_UPDATE_URL must be an allowed Merlin update URL.');
                 return { success: false, currentVersion };
             }
@@ -60,7 +69,7 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
         }
 
         try {
-            const response = await axios.get(UPDATE_LATEST_API_URL, {
+            const response = await axios.get(latestApiUrl, {
                 timeout: 10000,
                 headers: {
                     Accept: 'application/json',
@@ -69,9 +78,9 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
             });
             const release = response.data || {};
             const latestVersion = normalizeVersion(release.version);
-            const downloadUrl = String(release.downloadUrl || UPDATE_DOWNLOAD_API_URL).trim();
+            const downloadUrl = String(release.downloadUrl || downloadApiUrl).trim();
 
-            if (!release.success || !latestVersion || !isAllowedDownloadUrl(downloadUrl)) {
+            if (!release.success || !latestVersion || !isAllowedDownloadUrl(downloadUrl, downloadApiUrl)) {
                 return { success: false, currentVersion };
             }
 
@@ -89,7 +98,7 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
     }
 
     async function openDownload(downloadUrl) {
-        if (!isAllowedDownloadUrl(downloadUrl)) {
+        if (!isAllowedDownloadUrl(downloadUrl, downloadApiUrl)) {
             return { success: false, error: 'INVALID_DOWNLOAD_URL' };
         }
         await shell.openExternal(downloadUrl);
@@ -97,7 +106,7 @@ function createUpdateService({ app, axios, shell, path, downloadManager }) {
     }
 
     async function downloadUpdate({ operationId, downloadUrl, latestVersion, onProgress = () => {} }) {
-        if (!isAllowedDownloadUrl(downloadUrl)) {
+        if (!isAllowedDownloadUrl(downloadUrl, downloadApiUrl)) {
             return { success: false, code: 'invalid_download_url' };
         }
 
