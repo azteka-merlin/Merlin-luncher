@@ -1260,6 +1260,13 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.offerLater.addEventListener('click', () => finishOffer('later', { notifyLater: true }));
     elements.offerDownload.addEventListener('click', runOfferDownload);
     elements.offerCover.addEventListener('error', () => {
+        const fallback = fallbackCoverUrl(offerState.current?.appId);
+        if (fallback && !elements.offerCover.dataset.ryuuFallbackApplied && elements.offerCover.src !== fallback) {
+            elements.offerCover.dataset.ryuuFallbackApplied = 'true';
+            elements.offerCover.src = fallback;
+            elements.offerCover.hidden = false;
+            return;
+        }
         elements.offerCover.hidden = true;
     });
     elements.progressCancel.addEventListener('click', async () => {

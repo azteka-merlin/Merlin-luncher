@@ -168,6 +168,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         return /^https?:\/\/store\.steampowered\.com\/app\//i.test(String(value || '').trim());
     }
 
+    function fallbackCoverUrl(appId) {
+        const normalizedAppId = String(appId || '').trim();
+        return /^\d+$/.test(normalizedAppId)
+            ? `https://generator.ryuu.lol/files/images/${normalizedAppId}.jpg`
+            : null;
+    }
+
     function clearSuggestions() {
         searchLoading = false;
         suggestionItems = [];
@@ -204,6 +211,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             image.loading = 'lazy';
             image.decoding = 'async';
             image.addEventListener('error', () => {
+                const fallbackUrl = fallbackCoverUrl(game.appId);
+                if (fallbackUrl && !image.dataset.ryuuFallbackApplied && image.src !== fallbackUrl) {
+                    image.dataset.ryuuFallbackApplied = 'true';
+                    image.src = fallbackUrl;
+                    return;
+                }
                 const placeholder = document.createElement('div');
                 placeholder.className = 'game-queue-cover game-queue-cover-placeholder';
                 image.replaceWith(placeholder);
