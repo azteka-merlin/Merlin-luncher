@@ -64,10 +64,28 @@ function serviceFor(fixture, download, overrides = {}) {
         cacheStore: fixture.cacheStore,
         catalogStore: fixture.catalogStore,
         catalogService: {
-            refresh: async () => {
-                const downloaded = await download();
-                fixture.catalogStore.replace(downloaded.games);
-                return downloaded.games;
+            enrichAppIds: async (appIds, { allowCatalogRefresh = true } = {}) => {
+                if (allowCatalogRefresh) {
+                    const downloaded = await download();
+                    fixture.catalogStore.replace(downloaded.games);
+                }
+
+                const resolved = new Map();
+                for (const appId of appIds) {
+                    const entry = fixture.catalogStore.get(appId);
+                    if (entry) resolved.set(appId, entry);
+                }
+                return resolved;
+            },
+            rememberEntries: items => {
+                for (const item of items || []) {
+                    if (!item?.appId) continue;
+                    fixture.catalog[item.appId] = {
+                        name: item.name,
+                        coverUrl: item.coverUrl || null,
+                        coverSource: item.coverSource || null
+                    };
+                }
             }
         },
         steamService: overrides.steamService || { isRunning: async () => true },

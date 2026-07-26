@@ -43,7 +43,12 @@ test('keeps only the first eligible correction and blocks Hypervisor entries', a
         correction: {
             href: 'https://example.com/fix.zip',
             filename: 'fix.zip',
-            size: '1 GB'
+            size: '1 GB',
+            adminNote: undefined,
+            upvotes: 0,
+            downvotes: 0,
+            score: 0,
+            viewerVote: null
         }
     });
 });

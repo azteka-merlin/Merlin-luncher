@@ -14,6 +14,7 @@ test('registers isolated corrections IPC channels', () => {
         'corrections:list',
         'corrections:refresh',
         'corrections:prepare-install',
+        'corrections:vote',
         'corrections:download',
         'corrections:install',
         'corrections:cancel',

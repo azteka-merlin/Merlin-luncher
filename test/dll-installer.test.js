@@ -20,6 +20,7 @@ function createFixture({ existing = [], dialogResponse = 0 } = {}) {
             });
             existingPaths.add(path.normalize(destPath));
         },
+        mkdirSync() {},
         rmSync(filePath) {
             const normalized = path.normalize(filePath);
             removed.push(normalized);
@@ -116,6 +117,7 @@ test('reports a friendly error when Steam is locking a DLL during repair', async
             ...{
                 existsSync: filePath => fixture.existingPaths.has(path.normalize(filePath)),
                 rmSync: () => {},
+                mkdirSync: () => {},
                 copyFileSync(srcPath, destPath) {
                     const normalizedDest = path.normalize(destPath);
                     if (normalizedDest === path.join(steamRoot, 'dwmapi.dll')) {

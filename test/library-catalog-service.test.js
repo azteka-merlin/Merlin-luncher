@@ -78,7 +78,7 @@ test('search does not refresh when the local catalog already has name matches', 
     assert.equal(results[0].appId, '20');
 });
 
-test('reuses old local catalog entries and backfills the ryuu fallback image', async () => {
+test('reuses old local catalog entries and strips the ryuu fallback image', async () => {
     const fixture = createFixture({
         '1736800': { name: 'PRAGMATA', coverUrl: null, coverSource: null }
     });
@@ -97,6 +97,6 @@ test('reuses old local catalog entries and backfills the ryuu fallback image', a
 
     assert.equal(results.length, 1);
     assert.equal(results[0].appId, '1736800');
-    assert.equal(results[0].coverUrl, 'https://generator.ryuu.lol/files/images/1736800.jpg');
-    assert.equal(results[0].coverSource, 'ryuu_image');
+    assert.equal(results[0].coverUrl, null);
+    assert.equal(results[0].coverSource, null);
 });
