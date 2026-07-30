@@ -17,6 +17,18 @@ const translations = {
         gamepad_connected: 'Controle Conectado',
         downloading: 'Baixando...',
         instructions: 'Deixe a magia com Merlin. · Powered by Azteka',
+        footer_magic: 'Deixe a magia com Merlin',
+        footer_discord_support: 'Suporte oficial no Discord',
+        footer_powered: 'Powered by Azteka',
+        discord_announcement_title: '🏰 Bem-vindo à Casa do Merlin!',
+        discord_announcement_subtitle: 'O servidor oficial do Merlin já está disponível.',
+        discord_announcement_message: 'Acompanhe as novidades do projeto, receba suporte oficial, relate bugs, envie sugestões e converse com a comunidade.',
+        discord_announcement_closing: 'Esperamos você por lá!',
+        discord_announcement_footer_note: 'Quer entrar depois? Sem problema. O Discord continuará disponível no rodapé do Merlin Launcher.',
+        discord_announcement_join: 'Entrar no Discord',
+        discord_announcement_close: 'Fechar aviso',
+        discord_announcement_later: 'Agora não',
+        discord_announcement_dont_remind: 'Não me lembre novamente',
         tutorial_prompt_title: 'Quer conhecer o Merlin?',
         tutorial_prompt_message: 'Preparamos um tutorial rápido para mostrar como usar o Merlin. Você deseja assistir agora?',
         tutorial_prompt_hint: 'Você poderá assistir novamente a qualquer momento em Ajuda → Tutorial.',
@@ -62,6 +74,18 @@ const translations = {
         gamepad_connected: 'Controller Connected',
         downloading: 'Downloading...',
         instructions: 'Leave the magic to Merlin. · Powered by Azteka',
+        footer_magic: 'Leave the magic to Merlin',
+        footer_discord_support: 'Official Discord support',
+        footer_powered: 'Powered by Azteka',
+        discord_announcement_title: 'Merlin’s House has opened its doors!',
+        discord_announcement_subtitle: 'Merlin’s official server is now available.',
+        discord_announcement_message: 'Follow project news, receive official support, report bugs, send suggestions, and talk with the community.',
+        discord_announcement_closing: 'We’ll be waiting for you there!',
+        discord_announcement_footer_note: 'Want to join later? No problem. Discord will remain available in the Merlin Launcher footer.',
+        discord_announcement_join: 'Join Discord',
+        discord_announcement_close: 'Close notice',
+        discord_announcement_later: 'Not now',
+        discord_announcement_dont_remind: 'Don’t remind me again',
         tutorial_prompt_title: 'Want to discover Merlin?',
         tutorial_prompt_message: 'We prepared a quick tutorial to show you how to use Merlin. Would you like to watch it now?',
         tutorial_prompt_hint: 'You can watch it again at any time from Help → Tutorial.',
@@ -107,6 +131,18 @@ const translations = {
         gamepad_connected: 'Controlador conectado',
         downloading: 'Descargando...',
         instructions: 'Deja la magia en manos de Merlin. · Powered by Azteka',
+        footer_magic: 'Deja la magia en manos de Merlin',
+        footer_discord_support: 'Soporte oficial en Discord',
+        footer_powered: 'Powered by Azteka',
+        discord_announcement_title: 'La Casa de Merlin abrió sus puertas!',
+        discord_announcement_subtitle: 'El servidor oficial de Merlin ya está disponible.',
+        discord_announcement_message: 'Sigue las novedades del proyecto, recibe soporte oficial, reporta bugs, envía sugerencias y conversa con la comunidad.',
+        discord_announcement_closing: 'Te esperamos allí!',
+        discord_announcement_footer_note: '¿Quieres entrar más tarde? Sin problema. Discord seguirá disponible en el pie de página de Merlin Launcher.',
+        discord_announcement_join: 'Entrar a Discord',
+        discord_announcement_close: 'Cerrar aviso',
+        discord_announcement_later: 'Ahora no',
+        discord_announcement_dont_remind: 'No recordarme de nuevo',
         tutorial_prompt_title: '¿Quieres conocer Merlin?',
         tutorial_prompt_message: 'Preparamos un tutorial rápido para mostrarte cómo usar Merlin. ¿Quieres verlo ahora?',
         tutorial_prompt_hint: 'Puedes verlo de nuevo en cualquier momento desde Ayuda → Tutorial.',
@@ -152,6 +188,18 @@ const translations = {
         gamepad_connected: 'Manette connectée',
         downloading: 'Téléchargement...',
         instructions: 'Laissez Merlin faire la magie. · Powered by Azteka',
+        footer_magic: 'Laissez Merlin faire la magie',
+        footer_discord_support: 'Support officiel sur Discord',
+        footer_powered: 'Powered by Azteka',
+        discord_announcement_title: 'La Maison de Merlin a ouvert ses portes !',
+        discord_announcement_subtitle: 'Le serveur officiel de Merlin est maintenant disponible.',
+        discord_announcement_message: 'Suivez les nouveautés du projet, recevez le support officiel, signalez des bugs, envoyez des suggestions et discutez avec la communauté.',
+        discord_announcement_closing: 'Nous vous y attendons !',
+        discord_announcement_footer_note: 'Vous voulez rejoindre plus tard ? Aucun souci. Discord restera disponible dans le pied de page de Merlin Launcher.',
+        discord_announcement_join: 'Rejoindre Discord',
+        discord_announcement_close: 'Fermer l’avis',
+        discord_announcement_later: 'Pas maintenant',
+        discord_announcement_dont_remind: 'Ne plus me le rappeler',
         tutorial_prompt_title: 'Envie de découvrir Merlin ?',
         tutorial_prompt_message: 'Nous avons préparé un court tutoriel pour vous montrer comment utiliser Merlin. Voulez-vous le regarder maintenant ?',
         tutorial_prompt_hint: 'Vous pourrez le revoir à tout moment depuis Aide → Tutoriel.',
@@ -197,6 +245,18 @@ const translations = {
         gamepad_connected: 'Controller verbunden',
         downloading: 'Wird heruntergeladen...',
         instructions: 'Überlass die Magie Merlin. · Powered by Azteka',
+        footer_magic: 'Überlass die Magie Merlin',
+        footer_discord_support: 'Offizieller Support auf Discord',
+        footer_powered: 'Powered by Azteka',
+        discord_announcement_title: 'Das Haus von Merlin hat seine Türen geöffnet!',
+        discord_announcement_subtitle: 'Der offizielle Merlin-Server ist jetzt verfügbar.',
+        discord_announcement_message: 'Verfolge Neuigkeiten zum Projekt, erhalte offiziellen Support, melde Bugs, sende Vorschläge und sprich mit der Community.',
+        discord_announcement_closing: 'Wir warten dort auf dich!',
+        discord_announcement_footer_note: 'Möchtest du später beitreten? Kein Problem. Discord bleibt in der Fußzeile des Merlin Launchers verfügbar.',
+        discord_announcement_join: 'Discord beitreten',
+        discord_announcement_close: 'Hinweis schließen',
+        discord_announcement_later: 'Jetzt nicht',
+        discord_announcement_dont_remind: 'Nicht erneut erinnern',
         tutorial_prompt_title: 'Möchtest du Merlin kennenlernen?',
         tutorial_prompt_message: 'Wir haben ein kurzes Tutorial vorbereitet, das dir die Verwendung von Merlin zeigt. Möchtest du es jetzt ansehen?',
         tutorial_prompt_hint: 'Du kannst es jederzeit unter Hilfe → Tutorial erneut ansehen.',
@@ -382,6 +442,8 @@ let webview;
 document.addEventListener('DOMContentLoaded', async () => {
     webview = document.getElementById('webview');
 
+    prepareDiscordAnnouncementImage();
+
     // Load configuration
     await loadConfig();
 
@@ -405,8 +467,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.merlinView.set(document.body.dataset.merlinView || 'add-games');
+    maybeShowDiscordAnnouncement();
 });
 
+function prepareDiscordAnnouncementImage() {
+    const image = document.getElementById('discordAnnouncementImage');
+    const fallback = document.getElementById('discordAnnouncementFallback');
+    if (!image || !fallback) return;
+
+    image.addEventListener('load', () => {
+        image.hidden = false;
+        fallback.hidden = true;
+    }, { once: true });
+
+    image.addEventListener('error', () => {
+        image.hidden = true;
+        fallback.hidden = false;
+    }, { once: true });
+    if (image.complete && image.naturalWidth > 0) {
+        image.hidden = false;
+        fallback.hidden = true;
+    }
+}
+
+function showDiscordAnnouncement() {
+    const modal = document.getElementById('discordAnnouncementModal');
+    const joinButton = document.getElementById('discordAnnouncementJoinBtn');
+    if (!modal) return;
+
+    modal.hidden = false;
+    joinButton?.focus();
+}
+
+function hideDiscordAnnouncement() {
+    const modal = document.getElementById('discordAnnouncementModal');
+    if (modal) modal.hidden = true;
+}
+
+async function dismissDiscordAnnouncement() {
+    const dontRemind = document.getElementById('discordAnnouncementDontRemind');
+    hideDiscordAnnouncement();
+
+    if (dontRemind?.checked) {
+        config.discordAnnouncementSeen = true;
+        await window.electronAPI.saveConfig({ discordAnnouncementSeen: true });
+    }
+}
+
+function maybeShowDiscordAnnouncement() {
+    if (config.discordAnnouncementSeen === true) return;
+    if (config.tutorialPromptSeen !== true) return;
+
+    window.setTimeout(() => {
+        const modal = document.getElementById('discordAnnouncementModal');
+        const welcomeModal = document.getElementById('welcomeModal');
+        if (!modal || (welcomeModal && !welcomeModal.hidden)) return;
+        showDiscordAnnouncement();
+    }, 900);
+}
 // Load configuration
 async function loadConfig() {
     const steamDetectedPromise = window.electronAPI.isSteamDetected().catch(() => false);
@@ -571,6 +689,25 @@ function updateLanguage(lang) {
 
 // Setup event listeners
 function setupEventListeners() {
+    const discordSupportLink = document.getElementById('discordSupportLink');
+    if (discordSupportLink) {
+        discordSupportLink.addEventListener('click', () => {
+            window.electronAPI.openDiscordSupport();
+        });
+    }
+    const discordAnnouncementCloseBtn = document.getElementById('discordAnnouncementCloseBtn');
+    const discordAnnouncementLaterBtn = document.getElementById('discordAnnouncementLaterBtn');
+    const discordAnnouncementJoinBtn = document.getElementById('discordAnnouncementJoinBtn');
+
+    discordAnnouncementCloseBtn?.addEventListener('click', dismissDiscordAnnouncement);
+    discordAnnouncementLaterBtn?.addEventListener('click', dismissDiscordAnnouncement);
+    discordAnnouncementJoinBtn?.addEventListener('click', async () => {
+        hideDiscordAnnouncement();
+        config.discordAnnouncementSeen = true;
+        await window.electronAPI.saveConfig({ discordAnnouncementSeen: true });
+        await window.electronAPI.openDiscordSupport();
+    });
+
     // Language change
     document.getElementById('languageSelect').addEventListener('change', async (e) => {
         currentLanguage = e.target.value;

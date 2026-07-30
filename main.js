@@ -103,6 +103,19 @@ function isAllowedSteamUrl(value) {
     }
 }
 
+function isAllowedDiscordUrl(value) {
+    try {
+        const { protocol, hostname } = new URL(value);
+        return protocol === 'https:' && (
+            hostname === 'discord.gg'
+            || hostname === 'discord.com'
+            || hostname.endsWith('.discord.com')
+        );
+    } catch {
+        return false;
+    }
+}
+
 // Development and installed builds must never compete for Chromium cache files.
 if (!app.isPackaged) {
     const devDataRoot = path.join(
@@ -160,7 +173,8 @@ const configStore = createConfigStore({
         steamPath: '',
         language: 'ptbr',
         tutorialPromptSeen: false,
-        correctionsDisclaimerSeen: false
+        correctionsDisclaimerSeen: false,
+        discordAnnouncementSeen: false
     }
 });
 
@@ -397,6 +411,12 @@ ipcMain.handle('app:download-update', (event, payload) => updateService.download
 ipcMain.handle('app:cancel-update-download', (_event, operationId) => updateService.cancelDownload(operationId));
 ipcMain.handle('app:open-downloaded-update', (_event, filePath) => updateService.openDownloadedFile(filePath));
 ipcMain.handle('app:open-downloaded-update-folder', (_event, folderPath) => updateService.openDownloadedFolder(folderPath));
+ipcMain.handle('app:open-discord-support', async () => {
+    const url = 'https://discord.gg/6RKFKcGmQZ';
+    if (!isAllowedDiscordUrl(url)) return { success: false };
+    await shell.openExternal(url);
+    return { success: true };
+});
 
 app.on('web-contents-created', (_event, contents) => {
     contents.setWindowOpenHandler(({ url }) => {
@@ -426,4 +446,3 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
-

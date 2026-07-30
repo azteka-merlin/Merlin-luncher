@@ -3715,6 +3715,44 @@ webview {
     color: var(--text-tertiary);
     text-align: center;
     margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.footer-separator {
+    color: var(--text-muted);
+}
+
+.footer-link {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font: inherit;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+    color: var(--accent);
+    text-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
+    outline: none;
+}
+
+.footer-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex: 0 0 auto;
+    fill: currentColor;
 }
 
 .button-group {
@@ -3962,4 +4000,154 @@ webview {
 
 .service-status-modal-card .library-modal-actions {
     justify-content: center;
+}
+.discord-announcement-card {
+    position: relative;
+    width: min(900px, calc(100vw - 40px));
+    max-width: 900px;
+    min-height: 400px;
+    padding: 0;
+    overflow: hidden;
+    text-align: left;
+}
+
+.discord-announcement-card .tutorial-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.discord-announcement-layout {
+    display: grid;
+    grid-template-columns: 35% 1fr;
+    min-height: 560px;
+    align-items: center;
+}
+
+.discord-announcement-hero {
+    position: relative;
+    align-self: stretch;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.discord-announcement-hero::after {
+    content: '';
+    position: absolute;
+    inset: 14% -24% 8% 18%;
+    z-index: 0;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 68%);
+}
+
+.discord-announcement-hero img {
+    position: absolute;
+    z-index: 1;
+    left: -20px;
+    bottom: -28px;
+    width: 128%;
+    max-width: none;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.34));
+}
+
+.discord-announcement-content {
+    padding: 3rem 3.25rem 3rem 1.35rem;
+}
+
+.discord-announcement-content h2 {
+    max-width: 460px;
+    margin-bottom: 1rem;
+    line-height: 1.08;
+}
+
+.discord-announcement-content p {
+    max-width: 460px;
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.discord-announcement-content p + p {
+    margin-top: 0.95rem;
+}
+
+.discord-announcement-closing {
+    color: var(--text-primary) !important;
+}
+
+.discord-announcement-reminder {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 1.25rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.discord-announcement-reminder input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.discord-announcement-actions {
+    justify-content: flex-start;
+    margin-top: 1.35rem;
+}
+
+.discord-announcement-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.discord-announcement-button svg {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    fill: currentColor;
+}
+
+@media (max-width: 760px) {
+    .discord-announcement-card {
+    position: relative;
+    width: min(92vw, 460px);
+        min-height: auto;
+    }
+
+    .discord-announcement-layout {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .discord-announcement-hero {
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .discord-announcement-hero::after {
+        inset: 18% 8% -8% 8%;
+    }
+
+    .discord-announcement-hero img {
+        left: 50%;
+        bottom: -46px;
+        width: min(86vw, 330px);
+        transform: translateX(-50%);
+    }
+
+    .discord-announcement-content {
+        padding: 0 1.25rem 1.25rem;
+    }
+    .discord-announcement-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .discord-announcement-actions .btn {
+        width: 100%;
+    }
 }
