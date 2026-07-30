@@ -284,6 +284,7 @@ const correctionsService = createCorrectionsService({
         url: correctionsCatalogUrl,
         voteUrl: correctionsVoteUrl
     }),
+    apiBaseUrl,
     libraryCatalogService,
     downloadManager
 });

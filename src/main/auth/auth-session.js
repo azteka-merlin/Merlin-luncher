@@ -82,7 +82,7 @@ function createAuthSession({
         const responseData = error.response?.data;
         const detail = typeof responseData === 'string'
             ? responseData
-            : responseData?.message || error.message || '';
+            : responseData?.message || responseData?.error || error.message || '';
         const normalized = detail.toLowerCase();
 
         if (status === 401 && normalized.includes('hwid')) {

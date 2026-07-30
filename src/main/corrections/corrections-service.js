@@ -11,6 +11,7 @@ function createCorrectionsService({
     authSession,
     catalogStore,
     catalogClient,
+    apiBaseUrl,
     libraryCatalogService,
     downloadManager
 }) {
@@ -135,6 +136,30 @@ function createCorrectionsService({
             imageUrl: item.imageUrl || null,
             ...payload
         });
+    }
+
+    function isConfiguredApiFixDownloadUrl(value) {
+        try {
+            const url = new URL(String(value || ''));
+            const baseUrl = new URL(String(apiBaseUrl || '').replace(/\/$/, ''));
+            const basePath = baseUrl.pathname.replace(/\/$/, '');
+            return url.origin === baseUrl.origin
+                && url.pathname === `${basePath}/fixes/download`;
+        } catch {
+            return false;
+        }
+    }
+
+    async function getDownloadHeaders(url) {
+        if (!isConfiguredApiFixDownloadUrl(url)) return {};
+        if (!authSession?.getAccessToken) {
+            const error = new Error('Authentication is required.');
+            error.code = 'auth_required';
+            throw error;
+        }
+        return {
+            Authorization: `Bearer ${await authSession.getAccessToken()}`
+        };
     }
 
     async function hydrateImages(items) {
@@ -486,10 +511,11 @@ function createCorrectionsService({
             remainingSeconds: null
         });
 
-        const result = await downloadManager.download({
+        const runDownload = async () => downloadManager.download({
             operationId: operation.id,
             url: item.correction.href,
             destinationPath,
+            headers: await getDownloadHeaders(item.correction.href),
             onProgress: progress => {
                 const percent = mode === 'install'
                     ? 8 + Math.round((progress.percent || 0) * 0.52)
@@ -501,6 +527,30 @@ function createCorrectionsService({
                 });
             }
         });
+
+        let result;
+        try {
+            result = await runDownload();
+        } catch (error) {
+            return {
+                success: false,
+                code: error?.code === 'missing' ? 'auth_required' : (error?.code || 'download_failed'),
+                message: error?.message || 'Download failed'
+            };
+        }
+        if (result.code === 'auth_required' || result.status === 401) {
+            if (!authSession?.handleUnauthorized) return { success: false, code: 'auth_required' };
+            try {
+                await authSession.handleUnauthorized();
+                result = await runDownload();
+            } catch (error) {
+                return {
+                    success: false,
+                    code: error?.code === 'missing' ? 'auth_required' : (error?.code || 'auth_required'),
+                    message: error?.message || 'Authentication is required.'
+                };
+            }
+        }
 
         if (!result.success) return result;
         return result;

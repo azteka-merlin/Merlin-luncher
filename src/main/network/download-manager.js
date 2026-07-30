@@ -118,9 +118,11 @@ function createDownloadManager({ fs, path, axios, httpsAgent }) {
             if (downloadState.cancelled || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
                 return { success: false, code: 'cancelled' };
             }
+            const status = Number(error?.response?.status) || null;
             return {
                 success: false,
-                code: 'download_failed',
+                code: status === 401 ? 'auth_required' : 'download_failed',
+                status,
                 message: error.message
             };
         } finally {
