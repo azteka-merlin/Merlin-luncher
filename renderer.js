@@ -19,6 +19,7 @@ const translations = {
         instructions: 'Deixe a magia com Merlin. · Powered by Azteka',
         footer_magic: 'Deixe a magia com Merlin',
         footer_discord_support: 'Suporte oficial no Discord',
+        footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: '🏰 Bem-vindo à Casa do Merlin!',
         discord_announcement_subtitle: 'O servidor oficial do Merlin já está disponível.',
@@ -76,6 +77,7 @@ const translations = {
         instructions: 'Leave the magic to Merlin. · Powered by Azteka',
         footer_magic: 'Leave the magic to Merlin',
         footer_discord_support: 'Official Discord support',
+        footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'Merlin’s House has opened its doors!',
         discord_announcement_subtitle: 'Merlin’s official server is now available.',
@@ -133,6 +135,7 @@ const translations = {
         instructions: 'Deja la magia en manos de Merlin. · Powered by Azteka',
         footer_magic: 'Deja la magia en manos de Merlin',
         footer_discord_support: 'Soporte oficial en Discord',
+        footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'La Casa de Merlin abrió sus puertas!',
         discord_announcement_subtitle: 'El servidor oficial de Merlin ya está disponible.',
@@ -190,6 +193,7 @@ const translations = {
         instructions: 'Laissez Merlin faire la magie. · Powered by Azteka',
         footer_magic: 'Laissez Merlin faire la magie',
         footer_discord_support: 'Support officiel sur Discord',
+        footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'La Maison de Merlin a ouvert ses portes !',
         discord_announcement_subtitle: 'Le serveur officiel de Merlin est maintenant disponible.',
@@ -247,6 +251,7 @@ const translations = {
         instructions: 'Überlass die Magie Merlin. · Powered by Azteka',
         footer_magic: 'Überlass die Magie Merlin',
         footer_discord_support: 'Offizieller Support auf Discord',
+        footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'Das Haus von Merlin hat seine Türen geöffnet!',
         discord_announcement_subtitle: 'Der offizielle Merlin-Server ist jetzt verfügbar.',
@@ -693,6 +698,12 @@ function setupEventListeners() {
     if (discordSupportLink) {
         discordSupportLink.addEventListener('click', () => {
             window.electronAPI.openDiscordSupport();
+        });
+    }
+    const instagramLink = document.getElementById('instagramLink');
+    if (instagramLink) {
+        instagramLink.addEventListener('click', () => {
+            window.electronAPI.openInstagram();
         });
     }
     const discordAnnouncementCloseBtn = document.getElementById('discordAnnouncementCloseBtn');

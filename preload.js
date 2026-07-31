@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openDownloadedUpdate: (filePath) => ipcRenderer.invoke('app:open-downloaded-update', filePath),
     openDownloadedUpdateFolder: (folderPath) => ipcRenderer.invoke('app:open-downloaded-update-folder', folderPath),
     openDiscordSupport: () => ipcRenderer.invoke('app:open-discord-support'),
+    openInstagram: () => ipcRenderer.invoke('app:open-instagram'),
     onUpdateDownloadProgress: (callback) => {
         ipcRenderer.on('app:update-download-progress', (_event, progress) => callback(progress));
     },
