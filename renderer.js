@@ -52,6 +52,13 @@ const translations = {
         files_ok: 'Instalado',
         files_missing: 'Pendente',
         files_label: 'Arquivos',
+        billing_title: 'Assinatura',
+        billing_description: 'Gerencie sua mensalidade, cartão e cancelamento pelo portal seguro.',
+        billing_manage: 'Gerenciar assinatura',
+        billing_opening: 'Abrindo portal de assinatura...',
+        billing_opened: 'Portal de assinatura aberto.',
+        billing_unavailable: 'Esta licença não possui assinatura mensal para gerenciar.',
+        billing_portal_failed: 'Não foi possível abrir o portal de assinatura.',
         files_verified: 'Arquivos verificados com sucesso',
         files_already_ok: 'Tudo já está configurado.',
         activation_path_invalid: 'O caminho configurado não é uma instalação válida do Steam.',
@@ -110,6 +117,13 @@ const translations = {
         files_ok: 'Installed',
         files_missing: 'Pending',
         files_label: 'Files',
+        billing_title: 'Subscription',
+        billing_description: 'Manage your monthly plan, card, and cancellation through the secure portal.',
+        billing_manage: 'Manage subscription',
+        billing_opening: 'Opening subscription portal...',
+        billing_opened: 'Subscription portal opened.',
+        billing_unavailable: 'This license does not have a monthly subscription to manage.',
+        billing_portal_failed: 'Could not open the subscription portal.',
         files_verified: 'Files verified successfully',
         files_already_ok: 'Everything is already set up.',
         activation_path_invalid: 'The configured path is not a valid Steam installation.',
@@ -168,6 +182,13 @@ const translations = {
         files_ok: 'Instalado',
         files_missing: 'Pendiente',
         files_label: 'Archivos',
+        billing_title: 'Suscripción',
+        billing_description: 'Gestiona tu mensualidad, tarjeta y cancelación desde el portal seguro.',
+        billing_manage: 'Gestionar suscripción',
+        billing_opening: 'Abriendo portal de suscripción...',
+        billing_opened: 'Portal de suscripción abierto.',
+        billing_unavailable: 'Esta licencia no tiene una suscripción mensual para gestionar.',
+        billing_portal_failed: 'No se pudo abrir el portal de suscripción.',
         files_verified: 'Archivos verificados con éxito',
         files_already_ok: 'Todo ya está configurado.',
         activation_path_invalid: 'La ruta configurada no es una instalación válida de Steam.',
@@ -226,6 +247,13 @@ const translations = {
         files_ok: 'Installé',
         files_missing: 'En attente',
         files_label: 'Fichiers',
+        billing_title: 'Abonnement',
+        billing_description: 'Gérez votre mensualité, votre carte et l’annulation depuis le portail sécurisé.',
+        billing_manage: 'Gérer l’abonnement',
+        billing_opening: 'Ouverture du portail d’abonnement...',
+        billing_opened: 'Portail d’abonnement ouvert.',
+        billing_unavailable: 'Cette licence n’a pas d’abonnement mensuel à gérer.',
+        billing_portal_failed: 'Impossible d’ouvrir le portail d’abonnement.',
         files_verified: 'Fichiers vérifiés avec succès',
         files_already_ok: 'Tout est déjà configuré.',
         activation_path_invalid: 'Le chemin configuré n’est pas une installation Steam valide.',
@@ -284,6 +312,13 @@ const translations = {
         files_ok: 'Installiert',
         files_missing: 'Ausstehend',
         files_label: 'Dateien',
+        billing_title: 'Abonnement',
+        billing_description: 'Verwalte Monatsplan, Karte und Kündigung im sicheren Portal.',
+        billing_manage: 'Abonnement verwalten',
+        billing_opening: 'Abonnement-Portal wird geöffnet...',
+        billing_opened: 'Abonnement-Portal geöffnet.',
+        billing_unavailable: 'Diese Lizenz hat kein monatliches Abonnement zur Verwaltung.',
+        billing_portal_failed: 'Das Abonnement-Portal konnte nicht geöffnet werden.',
         files_verified: 'Dateien erfolgreich verifiziert',
         files_already_ok: 'Alles ist bereits eingerichtet.',
         activation_path_invalid: 'Der konfigurierte Pfad ist keine gültige Steam-Installation.',
@@ -442,6 +477,7 @@ let currentLanguage = 'en';
 let config = {};
 let currentAppId = null;
 let webview;
+let billingPortalBusy = false;
 
 // Initialization
 document.addEventListener('DOMContentLoaded', async () => {
@@ -472,6 +508,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.merlinView.set(document.body.dataset.merlinView || 'add-games');
+    refreshBillingPortalCard();
     maybeShowDiscordAnnouncement();
 });
 
@@ -572,6 +609,51 @@ function updateSteamStatus(isDetected) {
     } else {
         indicator.classList.remove('online');
         text.textContent = t('steam_offline');
+    }
+}
+
+function setBillingPortalBusy(isBusy) {
+    billingPortalBusy = Boolean(isBusy);
+    const button = document.getElementById('manageSubscriptionBtn');
+    if (!button) return;
+    button.disabled = billingPortalBusy;
+    button.textContent = billingPortalBusy ? t('billing_opening') : t('billing_manage');
+}
+
+function renderBillingPortalCard(session) {
+    const card = document.getElementById('billingCard');
+    if (!card) return;
+    const canManageSubscription = Boolean(session?.authenticated && session.license?.billing?.canManageSubscription);
+    card.hidden = !canManageSubscription;
+    if (!canManageSubscription) {
+        setBillingPortalBusy(false);
+    }
+}
+
+async function refreshBillingPortalCard() {
+    try {
+        const session = await window.electronAPI.auth.status();
+        renderBillingPortalCard(session);
+    } catch (_) {
+        renderBillingPortalCard(null);
+    }
+}
+
+async function openBillingPortal() {
+    if (billingPortalBusy) return;
+    setBillingPortalBusy(true);
+    try {
+        const result = await window.electronAPI.auth.manageSubscription();
+        if (result?.ok) {
+            showNotification(t('billing_opened'));
+            await refreshBillingPortalCard();
+            return;
+        }
+        showNotification(t(result?.code || 'billing_portal_failed'), 'error');
+    } catch (_) {
+        showNotification(t('billing_portal_failed'), 'error');
+    } finally {
+        setBillingPortalBusy(false);
     }
 }
 
@@ -718,6 +800,10 @@ function setupEventListeners() {
         await window.electronAPI.saveConfig({ discordAnnouncementSeen: true });
         await window.electronAPI.openDiscordSupport();
     });
+
+    const manageSubscriptionBtn = document.getElementById('manageSubscriptionBtn');
+    manageSubscriptionBtn?.addEventListener('click', openBillingPortal);
+    window.addEventListener('merlin-authenticated', refreshBillingPortalCard);
 
     // Language change
     document.getElementById('languageSelect').addEventListener('change', async (e) => {

@@ -127,6 +127,16 @@
                     </div>
                 </div>
 
+                <div id="billingCard" class="billing-section card" hidden>
+                    <h2 class="section-title" data-i18n="billing_title">Assinatura</h2>
+                    <p class="billing-description" data-i18n="billing_description">
+                        Gerencie sua mensalidade, cartão e cancelamento pelo portal seguro.
+                    </p>
+                    <button id="manageSubscriptionBtn" class="btn btn-secondary billing-manage-btn" type="button" data-i18n="billing_manage">
+                        Gerenciar assinatura
+                    </button>
+                </div>
+
                 <div id="steamActionsCard" class="actions-section card" hidden>
                     <h2 class="section-title" data-i18n="actions">Actions</h2>
                     <div class="button-group vertical">
@@ -534,6 +544,10 @@
                     <span id="licenseGateSubmitText">Validar chave</span>
                     <span class="license-gate-spinner" aria-hidden="true"></span>
                 </button>
+                <p class="license-gate-signup">
+                    <span id="licenseGateSignupText">Ainda n&atilde;o tem uma licen&ccedil;a?</span>
+                    <button id="licenseGateSignupLink" class="license-gate-signup-link" type="button">Obter licen&ccedil;a</button>
+                </p>
             </form>
             <p id="licenseGatePrivacy" class="license-gate-privacy">
                 A chave fica protegida neste computador.

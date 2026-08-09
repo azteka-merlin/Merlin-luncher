@@ -9,6 +9,10 @@ const licenseGateTranslations = {
         checking: 'Validando acesso salvo...',
         submit: 'Validar chave',
         validating: 'Validando licença...',
+        signupText: 'Ainda não tem uma licença?',
+        signupLink: 'Obter licença',
+        signupOpening: 'Abrindo cadastro...',
+        signupFailed: 'Não foi possível abrir o cadastro. Tente novamente.',
         privacy: 'A chave fica protegida neste computador.',
         invalid_key: 'A chave informada não é válida.',
         expired: 'Esta licença expirou. Fale com o administrador para renovar.',
@@ -33,6 +37,10 @@ const licenseGateTranslations = {
         checking: 'Validating saved access...',
         submit: 'Validate key',
         validating: 'Validating license...',
+        signupText: 'No license yet?',
+        signupLink: 'Get a license',
+        signupOpening: 'Opening signup...',
+        signupFailed: 'Could not open signup. Try again.',
         privacy: 'Your key is protected on this computer.',
         invalid_key: 'The key you entered is invalid.',
         expired: 'This license has expired. Contact the administrator to renew it.',
@@ -57,6 +65,10 @@ const licenseGateTranslations = {
         checking: 'Validando el acceso guardado...',
         submit: 'Validar clave',
         validating: 'Validando licencia...',
+        signupText: '¿Aún no tienes licencia?',
+        signupLink: 'Obtener licencia',
+        signupOpening: 'Abriendo el registro...',
+        signupFailed: 'No se pudo abrir el registro. Inténtalo de nuevo.',
         privacy: 'Tu clave está protegida en este equipo.',
         invalid_key: 'La clave introducida no es válida.',
         expired: 'Esta licencia ha caducado. Contacta al administrador para renovarla.',
@@ -81,6 +93,10 @@ const licenseGateTranslations = {
         checking: 'Validation de l’accès enregistré...',
         submit: 'Valider la clé',
         validating: 'Validation de la licence...',
+        signupText: 'Pas encore de licence ?',
+        signupLink: 'Obtenir une licence',
+        signupOpening: 'Ouverture de l’inscription...',
+        signupFailed: 'Impossible d’ouvrir l’inscription. Réessayez.',
         privacy: 'Votre clé est protégée sur cet ordinateur.',
         invalid_key: 'La clé saisie est invalide.',
         expired: 'Cette licence a expiré. Contactez l’administrateur pour la renouveler.',
@@ -105,6 +121,10 @@ const licenseGateTranslations = {
         checking: 'Gespeicherten Zugang validieren...',
         submit: 'Schlüssel validieren',
         validating: 'Lizenz wird validiert...',
+        signupText: 'Noch keine Lizenz?',
+        signupLink: 'Lizenz erhalten',
+        signupOpening: 'Registrierung wird geöffnet...',
+        signupFailed: 'Registrierung konnte nicht geöffnet werden. Versuchen Sie es erneut.',
         privacy: 'Ihr Schlüssel ist auf diesem Computer geschützt.',
         invalid_key: 'Der eingegebene Schlüssel ist ungültig.',
         expired: 'Diese Lizenz ist abgelaufen. Wenden Sie sich zur Verlängerung an den Administrator.',
@@ -129,6 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedback = document.getElementById('licenseGateFeedback');
     const title = document.getElementById('licenseGateTitle');
     const description = document.getElementById('licenseGateDescription');
+    const signupText = document.getElementById('licenseGateSignupText');
+    const signupLink = document.getElementById('licenseGateSignupLink');
     let language = 'ptbr';
     let busy = true;
     let mode = 'checking';
@@ -153,6 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('licenseGateLabel').textContent = text.label;
         document.getElementById('licenseGateSubmitText').textContent = text.submit;
         document.getElementById('licenseGatePrivacy').textContent = text.privacy;
+        signupText.textContent = text.signupText;
+        signupLink.textContent = text.signupLink;
         if (isRateLimited()) renderRateLimitCountdown();
     }
 
@@ -283,6 +307,29 @@ document.addEventListener('DOMContentLoaded', () => {
         feedback.textContent = messages().missing;
         feedback.dataset.type = 'info';
         feedback.dataset.code = '';
+    });
+
+    signupLink.addEventListener('click', async () => {
+        if (signupLink.disabled) return;
+        const previousFeedback = feedback.textContent;
+        const previousType = feedback.dataset.type;
+        const previousCode = feedback.dataset.code;
+        signupLink.disabled = true;
+        feedback.textContent = messages().signupOpening;
+        feedback.dataset.type = 'info';
+        feedback.dataset.code = '';
+        try {
+            const result = await window.electronAPI.auth.openSignup();
+            if (!result?.ok) throw new Error('open_signup_failed');
+            feedback.textContent = previousFeedback;
+            feedback.dataset.type = previousType || 'info';
+            feedback.dataset.code = previousCode || '';
+        } catch (_) {
+            feedback.textContent = messages().signupFailed;
+            feedback.dataset.type = 'error';
+        } finally {
+            signupLink.disabled = false;
+        }
     });
 
     form.addEventListener('submit', async event => {

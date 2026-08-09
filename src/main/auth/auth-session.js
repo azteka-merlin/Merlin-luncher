@@ -118,6 +118,16 @@ function createAuthSession({
         };
     }
 
+    function normalizeBilling(rawBilling) {
+        return {
+            accessType: rawBilling?.accessType || 'free',
+            billingStatus: rawBilling?.billingStatus || 'none',
+            currentPeriodEnd: rawBilling?.currentPeriodEnd || null,
+            cancelAtPeriodEnd: Boolean(rawBilling?.cancelAtPeriodEnd),
+            canManageSubscription: Boolean(rawBilling?.canManageSubscription)
+        };
+    }
+
     async function performLogin(licenseKey) {
         if (!LICENSE_KEY_PATTERN.test(licenseKey)) {
             throw new AuthError('invalid_key', 'Invalid license key format.');
@@ -157,7 +167,8 @@ function createAuthSession({
                 license: {
                     name: data.license.name,
                     expiresAt: data.license.expiresAt,
-                    status: data.license.status
+                    status: data.license.status,
+                    billing: normalizeBilling(data.license.billing || data.billing)
                 }
             };
             persistSession();
@@ -231,6 +242,41 @@ function createAuthSession({
         }
     }
 
+    async function createBillingPortalSession() {
+        const accessToken = await getAccessToken();
+        try {
+            const response = await axios.post(
+                `${baseUrl}/launcher/billing-portal`,
+                {},
+                {
+                    timeout: 15_000,
+                    httpsAgent,
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${accessToken}`,
+                        'User-Agent': 'Merlin/2.0'
+                    }
+                }
+            );
+            const portalUrl = response.data?.portalUrl;
+            if (!portalUrl) {
+                throw new AuthError('invalid_response', 'The Merlin API returned an invalid billing portal session.');
+            }
+            return { ok: true, portalUrl };
+        } catch (error) {
+            if (error instanceof AuthError) throw error;
+            if (error?.response?.status === 401) {
+                await handleUnauthorized();
+                return createBillingPortalSession();
+            }
+            if (error?.response?.status === 409) {
+                return { ok: false, code: 'billing_unavailable' };
+            }
+            return { ok: false, code: 'billing_portal_failed' };
+        }
+    }
+
     async function handleUnauthorized() {
         if (session) session.accessTokenExpiresAt = 0;
         try {
@@ -244,7 +290,7 @@ function createAuthSession({
         }
     }
 
-    return { getAccessToken, handleUnauthorized, hasStoredSession, login, status };
+    return { createBillingPortalSession, getAccessToken, handleUnauthorized, hasStoredSession, login, status };
 }
 
 module.exports = { AuthError, createAuthSession };

@@ -79,6 +79,7 @@ test('auth session allows retry after transient server validation failure', asyn
     const secondAttempt = await session.login('MERLIN-ABCD-EFGH-JKLM');
     assert.equal(secondAttempt.authenticated, true);
     assert.equal(secondAttempt.license.name, 'Azteka');
+    assert.equal(secondAttempt.license.billing.canManageSubscription, false);
     assert.equal(session.hasStoredSession(), true);
 
     const accessToken = await session.getAccessToken();
@@ -112,4 +113,56 @@ test('auth session returns rate_limited when the API throttles license attempts'
     const result = await session.login('MERLIN-ABCD-EFGH-JKLM');
     assert.equal(result.authenticated, false);
     assert.equal(result.code, 'rate_limited');
+});
+
+test('auth session opens billing portal for manageable monthly subscriptions', async () => {
+    const requests = [];
+    const session = createAuthSession({
+        app: { getPath: () => 'C:\\Users\\AZTEKA\\AppData\\Roaming\\Merlin' },
+        safeStorage: createSafeStorage(),
+        fs: createMemoryFs(),
+        path,
+        axios: {
+            post: async (url, body, options) => {
+                requests.push({ url, body, options });
+                if (url.endsWith('/auth/login')) {
+                    return {
+                        data: {
+                            accessToken: 'token-billing',
+                            expiresIn: 3600,
+                            license: {
+                                name: 'Azteka',
+                                expiresAt: '2026-12-31',
+                                status: 'active',
+                                billing: {
+                                    accessType: 'monthly_subscription',
+                                    billingStatus: 'active',
+                                    currentPeriodEnd: '2026-09-01T00:00:00.000Z',
+                                    cancelAtPeriodEnd: false,
+                                    canManageSubscription: true
+                                }
+                            }
+                        }
+                    };
+                }
+
+                assert.equal(url, 'https://api-merlin.com/api/launcher/billing-portal');
+                assert.equal(options.headers.Authorization, 'Bearer token-billing');
+                return { data: { success: true, portalUrl: 'https://billing.stripe.com/session/test' } };
+            }
+        },
+        httpsAgent: {},
+        machineIdentity: {
+            getHwid: async () => 'merlin-hwid-123'
+        },
+        baseUrl: 'https://api-merlin.com/api'
+    });
+
+    const login = await session.login('MERLIN-ABCD-EFGH-JKLM');
+    assert.equal(login.authenticated, true);
+    assert.equal(login.license.billing.canManageSubscription, true);
+
+    const portal = await session.createBillingPortalSession();
+    assert.deepEqual(portal, { ok: true, portalUrl: 'https://billing.stripe.com/session/test' });
+    assert.equal(requests.length, 2);
 });
