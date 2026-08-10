@@ -174,6 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return poll.options.find(option => option.id === poll.viewer.optionId) || null;
     }
 
+    function requiresContributionVote(poll) {
+        return poll?.type === 'game_request' && poll.viewer?.voted && !isPollComplete(poll);
+    }
+
     function updateBadge() {
         activePoll = polls[0] || null;
         if (!activePoll) {
@@ -237,6 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
         skipBtn.hidden = true;
         backBtn.hidden = true;
         nextBtn.hidden = !(poll.type === 'game_request' && poll.viewer.voted);
+        closeTopBtn.hidden = requiresContributionVote(poll);
+        closeBtn.hidden = requiresContributionVote(poll);
     }
 
     function renderContributionStep(poll) {
@@ -261,9 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
         }
 
-        backBtn.hidden = false;
+        backBtn.hidden = requiresContributionVote(poll);
         skipBtn.hidden = true;
         nextBtn.hidden = true;
+        closeTopBtn.hidden = requiresContributionVote(poll);
+        closeBtn.hidden = requiresContributionVote(poll);
     }
 
     function renderModal() {
@@ -306,12 +314,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openModal() {
         if (!activePoll) return;
-        step = 'main';
+        step = requiresContributionVote(activePoll) ? 'contribution' : 'main';
         renderModal();
         modal.hidden = false;
     }
 
     function closeModal() {
+        if (requiresContributionVote(activePoll)) {
+            step = 'contribution';
+            renderModal();
+            return;
+        }
         modal.hidden = true;
     }
 
