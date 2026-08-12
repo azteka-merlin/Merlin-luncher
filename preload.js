@@ -140,5 +140,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     polls: {
         active: () => ipcRenderer.invoke('polls:active'),
         vote: (payload) => ipcRenderer.invoke('polls:vote', payload)
+    },
+
+    announcements: {
+        eligible: () => ipcRenderer.invoke('announcements:eligible'),
+        recordView: (payload) => ipcRenderer.invoke('announcements:view', payload),
+        dismiss: (payload) => ipcRenderer.invoke('announcements:dismiss', payload)
     }
 });

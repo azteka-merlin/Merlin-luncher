@@ -13,6 +13,8 @@ const { createCorrectionsCatalogClient } = require('./src/main/corrections/corre
 const { createCorrectionsCatalogStore } = require('./src/main/corrections/corrections-catalog-store');
 const { createCorrectionsService } = require('./src/main/corrections/corrections-service');
 const { createAuthSession } = require('./src/main/auth/auth-session');
+const { createAnnouncementsClient } = require('./src/main/announcements/announcements-client');
+const { createAnnouncementsService } = require('./src/main/announcements/announcements-service');
 const { installLuaFile } = require('./src/main/files/lua-transformer');
 const { createAddGamesService } = require('./src/main/games/add-games-service');
 const { createGameNameResolver } = require('./src/main/games/game-name-resolver');
@@ -24,6 +26,7 @@ const { parseSteamGameLink } = require('./src/main/games/steam-link-parser');
 const { registerCorrectionsIpc } = require('./src/main/ipc/register-corrections-ipc');
 const { registerExistingIpc } = require('./src/main/ipc/register-existing-ipc');
 const { registerAuthIpc } = require('./src/main/ipc/register-auth-ipc');
+const { registerAnnouncementsIpc } = require('./src/main/ipc/register-announcements-ipc');
 const { registerGamesIpc } = require('./src/main/ipc/register-games-ipc');
 const { registerLibraryIpc } = require('./src/main/ipc/register-library-ipc');
 const { registerPremiumIpc } = require('./src/main/ipc/register-premium-ipc');
@@ -210,6 +213,7 @@ const premiumActivateThirdPartyUrl = `${apiBaseUrl}/premium/activate-third-party
 const premiumActivationEventUrl = `${apiBaseUrl}/premium/activation-events`;
 const pollsActiveUrl = `${apiBaseUrl}/polls/active`;
 const pollsVoteUrl = `${apiBaseUrl}/polls`;
+const announcementsApiUrl = `${apiBaseUrl}/announcements`;
 const updateLatestApiUrl = `${apiBaseUrl}/updates/latest`;
 const updateDownloadApiUrl = `${apiBaseUrl}/updates/download`;
 const apiAgent = createApiAgent();
@@ -331,6 +335,13 @@ const pollsService = createPollsService({
         voteUrl: pollsVoteUrl
     })
 });
+const announcementsService = createAnnouncementsService({
+    authSession,
+    announcementsClient: createAnnouncementsClient({
+        axios,
+        baseUrl: announcementsApiUrl
+    })
+});
 
 const gameInstaller = createGameInstaller({
     app,
@@ -404,6 +415,7 @@ registerLibraryIpc({ ipcMain, libraryService });
 registerCorrectionsIpc({ ipcMain, correctionsService });
 registerPremiumIpc({ ipcMain, premiumService });
 registerPollsIpc({ ipcMain, pollsService });
+registerAnnouncementsIpc({ ipcMain, announcementsService });
 registerAuthIpc({ ipcMain, authSession, shell, apiBaseUrl });
 ipcMain.handle('app:set-menu-language', (_event, language) => {
     setApplicationMenu(language);

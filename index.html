@@ -743,6 +743,24 @@
         </div>
     </div>
 
+    <div id="announcementModal" class="library-modal announcement-modal" role="dialog" aria-modal="true" aria-labelledby="announcementModalTitle" hidden>
+        <div class="library-modal-card announcement-modal-card">
+            <button id="announcementModalCloseBtn" class="announcement-modal-close" type="button" aria-label="Fechar comunicado">x</button>
+            <div id="announcementModalImageWrap" class="announcement-modal-image-wrap" hidden>
+                <img id="announcementModalImage" class="announcement-modal-image" alt="">
+            </div>
+            <div class="announcement-modal-copy">
+                <p class="corrections-progress-eyebrow">Comunicado Merlin</p>
+                <h2 id="announcementModalTitle"></h2>
+                <p id="announcementModalText"></p>
+            </div>
+            <label id="announcementModalDismissRow" class="announcement-modal-dismiss" hidden>
+                <input id="announcementModalDismissCheckbox" type="checkbox">
+                <span>Nao mostrar novamente</span>
+            </label>
+        </div>
+    </div>
+
     <div id="premiumIntroModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="premiumIntroTitle" hidden>
         <div class="library-modal-card premium-intro-card">
             <div class="corrections-progress-heading">
@@ -1014,6 +1032,7 @@
     <script src="src/renderer/shared/update-checker.js"></script>
     <script src="src/renderer/shared/service-status.js"></script>
     <script src="src/renderer/shared/polls.js"></script>
+    <script src="src/renderer/shared/announcements.js"></script>
     <script src="src/renderer/add-games/add-games.js"></script>
     <script src="src/renderer/library/library-model.js"></script>
     <script src="src/renderer/library/library.js"></script>
