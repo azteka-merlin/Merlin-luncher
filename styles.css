@@ -2094,6 +2094,7 @@ webview {
 }
 
 .announcement-modal-image-wrap {
+    position: relative;
     aspect-ratio: 16 / 9;
     min-height: 180px;
     max-height: 320px;
@@ -2108,6 +2109,12 @@ webview {
     height: 100%;
     display: block;
     object-fit: cover;
+}
+
+.announcement-modal-image-wrap.is-cropped .announcement-modal-image {
+    position: absolute;
+    max-width: none;
+    object-fit: unset;
 }
 
 .announcement-modal-copy {

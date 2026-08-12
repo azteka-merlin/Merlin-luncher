@@ -21,6 +21,15 @@ function normalizeAnnouncement(entry, baseUrl = DEFAULT_ANNOUNCEMENTS_URL) {
         if (!Number.isFinite(numberValue)) return 50;
         return Math.min(100, Math.max(0, Math.round(numberValue)));
     };
+    const normalizeCropArea = (value) => {
+        const x = Number(value?.imageCropX);
+        const y = Number(value?.imageCropY);
+        const width = Number(value?.imageCropWidth);
+        const height = Number(value?.imageCropHeight);
+        if (![x, y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return null;
+        if (x < 0 || y < 0 || x + width > 100 || y + height > 100) return null;
+        return { x, y, width, height };
+    };
 
     return {
         id,
@@ -30,6 +39,7 @@ function normalizeAnnouncement(entry, baseUrl = DEFAULT_ANNOUNCEMENTS_URL) {
         imageFit,
         imagePositionX: normalizePosition(entry.imagePositionX),
         imagePositionY: normalizePosition(entry.imagePositionY),
+        imageCropArea: normalizeCropArea(entry),
         frequency,
         allowDismissForever: entry.allowDismissForever === true
     };

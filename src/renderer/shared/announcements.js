@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeAnnouncement = null;
     let loading = false;
     let lastRefreshAt = 0;
+    let imageCropCleanup = null;
     const hiddenThisSession = new Set();
 
     function hasOtherModalOpen() {
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAnnouncement(announcement) {
+        cleanupImageCropLayout();
         title.textContent = announcement.title || '';
         text.textContent = announcement.bodyText || '';
 
@@ -29,15 +31,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (announcement.imageUrl) {
             image.src = announcement.imageUrl;
-            image.style.objectFit = announcement.imageFit === 'contain' ? 'contain' : 'cover';
-            image.style.objectPosition = `${normalizeImagePosition(announcement.imagePositionX)}% ${normalizeImagePosition(announcement.imagePositionY)}%`;
+            if (announcement.imageCropArea) {
+                applyImageCropLayout(announcement.imageCropArea);
+            } else {
+                imageWrap.classList.remove('is-cropped');
+                image.style.objectFit = announcement.imageFit === 'contain' ? 'contain' : 'cover';
+                image.style.objectPosition = `${normalizeImagePosition(announcement.imagePositionX)}% ${normalizeImagePosition(announcement.imagePositionY)}%`;
+            }
             imageWrap.hidden = false;
         } else {
             image.removeAttribute('src');
             image.style.removeProperty('object-fit');
             image.style.removeProperty('object-position');
+            imageWrap.classList.remove('is-cropped');
             imageWrap.hidden = true;
         }
+    }
+
+    function cleanupImageCropLayout() {
+        if (imageCropCleanup) {
+            imageCropCleanup();
+            imageCropCleanup = null;
+        }
+        image.style.removeProperty('position');
+        image.style.removeProperty('width');
+        image.style.removeProperty('height');
+        image.style.removeProperty('left');
+        image.style.removeProperty('top');
+        image.style.removeProperty('max-width');
+    }
+
+    function applyImageCropLayout(cropArea) {
+        imageWrap.classList.add('is-cropped');
+        image.style.removeProperty('object-fit');
+        image.style.removeProperty('object-position');
+
+        const updateLayout = () => {
+            if (!image.naturalWidth || !image.naturalHeight) return;
+            const cropWidth = image.naturalWidth * (cropArea.width / 100);
+            const cropHeight = image.naturalHeight * (cropArea.height / 100);
+            if (!cropWidth || !cropHeight) return;
+
+            const scale = Math.max(imageWrap.clientWidth / cropWidth, imageWrap.clientHeight / cropHeight);
+            image.style.position = 'absolute';
+            image.style.maxWidth = 'none';
+            image.style.width = `${image.naturalWidth * scale}px`;
+            image.style.height = `${image.naturalHeight * scale}px`;
+            image.style.left = `${-image.naturalWidth * (cropArea.x / 100) * scale}px`;
+            image.style.top = `${-image.naturalHeight * (cropArea.y / 100) * scale}px`;
+        };
+
+        image.addEventListener('load', updateLayout);
+        window.addEventListener('resize', updateLayout);
+        if (image.complete) updateLayout();
+        imageCropCleanup = () => {
+            image.removeEventListener('load', updateLayout);
+            window.removeEventListener('resize', updateLayout);
+        };
     }
 
     function normalizeImagePosition(value) {
