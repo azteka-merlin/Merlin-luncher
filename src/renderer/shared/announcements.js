@@ -29,11 +29,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (announcement.imageUrl) {
             image.src = announcement.imageUrl;
+            image.style.objectFit = announcement.imageFit === 'contain' ? 'contain' : 'cover';
+            image.style.objectPosition = `${normalizeImagePosition(announcement.imagePositionX)}% ${normalizeImagePosition(announcement.imagePositionY)}%`;
             imageWrap.hidden = false;
         } else {
             image.removeAttribute('src');
+            image.style.removeProperty('object-fit');
+            image.style.removeProperty('object-position');
             imageWrap.hidden = true;
         }
+    }
+
+    function normalizeImagePosition(value) {
+        const numberValue = Number(value);
+        if (!Number.isFinite(numberValue)) return 50;
+        return Math.min(100, Math.max(0, Math.round(numberValue)));
     }
 
     async function recordOpenedView(announcement) {

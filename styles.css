@@ -2098,7 +2098,9 @@ webview {
     min-height: 180px;
     max-height: 320px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.04);
+    background:
+        radial-gradient(circle at 50% 18%, rgba(124, 58, 237, 0.16), transparent 42%),
+        rgba(255, 255, 255, 0.04);
 }
 
 .announcement-modal-image {

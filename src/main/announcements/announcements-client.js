@@ -15,12 +15,21 @@ function normalizeAnnouncement(entry, baseUrl = DEFAULT_ANNOUNCEMENTS_URL) {
     const frequency = ['always', 'once_per_day', 'once'].includes(entry.frequency)
         ? entry.frequency
         : 'always';
+    const imageFit = entry.imageFit === 'contain' ? 'contain' : 'cover';
+    const normalizePosition = (value) => {
+        const numberValue = Number(value);
+        if (!Number.isFinite(numberValue)) return 50;
+        return Math.min(100, Math.max(0, Math.round(numberValue)));
+    };
 
     return {
         id,
         title,
         bodyText,
         imageUrl: imageUrl || null,
+        imageFit,
+        imagePositionX: normalizePosition(entry.imagePositionX),
+        imagePositionY: normalizePosition(entry.imagePositionY),
         frequency,
         allowDismissForever: entry.allowDismissForever === true
     };

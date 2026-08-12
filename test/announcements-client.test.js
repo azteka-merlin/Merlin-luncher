@@ -9,6 +9,9 @@ test('normalizes eligible announcement payloads', () => {
         title: ' Aviso ',
         bodyText: ' Texto ',
         imageUrl: '/api/announcements/12/image',
+        imageFit: 'contain',
+        imagePositionX: '42',
+        imagePositionY: 8,
         frequency: 'once_per_day',
         allowDismissForever: true
     }, 'https://staging.api-merlin.com/api/announcements');
@@ -18,9 +21,27 @@ test('normalizes eligible announcement payloads', () => {
         title: 'Aviso',
         bodyText: 'Texto',
         imageUrl: 'https://staging.api-merlin.com/api/announcements/12/image',
+        imageFit: 'contain',
+        imagePositionX: 42,
+        imagePositionY: 8,
         frequency: 'once_per_day',
         allowDismissForever: true
     });
+});
+
+test('defaults announcement image framing', () => {
+    const announcement = normalizeAnnouncement({
+        id: 13,
+        title: 'Aviso',
+        bodyText: 'Texto',
+        imageFit: 'stretch',
+        imagePositionX: -20,
+        imagePositionY: 999
+    });
+
+    assert.equal(announcement.imageFit, 'cover');
+    assert.equal(announcement.imagePositionX, 0);
+    assert.equal(announcement.imagePositionY, 100);
 });
 
 test('rejects incomplete announcements', () => {
