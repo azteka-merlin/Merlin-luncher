@@ -58,13 +58,10 @@ body {
 }
 
 .logo-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    object-fit: cover;
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
     display: block;
-    border: 1px solid rgba(139, 92, 246, 0.28);
-    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.25);
 }
 
 .title {
@@ -190,6 +187,33 @@ body {
 
 .language-selector:focus {
     border-color: var(--accent);
+}
+
+.logout-btn {
+    min-height: 37px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 6px;
+    padding: 0.5rem 0.8rem;
+    background: rgba(127, 29, 29, 0.18);
+    color: #fecaca;
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover:not(:disabled) {
+    border-color: rgba(248, 113, 113, 0.6);
+    background: rgba(127, 29, 29, 0.28);
+    color: #fee2e2;
+}
+
+.logout-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
 }
 
 /* Main Content */
@@ -1926,6 +1950,88 @@ webview {
     padding: 0.7rem;
     border-left: 3px solid var(--accent-danger);
     background: rgba(239, 68, 68, 0.06);
+}
+
+.logout-modal-card {
+    position: relative;
+    width: min(100%, 420px);
+    border-color: rgba(139, 92, 246, 0.28);
+    background:
+        radial-gradient(circle at top right, rgba(124, 58, 237, 0.16), transparent 34%),
+        linear-gradient(180deg, rgba(20, 24, 38, 0.98), rgba(12, 16, 28, 0.98)),
+        var(--bg-card);
+}
+
+.logout-modal-close {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    font: inherit;
+    cursor: pointer;
+}
+
+.logout-modal-close:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+    color: var(--text-primary);
+}
+
+.logout-modal-eyebrow {
+    margin-bottom: 0.45rem;
+    color: #a78bfa !important;
+    font-size: 0.72rem !important;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.logout-modal-description {
+    max-width: 34ch;
+}
+
+.logout-modal-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    margin-top: 1rem;
+    padding: 0.85rem;
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    border-radius: 8px;
+    background: rgba(124, 58, 237, 0.08);
+}
+
+.logout-modal-info p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.logout-modal-info-icon {
+    width: 1.35rem;
+    height: 1.35rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.18);
+    color: #c4b5fd;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.logout-modal-card .btn-danger {
+    background: #b91c1c;
+    box-shadow: none;
+}
+
+.logout-modal-card .btn-danger:hover {
+    background: #dc2626;
 }
 
 .library-modal-actions {
@@ -3957,6 +4063,10 @@ webview {
 
     .header-nav-btn svg {
         display: none;
+    }
+
+    .logout-btn {
+        padding-inline: 0.65rem;
     }
 
     .add-games-actions {

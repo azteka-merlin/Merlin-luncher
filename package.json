@@ -1,6 +1,6 @@
 {
   "name": "merlin",
-  "version": "1.5.84",
+  "version": "1.5.85",
   "description": "Steam game injector with manifest and lua support",
   "main": "main.js",
   "scripts": {
@@ -69,7 +69,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "assets/icon.ico"
+      "icon": "assets/merlin-icon-compact.ico"
     },
     "nsis": {
       "oneClick": true,

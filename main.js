@@ -8,6 +8,8 @@ const axios = require('axios');
 const AdmZip = require('adm-zip');
 const nodeUnrar = require('node-unrar-js');
 
+const MERLIN_BRAND_ICON_PATH = path.join(__dirname, 'assets/merlin-window-icon.png');
+
 const { createConfigStore } = require('./src/main/config/config-store');
 const { createCorrectionsCatalogClient } = require('./src/main/corrections/corrections-catalog-client');
 const { createCorrectionsCatalogStore } = require('./src/main/corrections/corrections-catalog-store');
@@ -392,7 +394,7 @@ function createWindow() {
             devTools: !app.isPackaged,
             webviewTag: true
         },
-        icon: path.join(__dirname, 'assets/icon.png')
+        icon: MERLIN_BRAND_ICON_PATH
     });
 
     mainWindow.loadFile('index.html');

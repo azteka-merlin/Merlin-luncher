@@ -166,3 +166,44 @@ test('auth session opens billing portal for manageable monthly subscriptions', a
     assert.deepEqual(portal, { ok: true, portalUrl: 'https://billing.stripe.com/session/test' });
     assert.equal(requests.length, 2);
 });
+
+test('auth session logout clears persisted access', async () => {
+    let authRequiredCode = null;
+    const fs = createMemoryFs();
+    const session = createAuthSession({
+        app: { getPath: () => 'C:\\Users\\AZTEKA\\AppData\\Roaming\\Merlin' },
+        safeStorage: createSafeStorage(),
+        fs,
+        path,
+        axios: {
+            post: async () => ({
+                data: {
+                    accessToken: 'token-logout',
+                    expiresIn: 3600,
+                    license: {
+                        name: 'Azteka',
+                        expiresAt: '2026-12-31',
+                        status: 'active'
+                    }
+                }
+            })
+        },
+        httpsAgent: {},
+        machineIdentity: {
+            getHwid: async () => 'merlin-hwid-123'
+        },
+        baseUrl: 'https://api-merlin.com/api',
+        onAuthRequired: code => {
+            authRequiredCode = code;
+        }
+    });
+
+    const login = await session.login('MERLIN-ABCD-EFGH-JKLM');
+    assert.equal(login.authenticated, true);
+    assert.equal(session.hasStoredSession(), true);
+
+    assert.deepEqual(session.logout(), { ok: true });
+    assert.equal(authRequiredCode, 'missing');
+    assert.equal(session.hasStoredSession(), false);
+    await assert.rejects(() => session.getAccessToken(), { code: 'missing' });
+});

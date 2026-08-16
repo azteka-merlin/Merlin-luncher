@@ -326,6 +326,66 @@ const translations = {
     }
 };
 
+Object.assign(translations.ptbr, {
+    logout_button: 'Sair',
+    logout_eyebrow: 'CONTA MERLIN',
+    logout_title: 'Deseja sair do Merlin?',
+    logout_confirm: 'Você será desconectado do Merlin neste computador.',
+    logout_warning: 'Para entrar novamente, basta informar uma chave válida.',
+    logout_cancel: 'Cancelar',
+    logout_action: 'Sair',
+    logout_success: 'Você saiu do Merlin.',
+    logout_failed: 'Não foi possível sair. Tente novamente.'
+});
+
+Object.assign(translations.en, {
+    logout_button: 'Sign out',
+    logout_eyebrow: 'MERLIN ACCOUNT',
+    logout_title: 'Do you want to sign out of Merlin?',
+    logout_confirm: 'You will be disconnected from Merlin on this computer.',
+    logout_warning: 'To sign in again, just enter a valid key.',
+    logout_cancel: 'Cancel',
+    logout_action: 'Sign out',
+    logout_success: 'You signed out of Merlin.',
+    logout_failed: 'Could not sign out. Try again.'
+});
+
+Object.assign(translations.es, {
+    logout_button: 'Salir',
+    logout_eyebrow: 'CUENTA MERLIN',
+    logout_title: '¿Desea salir de Merlin?',
+    logout_confirm: 'Serás desconectado de Merlin en este equipo.',
+    logout_warning: 'Para entrar de nuevo, basta informar una clave válida.',
+    logout_cancel: 'Cancelar',
+    logout_action: 'Salir',
+    logout_success: 'Saliste de Merlin.',
+    logout_failed: 'No se pudo salir. Inténtalo de nuevo.'
+});
+
+Object.assign(translations.fr, {
+    logout_button: 'Se déconnecter',
+    logout_eyebrow: 'COMPTE MERLIN',
+    logout_title: 'Voulez-vous quitter Merlin ?',
+    logout_confirm: 'Vous serez déconnecté de Merlin sur cet ordinateur.',
+    logout_warning: 'Pour vous reconnecter, saisissez simplement une clé valide.',
+    logout_cancel: 'Annuler',
+    logout_action: 'Se déconnecter',
+    logout_success: 'Vous êtes déconnecté de Merlin.',
+    logout_failed: 'Impossible de se déconnecter. Réessayez.'
+});
+
+Object.assign(translations.de, {
+    logout_button: 'Abmelden',
+    logout_eyebrow: 'MERLIN-KONTO',
+    logout_title: 'Möchten Sie Merlin verlassen?',
+    logout_confirm: 'Sie werden auf diesem Computer von Merlin getrennt.',
+    logout_warning: 'Zum erneuten Anmelden geben Sie einfach einen gültigen Schlüssel ein.',
+    logout_cancel: 'Abbrechen',
+    logout_action: 'Abmelden',
+    logout_success: 'Sie wurden von Merlin abgemeldet.',
+    logout_failed: 'Abmeldung fehlgeschlagen. Versuchen Sie es erneut.'
+});
+
 const addGamesTranslations = {
     ptbr: {
         add_games_title: 'Adicionar jogo da Steam',
@@ -657,6 +717,54 @@ async function openBillingPortal() {
     }
 }
 
+function askToLogout() {
+    const modal = document.getElementById('logoutConfirmModal');
+    const closeButton = document.getElementById('logoutCloseBtn');
+    const cancelButton = document.getElementById('logoutCancelBtn');
+    const confirmButton = document.getElementById('logoutConfirmBtn');
+    if (!modal || !closeButton || !cancelButton || !confirmButton) return Promise.resolve(false);
+
+    return new Promise(resolve => {
+        let settled = false;
+
+        function close(value) {
+            if (settled) return;
+            settled = true;
+            modal.hidden = true;
+            modal.removeEventListener('click', handleBackdrop);
+            closeButton.removeEventListener('click', handleCancel);
+            cancelButton.removeEventListener('click', handleCancel);
+            confirmButton.removeEventListener('click', handleConfirm);
+            document.removeEventListener('keydown', handleKeydown);
+            resolve(value);
+        }
+
+        function handleCancel() {
+            close(false);
+        }
+
+        function handleConfirm() {
+            close(true);
+        }
+
+        function handleBackdrop(event) {
+            if (event.target === modal) close(false);
+        }
+
+        function handleKeydown(event) {
+            if (event.key === 'Escape' && !modal.hidden) close(false);
+        }
+
+        modal.hidden = false;
+        closeButton.addEventListener('click', handleCancel);
+        cancelButton.addEventListener('click', handleCancel);
+        confirmButton.addEventListener('click', handleConfirm);
+        modal.addEventListener('click', handleBackdrop);
+        document.addEventListener('keydown', handleKeydown);
+        confirmButton.focus();
+    });
+}
+
 // Check Steam status
 async function checkSteamStatus() {
     const isDetected = await window.electronAPI.isSteamDetected();
@@ -804,6 +912,24 @@ function setupEventListeners() {
     const manageSubscriptionBtn = document.getElementById('manageSubscriptionBtn');
     manageSubscriptionBtn?.addEventListener('click', openBillingPortal);
     window.addEventListener('merlin-authenticated', refreshBillingPortalCard);
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn?.addEventListener('click', async () => {
+        if (!await askToLogout()) return;
+
+        logoutBtn.disabled = true;
+        try {
+            const result = await window.electronAPI.auth.logout();
+            if (!result?.ok) throw new Error('logout_failed');
+            renderBillingPortalCard(null);
+            showNotification(t('logout_success'));
+            window.dispatchEvent(new CustomEvent('merlin-logout'));
+        } catch (_) {
+            showNotification(t('logout_failed'), 'error');
+        } finally {
+            logoutBtn.disabled = false;
+        }
+    });
 
     // Language change
     document.getElementById('languageSelect').addEventListener('change', async (e) => {

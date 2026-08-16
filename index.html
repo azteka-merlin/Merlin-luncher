@@ -12,7 +12,7 @@
         <header class="header">
             <div class="header-content">
                 <div class="logo-section">
-                    <img class="logo-icon" src="assets/wizard-avatar.jpg" alt="Merlin">
+                    <img class="logo-icon" src="assets/merlin-icon-compact.png" alt="Merlin">
                     <h1 class="title">Merlin</h1>
                     <span id="appVersion" class="version">v--</span>
                     <button id="updateNoticeBadge" class="update-notice-badge" type="button" hidden>
@@ -62,6 +62,7 @@
                         <option value="fr">Français</option>
                         <option value="ptbr">Português (Brasil)</option>
                     </select>
+                    <button id="logoutBtn" class="logout-btn" type="button" data-i18n="logout_button">Sair</button>
                 </div>
             </div>
         </header>
@@ -563,6 +564,23 @@
             <div class="library-modal-actions">
                 <button id="libraryCancelRemoveBtn" class="btn btn-secondary" type="button" data-i18n="library_cancel">Cancel</button>
                 <button id="libraryConfirmRemoveBtn" class="btn btn-danger" type="button" data-i18n="library_confirm_remove">Remove from Merlin</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logoutConfirmModal" class="library-modal" role="dialog" aria-modal="true" aria-labelledby="logoutConfirmTitle" hidden>
+        <div class="library-modal-card logout-modal-card">
+            <button id="logoutCloseBtn" class="logout-modal-close" type="button" data-i18n-aria-label="logout_cancel" aria-label="Cancelar">x</button>
+            <p class="logout-modal-eyebrow" data-i18n="logout_eyebrow">CONTA MERLIN</p>
+            <h2 id="logoutConfirmTitle" data-i18n="logout_title">Deseja sair do Merlin?</h2>
+            <p class="logout-modal-description" data-i18n="logout_confirm">Você será desconectado do Merlin neste computador.</p>
+            <div class="logout-modal-info">
+                <span class="logout-modal-info-icon" aria-hidden="true">i</span>
+                <p data-i18n="logout_warning">Para entrar novamente, basta informar uma chave válida.</p>
+            </div>
+            <div class="library-modal-actions">
+                <button id="logoutCancelBtn" class="btn btn-secondary" type="button" data-i18n="logout_cancel">Cancelar</button>
+                <button id="logoutConfirmBtn" class="btn btn-danger" type="button" data-i18n="logout_action">Sair</button>
             </div>
         </div>
     </div>

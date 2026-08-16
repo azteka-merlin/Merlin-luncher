@@ -353,6 +353,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.electronAPI.auth.onRequired(data => showError(data?.code || 'invalid_key'));
     window.addEventListener('merlin-language-changed', loadLanguage);
+    window.addEventListener('merlin-logout', () => {
+        input.value = '';
+        showError('missing');
+    });
 
     setApplicationLocked(true);
     (async () => {

@@ -219,6 +219,13 @@ function createAuthSession({
         }
     }
 
+    function logout() {
+        refreshPromise = null;
+        clearStoredSession();
+        onAuthRequired('missing');
+        return { ok: true };
+    }
+
     async function getAccessToken() {
         const stored = loadStoredSession();
         if (!stored) {
@@ -290,7 +297,7 @@ function createAuthSession({
         }
     }
 
-    return { createBillingPortalSession, getAccessToken, handleUnauthorized, hasStoredSession, login, status };
+    return { createBillingPortalSession, getAccessToken, handleUnauthorized, hasStoredSession, login, logout, status };
 }
 
 module.exports = { AuthError, createAuthSession };
