@@ -167,6 +167,7 @@ function createPremiumService({
 
     function mapActivationError(error) {
         const status = error?.response?.status;
+        const apiCode = typeof error?.response?.data?.code === 'string' ? error.response.data.code : '';
         const detail = typeof error?.response?.data?.error === 'string'
             ? error.response.data.error
             : typeof error?.response?.data?.message === 'string'
@@ -191,6 +192,9 @@ function createPremiumService({
         }
         if (status === 409 && normalized.includes('processed')) {
             return { code: 'processing', message: detail };
+        }
+        if (apiCode === 'TEST_LICENSE_PREMIUM_ACTIVATION_LIMIT_REACHED') {
+            return { code: 'test_limit_premium', message: detail };
         }
         return { code: 'activate_failed', message: detail || 'Premium activation failed' };
     }

@@ -108,3 +108,30 @@ test('searches the catalog and installs a selected game with cover metadata', as
     assert.equal(install.item.autoUpdate, false);
     assert.equal(receivedAutoUpdate, false);
 });
+
+test('preserves test license normal activation limit errors', async () => {
+    const service = createAddGamesService({
+        parseSteamGameLink: link => ({ appId: link, fallbackName: `Game ${link}` }),
+        nameResolver: { resolve: async (_appId, fallback) => fallback },
+        catalogService: {
+            resolveByAppId: async appId => ({ appId, name: `Catalog ${appId}`, coverUrl: `https://example.com/${appId}.jpg` }),
+            search: async () => []
+        },
+        queue: createGameQueue(),
+        gameInstaller: {
+            install: async () => ({
+                success: false,
+                reason: 'test_limit_normal',
+                message: 'O limite de ativacoes normais desta licenca de teste foi atingido.'
+            })
+        },
+        configStore: { get: () => ({ steamPath: 'C:\\Steam' }) },
+        steamService: {}
+    });
+
+    const install = await service.installNow({ selected: { appId: '10', name: 'God of War' } });
+
+    assert.equal(install.success, false);
+    assert.equal(install.code, 'test_limit_normal');
+    assert.equal(install.message, 'O limite de ativacoes normais desta licenca de teste foi atingido.');
+});

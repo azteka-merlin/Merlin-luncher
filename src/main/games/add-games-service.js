@@ -20,6 +20,12 @@ function friendlyInstallResult(result) {
             code: 'rate_limited'
         };
     }
+    if (result.reason === 'test_limit_normal') {
+        return {
+            ...result,
+            code: 'test_limit_normal'
+        };
+    }
 
     const message = String(result.message || '');
     if (/unable to download/i.test(message)) {

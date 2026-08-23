@@ -1,7 +1,8 @@
 {
   "steamPath": "C:\\Program Files (x86)\\Steam",
   "language": "ptbr",
-  "tutorialPromptSeen": false,
-  "correctionsDisclaimerSeen": false,
-  "premiumIntroSeen": false
+  "tutorialPromptSeen": true,
+  "correctionsDisclaimerSeen": true,
+  "discordAnnouncementSeen": false,
+  "premiumIntroSeen": true
 }

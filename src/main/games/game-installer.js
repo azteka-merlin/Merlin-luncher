@@ -109,6 +109,49 @@ function createGameInstaller({
         return { filesCopied, totalFiles };
     }
 
+    function parseApiErrorData(data) {
+        if (!data) return null;
+        if (typeof data === 'object' && !Buffer.isBuffer(data) && !(data instanceof ArrayBuffer)) {
+            return data;
+        }
+
+        try {
+            const text = Buffer.isBuffer(data)
+                ? data.toString('utf8')
+                : data instanceof ArrayBuffer
+                    ? Buffer.from(data).toString('utf8')
+                    : typeof data === 'string'
+                        ? data
+                        : '';
+            return text ? JSON.parse(text) : null;
+        } catch (_error) {
+            return null;
+        }
+    }
+
+    function getApiErrorPayload(error) {
+        return parseApiErrorData(error?.response?.data) || {};
+    }
+
+    function getApiErrorCode(error) {
+        const payload = getApiErrorPayload(error);
+        const code = payload.code || error?.code || '';
+        return typeof code === 'string' ? code : '';
+    }
+
+    function getApiErrorDetail(error) {
+        const payload = getApiErrorPayload(error);
+        if (typeof payload.error === 'string') return payload.error;
+        if (typeof payload.message === 'string') return payload.message;
+        if (typeof error?.response?.data?.error === 'string') return error.response.data.error;
+        if (typeof error?.response?.data?.message === 'string') return error.response.data.message;
+        return error?.message || '';
+    }
+
+    function isNormalTestLimitError(error) {
+        return getApiErrorCode(error) === 'TEST_LICENSE_NORMAL_ACTIVATION_LIMIT_REACHED';
+    }
+
     async function install({ appId, steamPath, onProgress, autoUpdate = true }) {
         appId = String(appId || '').trim();
         if (!/^\d+$/.test(appId)) {
@@ -178,7 +221,10 @@ function createGameInstaller({
                     }
                 } catch (error) {
                     console.error(`Attempt ${i + 1} failed (${source.name}):`, error.message);
-                    if (error.code && ['missing', 'invalid_key', 'expired', 'revoked', 'hwid_mismatch'].includes(error.code)) {
+                    if (
+                        isNormalTestLimitError(error)
+                        || (error.code && ['missing', 'invalid_key', 'expired', 'revoked', 'hwid_mismatch'].includes(error.code))
+                    ) {
                         throw error;
                     }
                 }
@@ -257,10 +303,16 @@ function createGameInstaller({
         } catch (error) {
             console.error('Error download-game:', error);
             const status = error?.response?.status;
+            const detail = getApiErrorDetail(error);
+            const code = isNormalTestLimitError(error)
+                ? 'test_limit_normal'
+                : status === 429
+                    ? 'rate_limited'
+                    : error.code;
             return {
                 success: false,
-                reason: status === 429 ? 'rate_limited' : error.code,
-                message: error.message
+                reason: code,
+                message: detail
             };
         } finally {
             activeDownloads.delete(appId);

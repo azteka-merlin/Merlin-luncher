@@ -100,23 +100,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const localErrorTranslations = {
         ptbr: {
             games_error_catalog_not_found: 'Nenhum jogo foi encontrado para essa busca.',
-            games_error_resolve_failed: 'Não foi possível interpretar esse link da Steam.'
+            games_error_resolve_failed: 'Não foi possível interpretar esse link da Steam.',
+            games_error_test_limit_normal: 'O limite de ativações normais desta licença de teste foi atingido.'
         },
         en: {
             games_error_catalog_not_found: 'No game was found for this search.',
-            games_error_resolve_failed: 'Could not understand this Steam link.'
+            games_error_resolve_failed: 'Could not understand this Steam link.',
+            games_error_test_limit_normal: 'This test license has reached its normal activation limit.'
         },
         es: {
             games_error_catalog_not_found: 'No se encontró ningún juego para esta búsqueda.',
-            games_error_resolve_failed: 'No se pudo interpretar este enlace de Steam.'
+            games_error_resolve_failed: 'No se pudo interpretar este enlace de Steam.',
+            games_error_test_limit_normal: 'Esta licencia de prueba alcanzó su límite de activaciones normales.'
         },
         fr: {
             games_error_catalog_not_found: 'Aucun jeu n’a été trouvé pour cette recherche.',
-            games_error_resolve_failed: 'Impossible d’interpréter ce lien Steam.'
+            games_error_resolve_failed: 'Impossible d’interpréter ce lien Steam.',
+            games_error_test_limit_normal: 'Cette licence de test a atteint sa limite d’activations normales.'
         },
         de: {
             games_error_catalog_not_found: 'Für diese Suche wurde kein Spiel gefunden.',
-            games_error_resolve_failed: 'Dieser Steam-Link konnte nicht verarbeitet werden.'
+            games_error_resolve_failed: 'Dieser Steam-Link konnte nicht verarbeitet werden.',
+            games_error_test_limit_normal: 'Diese Testlizenz hat ihr Limit für normale Aktivierungen erreicht.'
         }
     };
 
