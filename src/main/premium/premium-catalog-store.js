@@ -40,7 +40,7 @@ function normalizeItem(value) {
         : null;
     const viewer = value.viewer && typeof value.viewer === 'object'
         ? {
-            status: ['available', 'cooldown', 'reserved', 'unavailable'].includes(value.viewer.status)
+            status: ['available', 'cooldown', 'reserved', 'unavailable', 'locked'].includes(value.viewer.status)
                 ? value.viewer.status
                 : 'unavailable',
             canActivate: value.viewer.canActivate === true,
@@ -52,7 +52,43 @@ function normalizeItem(value) {
                 : null,
             lastActivatedAt: typeof value.viewer.lastActivatedAt === 'string'
                 ? value.viewer.lastActivatedAt.trim() || null
-                : null
+                : null,
+            lockedReason: ['tier_release_pending', 'tier_disabled', 'bronze_limit', 'free_catalog_cutoff'].includes(value.viewer.lockedReason)
+                ? value.viewer.lockedReason
+                : null,
+            releaseAvailableAt: typeof value.viewer.releaseAvailableAt === 'string'
+                ? value.viewer.releaseAvailableAt.trim() || null
+                : null,
+            nearestAvailableTier: ['bronze', 'prata', 'ouro'].includes(value.viewer.nearestAvailableTier)
+                ? value.viewer.nearestAvailableTier
+                : null,
+            planTier: ['bronze', 'prata', 'ouro'].includes(value.viewer.planTier)
+                ? value.viewer.planTier
+                : 'ouro',
+            plansEnabled: value.viewer.plansEnabled === true,
+            premiumActivationsUsed: value.viewer.premiumActivationsUsed === null || value.viewer.premiumActivationsUsed === undefined
+                ? null
+                : Math.max(0, Math.trunc(Number(value.viewer.premiumActivationsUsed) || 0)),
+            premiumActivationLimit: value.viewer.premiumActivationLimit === null || value.viewer.premiumActivationLimit === undefined
+                ? null
+                : Math.max(0, Math.trunc(Number(value.viewer.premiumActivationLimit) || 0)),
+            premiumActivationsResetAt: typeof value.viewer.premiumActivationsResetAt === 'string'
+                ? value.viewer.premiumActivationsResetAt.trim() || null
+                : null,
+            tierAvailability: Array.isArray(value.viewer.tierAvailability)
+                ? value.viewer.tierAvailability
+                    .map(item => {
+                        if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+                        const tier = ['bronze', 'prata', 'ouro'].includes(item.tier) ? item.tier : null;
+                        if (!tier) return null;
+                        return {
+                            tier,
+                            availableNow: item.availableNow === true,
+                            availableAt: typeof item.availableAt === 'string' ? item.availableAt.trim() || null : null
+                        };
+                    })
+                    .filter(Boolean)
+                : []
         }
         : null;
 
@@ -133,7 +169,21 @@ function createPremiumCatalogStore({ fs, path, getFilePath }) {
         return load().items.map(cloneItem);
     }
 
-    return { list, load, replace };
+    function clear() {
+        load();
+        items = [];
+        lastSync = null;
+        hadLoadError = false;
+
+        const filePath = getFilePath();
+        try {
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        } catch (error) {
+            console.warn('Unable to clear premium catalog cache:', error.message);
+        }
+    }
+
+    return { clear, list, load, replace };
 }
 
 module.exports = { createPremiumCatalogStore };

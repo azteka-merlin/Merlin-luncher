@@ -112,8 +112,19 @@ function createPremiumService({
 
     async function refresh() {
         try {
-            const accessToken = await getCatalogAccessToken();
-            const downloaded = await catalogClient.requestCatalog(accessToken);
+            let accessToken = await getCatalogAccessToken();
+            let downloaded;
+            try {
+                downloaded = await catalogClient.requestCatalog(accessToken);
+            } catch (error) {
+                if (error?.response?.status !== 401 || !authSession?.handleUnauthorized) {
+                    throw error;
+                }
+
+                await authSession.handleUnauthorized();
+                accessToken = await getCatalogAccessToken();
+                downloaded = await catalogClient.requestCatalog(accessToken);
+            }
             catalogStore.replace(downloaded.items, downloaded.syncedAt);
             cachedItems = downloaded.items;
             return { success: true, items: cloneItems(downloaded.items), stale: false };
@@ -148,6 +159,11 @@ function createPremiumService({
         }
 
         return refresh();
+    }
+
+    function clearCache() {
+        cachedItems = null;
+        catalogStore.clear?.();
     }
 
     async function findItem(appId) {
@@ -192,6 +208,9 @@ function createPremiumService({
         }
         if (status === 409 && normalized.includes('processed')) {
             return { code: 'processing', message: detail };
+        }
+        if ((status === 403 && normalized.includes('plan')) || normalized.includes('bronze premium activation limit')) {
+            return { code: 'plan_locked', message: detail };
         }
         if (apiCode === 'TEST_LICENSE_PREMIUM_ACTIVATION_LIMIT_REACHED') {
             return { code: 'test_limit_premium', message: detail };
@@ -842,6 +861,7 @@ function createPremiumService({
         activate,
         cancel,
         list,
+        clearCache,
         openGameFolder,
         refresh
     };

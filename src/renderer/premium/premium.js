@@ -22,6 +22,22 @@ window.merlinI18n.register({
         premium_activate_now: 'Ativar agora',
         premium_activating: 'Ativando...',
         premium_unavailable: 'Nenhuma vaga disponível',
+        premium_plan_locked: 'Bloqueado pelo plano',
+        premium_plan_paid_launch: 'Lançamento em plano pago',
+        premium_plan_gradual_launch: 'Lançamento gradual',
+        premium_plan_tier_now: '{tier} agora',
+        premium_plan_tier_in: '{tier} em {value}',
+        premium_view_plans: 'Ver planos',
+        premium_bronze_limit_reached: 'Limite de ativações atingido',
+        premium_bronze_limit_renews: 'Renova em {date}',
+        premium_bronze_limit_notice: 'Você atingiu as 3 ativações Premium deste mês. Prata e Ouro têm ativações ilimitadas.',
+        premium_bronze_limit_cta: 'Conhecer planos',
+        premium_free_catalog_cutoff_hint: 'Seu acesso gratuito mantém os jogos já disponíveis para sua licença. Novos lançamentos podem exigir um plano pago.',
+        premium_plan_available_in: 'Libera em {value}',
+        premium_plan_available_on_tier: 'Disponível no {tier}',
+        premium_bronze_limit: 'Limite Bronze atingido',
+        premium_global_cooldown_text: 'Você poderá ativar outro jogo em {value}. Com Ouro, jogos diferentes não exigem espera.',
+        premium_global_cooldown_cta: 'Conhecer Ouro',
         premium_in_cooldown: 'Em cooldown',
         premium_available_in: 'Disponível em {value}',
         premium_available_now: 'Disponível agora',
@@ -46,6 +62,7 @@ window.merlinI18n.register({
         premium_error_cooldown: 'Você ainda está em cooldown para este jogo.',
         premium_error_archive_unavailable: 'Os arquivos premium deste jogo ainda não estão disponíveis.',
         premium_error_processing: 'Já existe uma ativação deste jogo sendo processada agora.',
+        premium_error_plan_locked: 'Seu plano ainda não libera esta ativação premium.',
         premium_error_test_limit_premium: 'O limite de ativações premium desta licença de teste foi atingido.',
         premium_error_cancelled: 'Ativação cancelada.',
         premium_error_apply_failed: 'Não foi possível aplicar os arquivos premium.',
@@ -144,6 +161,22 @@ window.merlinI18n.register({
         premium_activate_now: 'Activate now',
         premium_activating: 'Activating...',
         premium_unavailable: 'No slots available',
+        premium_plan_locked: 'Plan locked',
+        premium_plan_paid_launch: 'Paid plan release',
+        premium_plan_gradual_launch: 'Gradual release',
+        premium_plan_tier_now: '{tier} now',
+        premium_plan_tier_in: '{tier} in {value}',
+        premium_view_plans: 'View plans',
+        premium_bronze_limit_reached: 'Activation limit reached',
+        premium_bronze_limit_renews: 'Renews on {date}',
+        premium_bronze_limit_notice: 'You have reached your 3 Premium activations for this month. Silver and Gold include unlimited activations.',
+        premium_bronze_limit_cta: 'View plans',
+        premium_free_catalog_cutoff_hint: 'Your free access keeps games already available to your license. New releases may require a paid plan.',
+        premium_plan_available_in: 'Unlocks in {value}',
+        premium_plan_available_on_tier: 'Available on {tier}',
+        premium_bronze_limit: 'Bronze limit reached',
+        premium_global_cooldown_text: 'You can activate another game in {value}. With Gold, different games do not require waiting.',
+        premium_global_cooldown_cta: 'Explore Gold',
         premium_in_cooldown: 'In cooldown',
         premium_available_in: 'Available in {value}',
         premium_available_now: 'Available now',
@@ -168,6 +201,7 @@ window.merlinI18n.register({
         premium_error_cooldown: 'You are still in cooldown for this game.',
         premium_error_archive_unavailable: 'Premium files for this game are not available yet.',
         premium_error_processing: 'An activation for this game is already being processed.',
+        premium_error_plan_locked: 'Your plan does not unlock this premium activation yet.',
         premium_error_test_limit_premium: 'This test license has reached its premium activation limit.',
         premium_error_cancelled: 'Activation cancelled.',
         premium_error_apply_failed: 'Could not apply the premium files.',
@@ -266,6 +300,22 @@ window.merlinI18n.register({
         premium_activate_now: 'Activar ahora',
         premium_activating: 'Activando...',
         premium_unavailable: 'No hay plazas disponibles',
+        premium_plan_locked: 'Bloqueado por plan',
+        premium_plan_paid_launch: 'Lanzamiento con plan pago',
+        premium_plan_gradual_launch: 'Lanzamiento gradual',
+        premium_plan_tier_now: '{tier} ahora',
+        premium_plan_tier_in: '{tier} en {value}',
+        premium_view_plans: 'Ver planes',
+        premium_bronze_limit_reached: 'Límite de activaciones alcanzado',
+        premium_bronze_limit_renews: 'Se renueva el {date}',
+        premium_bronze_limit_notice: 'Ha alcanzado sus 3 activaciones Premium de este mes. Plata y Oro incluyen activaciones ilimitadas.',
+        premium_bronze_limit_cta: 'Ver planes',
+        premium_free_catalog_cutoff_hint: 'Tu acceso gratuito mantiene los juegos ya disponibles para tu licencia. Los nuevos lanzamientos pueden requerir un plan pago.',
+        premium_plan_available_in: 'Se libera en {value}',
+        premium_plan_available_on_tier: 'Disponible en {tier}',
+        premium_bronze_limit: 'Límite Bronze alcanzado',
+        premium_global_cooldown_text: 'Podrá activar otro juego en {value}. Con Oro, los juegos diferentes no requieren espera.',
+        premium_global_cooldown_cta: 'Conocer Oro',
         premium_in_cooldown: 'En cooldown',
         premium_available_in: 'Disponible en {value}',
         premium_available_now: 'Disponible ahora',
@@ -290,6 +340,7 @@ window.merlinI18n.register({
         premium_error_cooldown: 'Todavía está en cooldown para este juego.',
         premium_error_archive_unavailable: 'Los archivos premium de este juego aún no están disponibles.',
         premium_error_processing: 'Ya se está procesando una activación para este juego.',
+        premium_error_plan_locked: 'Su plan aún no libera esta activación premium.',
         premium_error_test_limit_premium: 'Esta licencia de prueba alcanzó su límite de activaciones premium.',
         premium_error_cancelled: 'Activación cancelada.',
         premium_error_apply_failed: 'No se pudieron aplicar los archivos premium.',
@@ -388,6 +439,22 @@ window.merlinI18n.register({
         premium_activate_now: 'Activer maintenant',
         premium_activating: 'Activation...',
         premium_unavailable: 'Aucun créneau disponible',
+        premium_plan_locked: 'Bloqué par le forfait',
+        premium_plan_paid_launch: 'Sortie avec forfait payant',
+        premium_plan_gradual_launch: 'Sortie progressive',
+        premium_plan_tier_now: '{tier} maintenant',
+        premium_plan_tier_in: '{tier} dans {value}',
+        premium_view_plans: 'Voir les forfaits',
+        premium_bronze_limit_reached: 'Limite d’activations atteinte',
+        premium_bronze_limit_renews: 'Renouvellement le {date}',
+        premium_bronze_limit_notice: 'Vous avez atteint vos 3 activations Premium pour ce mois. Argent et Or incluent des activations illimitées.',
+        premium_bronze_limit_cta: 'Voir les forfaits',
+        premium_free_catalog_cutoff_hint: 'Votre accès gratuit conserve les jeux déjà disponibles pour votre licence. Les nouvelles sorties peuvent nécessiter un forfait payant.',
+        premium_plan_available_in: 'Disponible dans {value}',
+        premium_plan_available_on_tier: 'Disponible en {tier}',
+        premium_bronze_limit: 'Limite Bronze atteinte',
+        premium_global_cooldown_text: 'Vous pourrez activer un autre jeu dans {value}. Avec Or, les jeux différents ne nécessitent pas d’attente.',
+        premium_global_cooldown_cta: 'Découvrir Or',
         premium_in_cooldown: 'En cooldown',
         premium_available_in: 'Disponible dans {value}',
         premium_available_now: 'Disponible maintenant',
@@ -412,6 +479,7 @@ window.merlinI18n.register({
         premium_error_cooldown: 'Vous êtes encore en cooldown pour ce jeu.',
         premium_error_archive_unavailable: 'Les fichiers premium de ce jeu ne sont pas encore disponibles.',
         premium_error_processing: 'Une activation pour ce jeu est déjà en cours de traitement.',
+        premium_error_plan_locked: 'Votre forfait ne débloque pas encore cette activation premium.',
         premium_error_test_limit_premium: 'Cette licence de test a atteint sa limite d’activations premium.',
         premium_error_cancelled: 'Activation annulée.',
         premium_error_apply_failed: 'Impossible d’appliquer les fichiers premium.',
@@ -510,6 +578,22 @@ window.merlinI18n.register({
         premium_activate_now: 'Jetzt aktivieren',
         premium_activating: 'Aktivierung...',
         premium_unavailable: 'Keine Slots verfügbar',
+        premium_plan_locked: 'Vom Plan gesperrt',
+        premium_plan_paid_launch: 'Veröffentlichung mit Bezahlplan',
+        premium_plan_gradual_launch: 'Gestaffelte Veröffentlichung',
+        premium_plan_tier_now: '{tier} jetzt',
+        premium_plan_tier_in: '{tier} in {value}',
+        premium_view_plans: 'Pläne ansehen',
+        premium_bronze_limit_reached: 'Aktivierungslimit erreicht',
+        premium_bronze_limit_renews: 'Erneuert am {date}',
+        premium_bronze_limit_notice: 'Sie haben Ihre 3 Premium-Aktivierungen für diesen Monat erreicht. Silber und Gold enthalten unbegrenzte Aktivierungen.',
+        premium_bronze_limit_cta: 'Pläne ansehen',
+        premium_free_catalog_cutoff_hint: 'Dein kostenloser Zugang behält die für deine Lizenz bereits verfügbaren Spiele. Neue Veröffentlichungen können einen Bezahlplan erfordern.',
+        premium_plan_available_in: 'Verfügbar in {value}',
+        premium_plan_available_on_tier: 'Verfügbar mit {tier}',
+        premium_bronze_limit: 'Bronze-Limit erreicht',
+        premium_global_cooldown_text: 'Sie können in {value} ein weiteres Spiel aktivieren. Mit Gold erfordern unterschiedliche Spiele keine Wartezeit.',
+        premium_global_cooldown_cta: 'Gold entdecken',
         premium_in_cooldown: 'Im Cooldown',
         premium_available_in: 'Verfügbar in {value}',
         premium_available_now: 'Jetzt verfügbar',
@@ -534,6 +618,7 @@ window.merlinI18n.register({
         premium_error_cooldown: 'Für dieses Spiel befinden Sie sich noch im Cooldown.',
         premium_error_archive_unavailable: 'Premium-Dateien für dieses Spiel sind noch nicht verfügbar.',
         premium_error_processing: 'Eine Aktivierung für dieses Spiel wird bereits verarbeitet.',
+        premium_error_plan_locked: 'Ihr Plan schaltet diese Premium-Aktivierung noch nicht frei.',
         premium_error_test_limit_premium: 'Diese Testlizenz hat ihr Limit für Premium-Aktivierungen erreicht.',
         premium_error_cancelled: 'Aktivierung abgebrochen.',
         premium_error_apply_failed: 'Die Premium-Dateien konnten nicht angewendet werden.',
@@ -634,6 +719,9 @@ document.addEventListener('DOMContentLoaded', () => {
         gridWrap: document.getElementById('premiumGridWrap'),
         grid: document.getElementById('premiumGrid'),
         footer: document.getElementById('premiumFooter'),
+        globalCooldown: document.getElementById('premiumGlobalCooldownNotice'),
+        globalCooldownText: document.getElementById('premiumGlobalCooldownText'),
+        globalCooldownPlans: document.getElementById('premiumGlobalCooldownPlansBtn'),
         resultCount: document.getElementById('premiumResultCount'),
         pagination: document.getElementById('premiumPagination'),
         tooltip: document.getElementById('premiumTooltip'),
@@ -676,7 +764,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let tooltipState = null;
     let tooltipHideTimer = null;
     let progressCloseResolver = null;
-    let refreshQueuedFromCountdown = false;
     let premiumIntroSeen = null;
     let premiumIntroLoading = null;
     let premiumIntroOpened = false;
@@ -937,7 +1024,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getCooldownEntries(item) {
-        const entries = Array.isArray(item?.availability?.cooldownEntries)
+        // Availability is per game. The viewer cooldown may be global for
+        // Bronze/Prata and must not be presented as an occupied game slot.
+        return Array.isArray(item?.availability?.cooldownEntries)
             ? item.availability.cooldownEntries
                 .filter(entry => entry && typeof entry.availableAt === 'string' && entry.availableAt.trim())
                 .map(entry => ({
@@ -945,22 +1034,48 @@ document.addEventListener('DOMContentLoaded', () => {
                     kind: entry.kind === 'reserved' ? 'reserved' : 'cooldown'
                 }))
             : [];
+    }
 
-        const includeViewerEntry = (availableAt, kind) => {
-            const normalized = typeof availableAt === 'string' ? availableAt.trim() : '';
-            if (!normalized) return;
-            const exists = entries.some(entry =>
-                entry.availableAt === normalized && entry.kind === kind);
-            if (!exists) entries.push({ availableAt: normalized, kind });
-        };
+    function renderGlobalCooldownNotice() {
+        if (!elements.globalCooldown || !elements.globalCooldownText || !elements.globalCooldownPlans) return;
 
-        includeViewerEntry(item?.viewer?.cooldownUntil, 'cooldown');
-        includeViewerEntry(item?.viewer?.reservedUntil, 'reserved');
+        const limitItem = items.find(candidate => (
+            candidate?.viewer?.lockedReason === 'bronze_limit'
+        ));
+        if (limitItem) {
+            elements.globalCooldown.hidden = false;
+            elements.globalCooldown.dataset.expiry = '';
+            elements.globalCooldown.dataset.kind = 'limit';
+            elements.globalCooldownText.textContent = tr('premium_bronze_limit_notice');
+            elements.globalCooldownPlans.textContent = tr('premium_bronze_limit_cta');
+            return;
+        }
 
-        return entries.sort((left, right) => left.availableAt.localeCompare(right.availableAt));
+        const item = items.find(candidate => (
+            candidate?.viewer?.plansEnabled === true
+            && ['bronze', 'prata'].includes(candidate?.viewer?.planTier)
+            && ['cooldown', 'reserved'].includes(candidate?.viewer?.status)
+            && typeof candidate?.viewer?.cooldownUntil === 'string'
+        ));
+        const value = countdownValue(item?.viewer?.cooldownUntil);
+        if (!value) {
+            elements.globalCooldown.hidden = true;
+            elements.globalCooldown.dataset.expiry = '';
+            elements.globalCooldown.dataset.kind = '';
+            return;
+        }
+
+        elements.globalCooldown.hidden = false;
+        elements.globalCooldown.dataset.expiry = item.viewer.cooldownUntil;
+        elements.globalCooldown.dataset.kind = 'cooldown';
+        elements.globalCooldownText.textContent = tr('premium_global_cooldown_text', { value });
+        elements.globalCooldownPlans.textContent = tr('premium_global_cooldown_cta');
     }
 
     function stateForItem(item) {
+        if (item.viewer.status === 'locked') {
+            return 'locked';
+        }
         if (item.viewer.status === 'cooldown' || item.viewer.status === 'reserved') {
             return 'cooldown';
         }
@@ -971,6 +1086,75 @@ document.addEventListener('DOMContentLoaded', () => {
             return 'warning';
         }
         return 'available';
+    }
+
+    function tierLabel(tier) {
+        if (tier === 'bronze') return 'Bronze';
+        if (tier === 'prata') return 'Prata';
+        return 'Ouro';
+    }
+
+    function formatDate(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '—';
+        return new Intl.DateTimeFormat(currentLocale(), {
+            day: 'numeric',
+            month: 'long'
+        }).format(date);
+    }
+
+    function tierAvailabilitySummary(item) {
+        const entries = Array.isArray(item.viewer.tierAvailability)
+            ? item.viewer.tierAvailability
+            : [];
+        if (entries.length === 0) return lockedLabel(item);
+
+        const lowestAvailable = [...entries].reverse().find(entry => entry.availableNow === true);
+        if (lowestAvailable?.tier === 'bronze') {
+            return tr('premium_plan_available_on_tier', { tier: tierLabel('bronze') });
+        }
+
+        return entries.map(entry => {
+            if (entry.availableNow) {
+                return tr('premium_plan_tier_now', { tier: tierLabel(entry.tier) });
+            }
+            const value = countdownValue(entry.availableAt);
+            return value
+                ? tr('premium_plan_tier_in', { tier: tierLabel(entry.tier), value })
+                : null;
+        }).filter(Boolean).join(' · ') || lockedLabel(item);
+    }
+
+    function lockedTitle(item) {
+        if (item.viewer.lockedReason === 'bronze_limit') {
+            return tr('premium_bronze_limit_reached');
+        }
+        return item.viewer.lockedReason === 'free_catalog_cutoff'
+            ? tr('premium_plan_paid_launch')
+            : tr('premium_plan_gradual_launch');
+    }
+
+    function lockedDetail(item) {
+        if (item.viewer.lockedReason === 'bronze_limit') {
+            const resetAt = item.viewer.premiumActivationsResetAt;
+            return resetAt ? tr('premium_bronze_limit_renews', { date: formatDate(resetAt) }) : '';
+        }
+        return tierAvailabilitySummary(item);
+    }
+
+    function lockedLabel(item) {
+        if (item.viewer.lockedReason === 'bronze_limit') {
+            const used = Number(item.viewer.premiumActivationsUsed);
+            const limit = Number(item.viewer.premiumActivationLimit);
+            if (Number.isFinite(used) && Number.isFinite(limit) && limit > 0) {
+                return `${tr('premium_bronze_limit')} (${used}/${limit})`;
+            }
+            return tr('premium_bronze_limit');
+        }
+        if (item.viewer.nearestAvailableTier) {
+            return tr('premium_plan_available_on_tier', { tier: tierLabel(item.viewer.nearestAvailableTier) });
+        }
+        return tr('premium_plan_locked');
     }
 
     function buttonConfig(item) {
@@ -989,13 +1173,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: tr('premium_unavailable')
             };
         }
+        if (state === 'locked') {
+            if (item.viewer.lockedReason === 'bronze_limit') {
+                return {
+                    disabled: true,
+                    className: 'btn btn-secondary correction-card-btn premium-card-btn is-unavailable',
+                    text: tr('premium_bronze_limit_reached'),
+                    action: null
+                };
+            }
+            return {
+                disabled: false,
+                className: 'btn btn-secondary correction-card-btn premium-card-btn',
+                text: tr('premium_view_plans'),
+                action: 'plans'
+            };
+        }
         return {
             disabled: Boolean(activeOperation),
             className: 'btn btn-primary correction-card-btn premium-card-btn',
             text: activeOperation?.appId === item.appId
                 ? tr('premium_activating')
-                : tr('premium_activate_now')
+                : tr('premium_activate_now'),
+            action: 'activate'
         };
+    }
+
+    async function openPlans() {
+        try {
+            await window.electronAPI.auth.openPlans();
+        } catch (_) {
+            notify(tr('premium_error_refresh_failed'), 'error');
+        }
     }
 
     function coverElement(item) {
@@ -1129,14 +1338,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openTooltip(item, anchor) {
         clearTimeout(tooltipHideTimer);
-        tooltipState = { item, anchor };
+        tooltipState = { kind: 'catalog', item, anchor };
         renderTooltip(item);
+        elements.tooltip.hidden = false;
+        positionTooltip(anchor);
+    }
+
+    function openInfoTooltip(title, message, anchor) {
+        clearTimeout(tooltipHideTimer);
+        tooltipState = { kind: 'info', anchor, title, message };
+        elements.tooltip.replaceChildren();
+
+        const titleElement = document.createElement('div');
+        titleElement.className = 'premium-tooltip-title';
+        titleElement.textContent = title;
+
+        const messageElement = document.createElement('p');
+        messageElement.className = 'premium-tooltip-empty';
+        messageElement.textContent = message;
+
+        elements.tooltip.append(titleElement, messageElement);
         elements.tooltip.hidden = false;
         positionTooltip(anchor);
     }
 
     function updateTooltip() {
         if (!tooltipState) return;
+        if (tooltipState.kind === 'info') {
+            positionTooltip(tooltipState.anchor);
+            return;
+        }
         renderTooltip(tooltipState.item);
         positionTooltip(tooltipState.anchor);
     }
@@ -1192,15 +1423,35 @@ document.addEventListener('DOMContentLoaded', () => {
             dot.setAttribute('aria-hidden', 'true');
 
             const availabilityText = document.createElement('span');
-            availabilityText.textContent = slotsText(item);
+            availabilityText.textContent = state === 'locked' ? lockedTitle(item) : slotsText(item);
             availability.append(dot, availabilityText);
+
+            if (state === 'locked' && item.viewer.lockedReason === 'free_catalog_cutoff') {
+                const info = document.createElement('button');
+                info.type = 'button';
+                info.className = 'library-info-btn premium-plan-info';
+                info.textContent = '?';
+                info.title = tr('premium_free_catalog_cutoff_hint');
+                info.setAttribute('aria-label', info.title);
+                info.addEventListener('click', event => {
+                    event.stopPropagation();
+                    openInfoTooltip(lockedTitle(item), tr('premium_free_catalog_cutoff_hint'), info);
+                });
+                availability.append(info);
+            }
 
             const cooldownHint = document.createElement('p');
             cooldownHint.className = 'premium-cooldown-hint';
-            const expiry = item.viewer.cooldownUntil || item.viewer.reservedUntil || item.availability.nextSlotAt || null;
+            const expiry = item.viewer.cooldownUntil || item.viewer.reservedUntil || item.viewer.releaseAvailableAt || item.availability.nextSlotAt || null;
             if (state === 'cooldown') {
                 cooldownHint.dataset.expiry = expiry || '';
                 cooldownHint.textContent = cooldownLabel(expiry);
+            } else if (state === 'locked' && item.viewer.releaseAvailableAt) {
+                cooldownHint.dataset.expiry = item.viewer.releaseAvailableAt;
+                cooldownHint.textContent = cooldownLabel(item.viewer.releaseAvailableAt);
+            } else if (state === 'locked') {
+                cooldownHint.dataset.expiry = '';
+                cooldownHint.textContent = lockedDetail(item);
             } else {
                 cooldownHint.dataset.expiry = '';
                 const cooldownEntries = getCooldownEntries(item);
@@ -1219,19 +1470,29 @@ document.addEventListener('DOMContentLoaded', () => {
             actionButton.disabled = buttonState.disabled;
             actionButton.textContent = buttonState.text;
             if (!buttonState.disabled) {
-                actionButton.addEventListener('click', () => activate(item));
+                actionButton.addEventListener('click', () => {
+                    if (buttonState.action === 'plans') {
+                        openPlans();
+                        return;
+                    }
+                    activate(item);
+                });
             }
 
             actions.append(actionButton);
             card.append(imageWrap, title, appId, availability, cooldownHint, actions);
-            card.addEventListener('mouseenter', () => openTooltip(item, card));
-            card.addEventListener('mouseleave', event => {
-                if (event.relatedTarget && elements.tooltip.contains(event.relatedTarget)) return;
-                scheduleTooltipClose();
-            });
-            card.addEventListener('mousemove', () => {
-                if (tooltipState?.anchor === card) positionTooltip(card);
-            });
+            // The existing availability tooltip remains unchanged for its original
+            // states. New plan-locked cards use their compact card copy instead.
+            if (state !== 'locked') {
+                card.addEventListener('mouseenter', () => openTooltip(item, card));
+                card.addEventListener('mouseleave', event => {
+                    if (event.relatedTarget && elements.tooltip.contains(event.relatedTarget)) return;
+                    scheduleTooltipClose();
+                });
+                card.addEventListener('mousemove', () => {
+                    if (tooltipState?.anchor === card) positionTooltip(card);
+                });
+            }
             elements.grid.append(card);
         });
 
@@ -1240,6 +1501,7 @@ document.addEventListener('DOMContentLoaded', () => {
             total: filtered.length
         });
         renderPagination(totalPages);
+        renderGlobalCooldownNotice();
         updateTooltip();
         updateCountdowns();
     }
@@ -1247,7 +1509,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadPremium(force = false) {
         if (loading) return;
         loading = true;
-        refreshQueuedFromCountdown = false;
         elements.refresh.disabled = true;
         elements.refresh.classList.toggle('loading', force);
         elements.refreshLabel.textContent = tr(force ? 'premium_refreshing' : 'premium_refresh');
@@ -1467,10 +1728,10 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.view.hidden = !isActive;
         elements.button.classList.toggle('active', isActive);
         elements.button.setAttribute('aria-pressed', String(isActive));
-        if (isActive && !loaded) {
-            loadPremium(true);
-        }
         if (isActive) {
+            if (!loaded && !loading) {
+                void loadPremium();
+            }
             void showPremiumIntroIfNeeded();
         }
         if (!isActive) {
@@ -1480,31 +1741,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateCountdowns() {
         if (elements.view.hidden) return;
-        let foundExpired = false;
-
         elements.grid.querySelectorAll('.premium-cooldown-hint[data-expiry]').forEach(node => {
             const expiry = node.dataset.expiry || '';
             if (!expiry) return;
             const value = countdownValue(expiry);
             if (!value) {
-                foundExpired = true;
                 node.textContent = tr('premium_available_now');
                 return;
             }
             node.textContent = tr('premium_available_in', { value });
         });
 
+        if (elements.globalCooldown && !elements.globalCooldown.hidden && elements.globalCooldown.dataset.kind === 'cooldown') {
+            const value = countdownValue(elements.globalCooldown.dataset.expiry || '');
+            if (!value) {
+                elements.globalCooldown.hidden = true;
+            } else if (elements.globalCooldownText) {
+                elements.globalCooldownText.textContent = tr('premium_global_cooldown_text', { value });
+            }
+        }
+
         if (tooltipState) updateTooltip();
 
-        if (foundExpired && !loading && !refreshQueuedFromCountdown) {
-            refreshQueuedFromCountdown = true;
-            loadPremium(true);
-        }
     }
 
     elements.button.addEventListener('click', () => window.merlinView?.set?.('premium'));
     elements.introHelp?.addEventListener('click', openPremiumIntroManually);
     elements.refresh.addEventListener('click', () => loadPremium(true));
+    elements.globalCooldownPlans?.addEventListener('click', openPlans);
     elements.search.addEventListener('input', () => {
         currentPage = 1;
         render();
@@ -1540,6 +1804,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     window.addEventListener('merlin-view-changed', syncVisibility);
+    window.addEventListener('merlin-logout', () => {
+        items = [];
+        loaded = false;
+        currentPage = 1;
+        closeTooltip();
+        if (elements.globalCooldown) {
+            elements.globalCooldown.hidden = true;
+            elements.globalCooldown.dataset.expiry = '';
+            elements.globalCooldown.dataset.kind = '';
+        }
+    });
+    window.addEventListener('merlin-authenticated', () => {
+        if (!loaded && !loading) {
+            void loadPremium(true);
+        }
+    });
     window.addEventListener('merlin-language-changed', () => {
         updateIntroHelpLabel();
         render();

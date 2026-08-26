@@ -42,7 +42,7 @@ function normalizeCatalogGame(entry) {
         : null;
     const viewer = entry.viewer && typeof entry.viewer === 'object'
         ? {
-            status: ['available', 'cooldown', 'reserved', 'unavailable'].includes(entry.viewer.status)
+            status: ['available', 'cooldown', 'reserved', 'unavailable', 'locked'].includes(entry.viewer.status)
                 ? entry.viewer.status
                 : 'unavailable',
             canActivate: entry.viewer.canActivate === true,
@@ -54,7 +54,43 @@ function normalizeCatalogGame(entry) {
                 : null,
             lastActivatedAt: typeof entry.viewer.lastActivatedAt === 'string'
                 ? entry.viewer.lastActivatedAt.trim() || null
-                : null
+                : null,
+            lockedReason: ['tier_release_pending', 'tier_disabled', 'bronze_limit', 'free_catalog_cutoff'].includes(entry.viewer.lockedReason)
+                ? entry.viewer.lockedReason
+                : null,
+            releaseAvailableAt: typeof entry.viewer.releaseAvailableAt === 'string'
+                ? entry.viewer.releaseAvailableAt.trim() || null
+                : null,
+            nearestAvailableTier: ['bronze', 'prata', 'ouro'].includes(entry.viewer.nearestAvailableTier)
+                ? entry.viewer.nearestAvailableTier
+                : null,
+            planTier: ['bronze', 'prata', 'ouro'].includes(entry.viewer.planTier)
+                ? entry.viewer.planTier
+                : 'ouro',
+            plansEnabled: entry.viewer.plansEnabled === true,
+            premiumActivationsUsed: entry.viewer.premiumActivationsUsed === null || entry.viewer.premiumActivationsUsed === undefined
+                ? null
+                : Math.max(0, Math.trunc(Number(entry.viewer.premiumActivationsUsed) || 0)),
+            premiumActivationLimit: entry.viewer.premiumActivationLimit === null || entry.viewer.premiumActivationLimit === undefined
+                ? null
+                : Math.max(0, Math.trunc(Number(entry.viewer.premiumActivationLimit) || 0)),
+            premiumActivationsResetAt: typeof entry.viewer.premiumActivationsResetAt === 'string'
+                ? entry.viewer.premiumActivationsResetAt.trim() || null
+                : null,
+            tierAvailability: Array.isArray(entry.viewer.tierAvailability)
+                ? entry.viewer.tierAvailability
+                    .map(item => {
+                        if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+                        const tier = ['bronze', 'prata', 'ouro'].includes(item.tier) ? item.tier : null;
+                        if (!tier) return null;
+                        return {
+                            tier,
+                            availableNow: item.availableNow === true,
+                            availableAt: typeof item.availableAt === 'string' ? item.availableAt.trim() || null : null
+                        };
+                    })
+                    .filter(Boolean)
+                : []
         }
         : null;
 

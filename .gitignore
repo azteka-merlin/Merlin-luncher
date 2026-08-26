@@ -19,6 +19,3 @@ OpenSteamTool/build/
 
 # Manifesto de integridade gerado durante o build
 dist/integrity.json
-
-# Documentacao/contexto local
-docs/

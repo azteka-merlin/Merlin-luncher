@@ -1,0 +1,64 @@
+# Change Guardrails - Merlin
+
+Este arquivo existe para evitar regressao enquanto configuramos ambientes de API, cadastro publico e painel admin.
+
+## Regra Principal
+
+Nao alterar comportamento atual sem aprovacao previa.
+
+Isso inclui:
+
+- Fluxo de login/licenca.
+- Endpoints de producao.
+- Regras de ativacao Premium.
+- Instalacao de manifestos e arquivos Lua.
+- Instalacao das DLLs no Steam.
+- Fluxo de Corrections/fixes.
+- Atualizacao do launcher.
+- IPC entre renderer, preload e main.
+- Build, installer e empacotamento.
+
+Documentacao e diagnosticos podem ser criados quando forem explicitamente pedidos. Alteracoes funcionais em codigo, deploy, env, banco ou API precisam ser explicadas antes e aprovadas.
+
+## Antes De Mudar Codigo
+
+Checklist obrigatorio:
+
+- Identificar qual comportamento atual sera afetado.
+- Conferir se ja existe teste cobrindo o contrato.
+- Conferir se renderer, preload e main continuam alinhados quando houver IPC.
+- Conferir se a mudanca afeta producao por default.
+- Separar staging/local de producao de forma explicita.
+- Perguntar antes quando houver duvida de regra de negocio.
+
+## Ambientes
+
+Producao deve continuar sendo o comportamento padrao ate aprovarmos uma migracao explicita.
+
+Staging deve ser opt-in, por comando ou variavel de ambiente, por exemplo:
+
+- `npm run start:stage`
+- `MERLIN_API_BASE_URL=https://staging.api-merlin.com/api`
+
+Local pode existir para UI e desenvolvimento rapido, mas nao deve ser assumido como valido para ativacao real.
+
+## Deploy
+
+Proposta de nomes, ainda dependente de analisar os repos da API/admin:
+
+- `npm run deploy`: API + cadastro publico em producao.
+- `npm run deploy-stage`: API + cadastro publico em staging.
+- `npm run deploy:panel`: painel admin em producao.
+- `npm run deploy-stage:panel`: painel admin em staging.
+
+Nao implementar estes scripts no launcher. Eles pertencem ao repo da API/admin, a menos que o projeto vire monorepo.
+
+## Protecoes Importantes
+
+- O projeto e open source: nao vazar credenciais, tokens, secrets, emails privados, paths pessoais, dumps reais ou dados de cliente em codigo, docs, logs ou exemplos.
+- Nao remover validacoes de path que impedem escrita fora do destino esperado.
+- Nao relaxar regras de URL de update sem discutir seguranca.
+- Nao trocar endpoints hardcoded para staging/prod de forma silenciosa.
+- Nao alterar formato de payload da API sem coordenar API, admin e launcher.
+- Nao mexer em arquivos do Steam sem preservar os checks atuais.
+- Nao commitar `node_modules`, `dist`, `.deps` ou `package-lock.json` neste projeto.

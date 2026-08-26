@@ -1952,6 +1952,32 @@ webview {
     background: rgba(239, 68, 68, 0.06);
 }
 
+.premium-global-cooldown {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: -0.45rem 0 1.25rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid rgba(139, 92, 246, 0.34);
+    border-radius: 7px;
+    background: rgba(124, 58, 237, 0.08);
+}
+
+.premium-global-cooldown p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.premium-global-cooldown-btn {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+}
+
 .logout-modal-card {
     position: relative;
     width: min(100%, 420px);
@@ -2445,6 +2471,13 @@ webview {
 .premium-availability[data-state='danger'] .premium-availability-dot {
     background: var(--accent-danger);
     box-shadow: 0 0 12px rgba(239, 68, 68, 0.32);
+}
+
+.premium-plan-info {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-left: 0.05rem;
+    font-size: 0.68rem;
 }
 
 .premium-cooldown-hint {
@@ -3107,6 +3140,15 @@ webview {
 }
 
 @media (max-width: 680px) {
+    .premium-global-cooldown {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .premium-global-cooldown-btn {
+        width: 100%;
+    }
+
     .correction-offer-actions .btn {
         flex: 1 1 100%;
     }

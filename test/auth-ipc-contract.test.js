@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { registerAuthIpc } = require('../src/main/ipc/register-auth-ipc');
+const { getPlansUrl, registerAuthIpc } = require('../src/main/ipc/register-auth-ipc');
 
 test('registers auth IPC channels', () => {
     const channels = [];
@@ -19,6 +19,45 @@ test('registers auth IPC channels', () => {
         'auth:login',
         'auth:logout',
         'auth:manage-subscription',
-        'auth:open-signup'
+        'auth:open-signup',
+        'auth:open-plans'
     ]);
+});
+
+test('opens the public plans section with an explicit focus target', () => {
+    assert.equal(
+        getPlansUrl('https://staging.api-merlin.com/api'),
+        'https://staging.api-merlin.com/download?focus=planos#planos'
+    );
+});
+
+test('clears account-bound caches when logging out', async () => {
+    let logoutHandler;
+    let logoutCalls = 0;
+    let cacheClears = 0;
+
+    registerAuthIpc({
+        ipcMain: {
+            handle: (channel, handler) => {
+                if (channel === 'auth:logout') {
+                    logoutHandler = handler;
+                }
+            }
+        },
+        authSession: {
+            logout: () => {
+                logoutCalls += 1;
+                return { success: true };
+            }
+        },
+        shell: {},
+        apiBaseUrl: 'https://api-merlin.com/api',
+        onLogout: () => {
+            cacheClears += 1;
+        }
+    });
+
+    assert.deepEqual(await logoutHandler(), { success: true });
+    assert.equal(logoutCalls, 1);
+    assert.equal(cacheClears, 1);
 });

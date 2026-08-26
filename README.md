@@ -43,7 +43,7 @@
 
 ### Option 1: Executable (Recommended)
 
-Download the latest installer from the [releases](https://github.com/devGaSantos/Merlin/releases) page and run it.
+Download the latest installer from the [releases](https://github.com/azteka-merlin/Merlin-luncher/releases) page and run it.
 
 The Windows installer requests administrator permission. If Steam is found at
 the default `C:\Program Files (x86)\Steam` location, it automatically installs
@@ -54,8 +54,8 @@ custom locations can still be configured and repaired from inside Merlin.
 
 1. **Clone the repository**
 ```bash
-   git clone https://github.com/devGaSantos/Merlin.git
-   cd merlin
+   git clone https://github.com/azteka-merlin/Merlin-luncher.git
+   cd Merlin-luncher
 ```
 
 2. **Install dependencies**
@@ -206,7 +206,7 @@ Merlin/
 ### OpenSteamTool
 
 Merlin integrates and distributes DLLs built from the internalized
-OpenSteamTool core under [`OpenSteamTool`](C:\Users\AZTEKA\Videos\Merlin\OpenSteamTool).
+[OpenSteamTool](./OpenSteamTool) core.
 
 This native component comes from the OpenSteamTool codebase and uses
 third-party components including Microsoft Detours, Lua, spdlog, toml++, and

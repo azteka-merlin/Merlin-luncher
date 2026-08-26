@@ -418,7 +418,13 @@ registerCorrectionsIpc({ ipcMain, correctionsService });
 registerPremiumIpc({ ipcMain, premiumService });
 registerPollsIpc({ ipcMain, pollsService });
 registerAnnouncementsIpc({ ipcMain, announcementsService });
-registerAuthIpc({ ipcMain, authSession, shell, apiBaseUrl });
+registerAuthIpc({
+    ipcMain,
+    authSession,
+    shell,
+    apiBaseUrl,
+    onLogout: () => premiumService.clearCache()
+});
 ipcMain.handle('app:set-menu-language', (_event, language) => {
     setApplicationMenu(language);
     return { success: true };
