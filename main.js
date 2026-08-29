@@ -132,6 +132,17 @@ function isAllowedInstagramUrl(value) {
     }
 }
 
+function isAllowedWhatsAppCommunityUrl(value) {
+    try {
+        const { protocol, hostname, pathname } = new URL(value);
+        return protocol === 'https:'
+            && hostname === 'chat.whatsapp.com'
+            && pathname === '/Hl6fuEZfFBTBkoggTUTe87';
+    } catch {
+        return false;
+    }
+}
+
 // Development and installed builds must never compete for Chromium cache files.
 if (!app.isPackaged) {
     const devDataRoot = path.join(
@@ -446,6 +457,12 @@ ipcMain.handle('app:open-downloaded-update-folder', (_event, folderPath) => upda
 ipcMain.handle('app:open-discord-support', async () => {
     const url = 'https://discord.gg/6RKFKcGmQZ';
     if (!isAllowedDiscordUrl(url)) return { success: false };
+    await shell.openExternal(url);
+    return { success: true };
+});
+ipcMain.handle('app:open-whatsapp-community', async () => {
+    const url = 'https://chat.whatsapp.com/Hl6fuEZfFBTBkoggTUTe87';
+    if (!isAllowedWhatsAppCommunityUrl(url)) return { success: false };
     await shell.openExternal(url);
     return { success: true };
 });

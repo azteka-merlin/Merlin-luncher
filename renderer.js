@@ -19,6 +19,7 @@ const translations = {
         instructions: 'Deixe a magia com Merlin. · Powered by Azteka',
         footer_magic: 'Deixe a magia com Merlin',
         footer_discord_support: 'Suporte oficial no Discord',
+        footer_whatsapp_community: 'Comunidade no WhatsApp',
         footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: '🏰 Bem-vindo à Casa do Merlin!',
@@ -84,6 +85,7 @@ const translations = {
         instructions: 'Leave the magic to Merlin. · Powered by Azteka',
         footer_magic: 'Leave the magic to Merlin',
         footer_discord_support: 'Official Discord support',
+        footer_whatsapp_community: 'WhatsApp community',
         footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'Merlin’s House has opened its doors!',
@@ -149,6 +151,7 @@ const translations = {
         instructions: 'Deja la magia en manos de Merlin. · Powered by Azteka',
         footer_magic: 'Deja la magia en manos de Merlin',
         footer_discord_support: 'Soporte oficial en Discord',
+        footer_whatsapp_community: 'Comunidad en WhatsApp',
         footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'La Casa de Merlin abrió sus puertas!',
@@ -214,6 +217,7 @@ const translations = {
         instructions: 'Laissez Merlin faire la magie. · Powered by Azteka',
         footer_magic: 'Laissez Merlin faire la magie',
         footer_discord_support: 'Support officiel sur Discord',
+        footer_whatsapp_community: 'Communauté WhatsApp',
         footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'La Maison de Merlin a ouvert ses portes !',
@@ -279,6 +283,7 @@ const translations = {
         instructions: 'Überlass die Magie Merlin. · Powered by Azteka',
         footer_magic: 'Überlass die Magie Merlin',
         footer_discord_support: 'Offizieller Support auf Discord',
+        footer_whatsapp_community: 'WhatsApp-Community',
         footer_instagram: 'Instagram',
         footer_powered: 'Powered by Azteka',
         discord_announcement_title: 'Das Haus von Merlin hat seine Türen geöffnet!',
@@ -888,6 +893,12 @@ function setupEventListeners() {
     if (discordSupportLink) {
         discordSupportLink.addEventListener('click', () => {
             window.electronAPI.openDiscordSupport();
+        });
+    }
+    const whatsappCommunityLink = document.getElementById('whatsappCommunityLink');
+    if (whatsappCommunityLink) {
+        whatsappCommunityLink.addEventListener('click', () => {
+            window.electronAPI.openWhatsAppCommunity();
         });
     }
     const instagramLink = document.getElementById('instagramLink');
